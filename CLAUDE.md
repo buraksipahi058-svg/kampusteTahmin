@@ -15,4 +15,11 @@
 | `supabase/` | Migration, seed, SQL testleri | Supabase Cloud (CLI kökteki `package.json` ile: `npx supabase ...`) |
 | `docs/` | Mimari ve kararlar | — |
 
-Şema yalnızca `supabase/migrations` ile değişir; Supabase panelinden elle tablo/politika değiştirilmez. Supabase URL ve publishable key `.env` dosyalarında durur, repoya girmez.
+Şema yalnızca `supabase/migrations` ile değişir; Supabase panelinden elle tablo/politika değiştirilmez. Buluta gönderilmiş bir migration dosyası düzenlenmez, düzeltme yeni migration olarak yazılır. Supabase URL ve publishable key `.env` dosyalarında durur, repoya girmez.
+
+## Veritabanı testleri
+
+- `supabase/tests/database/*.test.sql` (pgTAP). Çalıştırma: kökte `npm run db:test` (Docker Desktop açık olmalı).
+- Testler buluttaki veritabanında tek transaction içinde çalışır ve `rollback` ile biter; veri bırakmamalı.
+- CLI'ın test rolü `postgres` yetkilerini devralmaz: her test dosyası `set local role postgres;` ile başlar, kullanıcı rolünden geri dönerken de `reset role` yerine bu kullanılır.
+- Her yeni tablo, RLS politikası ve fonksiyon için en az bir izin + bir ret testi yazılır.

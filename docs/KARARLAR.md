@@ -10,6 +10,21 @@ Bu dosya `MIMARI.md`'nin yanında yaşar: kesinleşen kararları ve henüz onay 
 | 2026-10-20 | Supabase geliştirme ortamı | Supabase Cloud (ücretsiz plan, Frankfurt). Şema değişiklikleri `supabase/migrations` altında migration olarak tutulur ve CLI ile buluta gönderilir; panelden elle şema değişikliği yapılmaz. (İlk karar host 192.168.1.13 idi; host erişilemez olunca değiştirildi.) |
 | 2026-10-20 | Admin paneli | Next.js, Windows'ta çalışır. Secret key kullanmaz; yetki kontrolü veritabanında |
 | 2026-10-20 | Repo | Yalnızca yerel git; GitHub sonra |
+| 2026-10-20 | Tablo adları (MIMARI §7'den sapmalar) | `users` yerine `profiles` (Supabase'in `auth.users` tablosuyla karışmasın). Okulun `email_domain` kolonu yerine `school_email_domains` tablosu (bir okulun birden fazla öğrenci alan adı olabilir). `student_email` ve doğrulama zamanı `profile_private` tablosunda (yalnızca kişi kendisi ve kullanıcı yönetme yetkisi olan görür); `email_verified` yerine `student_email_verified_at`. |
+| 2026-10-20 | Profil oluşturma | Kayıttan sonra, giriş yapmış kullanıcı `create_profile` fonksiyonunu çağırır; profil ve okul üyeliği tek işlemde açılır. Mail onayı bitmemiş ya da anonim oturum profil açamaz. Google ile giriş gibi yöntemler de aynı yoldan geçer. |
+| 2026-10-20 | Yazma yetkisi | İstemci hiçbir tabloya doğrudan satır ekleyemez/silemez. Kullanıcı yalnızca kendi ad, soyad ve bölümünü güncelleyebilir. Diğer her yazma işlemi yetki kontrolü içeren veritabanı fonksiyonlarıyla yapılır. |
+| 2026-10-20 | Yetki kapsamı | İzin bayrakları okul kümesine verilir, o okulun tüm alt kümelerinde geçerlidir. `ssp_ver` / `bakiye_duzelt` bayrak değildir, yalnızca süperadmin yapar. İzin verme/alma `admin_audit_log`'a yazılır; bu tablo yalnızca eklenir. İzin alan öğrenci `yetkili` olur, izni kalmayınca `student`'a döner. |
+| 2026-10-20 | İlk süperadmin | Fonksiyonla atanmaz; proje sahibi bir kez SQL ile atar (aşağıda). |
+| 2026-10-20 | Hesap silme | `auth.users` satırı profil varken silinemez (ledger bütünlüğü). Hesap silme Adım 11'de soft delete + anonimleştirme olarak yapılacak. |
+| 2026-10-20 | Testler | pgTAP, `npm run db:test` (= `supabase test db --linked`) ile buluttaki veritabanında çalışır; her test dosyası tek transaction'dır ve sonunda geri alınır. Docker Desktop açık olmalı. |
+
+### İlk süperadmini atama
+
+Süperadmin olacak kişi önce uygulamaya kaydolup profilini oluşturur, sonra proje klasöründe:
+
+```bash
+npx supabase db query --linked "update public.profiles set role = 'superadmin' where id = (select id from auth.users where email = 'MAIL_ADRESI')"
+```
 
 ## Adım planı
 
