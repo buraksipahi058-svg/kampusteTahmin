@@ -5,7 +5,7 @@ gerektirdiği bölgeleri aç. Kod dosyalarını baştan sona okuma; bölge dosya
 
 ## Şu an
 
-- **Son tamamlanan:** Adım 4 (mobil temel). Emülatörde kayıt → mail onayı → giriş → profil → bakiye (1.050 SP) → günlük ödül akışı çalıştı; `flutter analyze` temiz, 15 Flutter testi geçiyor.
+- **Son tamamlanan:** Adım 4 (mobil temel), commit `820d315`. Emülatörde kayıt → mail onayı → giriş → profil → bakiye (1.050 SP) → günlük ödül akışı çalıştı; `flutter analyze` temiz, 15 Flutter testi geçiyor.
 - **Sıradaki:** Adım 5 — okul maili doğrulama (mail sağlayıcısı seçilmeli; Supabase'in yerleşik maili yalnızca proje ekibine ve saatte birkaç mail gönderir).
 - **Kullanıcıdan beklenenler:** gerçek okulun adı ve öğrenci mail alan adı (şimdilik "Örnek
   Üniversitesi" / `ogr.ornek.edu.tr`); `KARARLAR.md`'deki açık öneriler 4–8; Adım 6'dan önce resmi
@@ -17,7 +17,7 @@ gerektirdiği bölgeleri aç. Kod dosyalarını baştan sona okuma; bölge dosya
 | 1 | Kümeler, profiller, yetkiler, RLS | Bitti | `af1c23a` |
 | 2 | Para çekirdeği | Bitti | `1ff2cfb` |
 | 3 | Bahis çekirdeği | Bitti | `ecc3be0` |
-| 4 | Mobil temel | Bitti | |
+| 4 | Mobil temel | Bitti | `820d315` |
 | 5 | Okul maili doğrulama | Sırada | |
 | 6 | Resmi SSP bahisler + admin paneli | | |
 | 7 | Sosyal havuz (hakem, itiraz) | | |
