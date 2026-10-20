@@ -5,8 +5,8 @@ gerektirdiği bölgeleri aç. Kod dosyalarını baştan sona okuma; bölge dosya
 
 ## Şu an
 
-- **Son tamamlanan:** Adım 3 (bahis çekirdeği), commit `ecc3be0`. 160 pgTAP + 9 eşzamanlılık senaryosu geçiyor.
-- **Sıradaki:** Adım 4 — mobil temel (kayıt/giriş, profil oluşturma, sekmeler, bakiye, günlük ödül).
+- **Son tamamlanan:** Adım 4 (mobil temel). Emülatörde kayıt → mail onayı → giriş → profil → bakiye (1.050 SP) → günlük ödül akışı çalıştı; `flutter analyze` temiz, 15 Flutter testi geçiyor.
+- **Sıradaki:** Adım 5 — okul maili doğrulama (mail sağlayıcısı seçilmeli; Supabase'in yerleşik maili yalnızca proje ekibine ve saatte birkaç mail gönderir).
 - **Kullanıcıdan beklenenler:** gerçek okulun adı ve öğrenci mail alan adı (şimdilik "Örnek
   Üniversitesi" / `ogr.ornek.edu.tr`); `KARARLAR.md`'deki açık öneriler 4–8; Adım 6'dan önce resmi
   bahiste sabit oran mı havuz mu (MIMARI §13.6); Adım 9'da ekonomi rakamları.
@@ -17,8 +17,8 @@ gerektirdiği bölgeleri aç. Kod dosyalarını baştan sona okuma; bölge dosya
 | 1 | Kümeler, profiller, yetkiler, RLS | Bitti | `af1c23a` |
 | 2 | Para çekirdeği | Bitti | `1ff2cfb` |
 | 3 | Bahis çekirdeği | Bitti | `ecc3be0` |
-| 4 | Mobil temel | Sırada | |
-| 5 | Okul maili doğrulama | | |
+| 4 | Mobil temel | Bitti | |
+| 5 | Okul maili doğrulama | Sırada | |
 | 6 | Resmi SSP bahisler + admin paneli | | |
 | 7 | Sosyal havuz (hakem, itiraz) | | |
 | 8 | Mini oyunlar | | |

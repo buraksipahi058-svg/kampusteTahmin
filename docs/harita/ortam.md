@@ -9,7 +9,7 @@ Araçlar, komutlar ve tuzaklar. Her şey Windows'ta çalışır (eski 192.168.1.
 | Flutter | 3.47.7, `C:\Users\burak\dev\flutter` (kullanıcı PATH'inde) | Analitik kapalı. `flutter config --jdk-dir` = Android Studio'nun `jbr`'si |
 | Android Studio | `C:\Program Files\Android\Android Studio` | JDK: `...\jbr` (OpenJDK 25) |
 | Android SDK | `%LOCALAPPDATA%\Android\Sdk` (`ANDROID_HOME`) | platform 36, build-tools 37, NDK 28.2.13676358 |
-| Emülatör | AVD `kampusbet_pixel` (Android 36, Pixel 7) | WHPX hızlandırma çalışıyor |
+| Emülatör | AVD `kampusbet_pixel` (Android 36, Pixel 7) | WHPX hızlandırma çalışıyor. Bilgisayar klavyesi fiziksel klavye sayılır: ekran klavyesi yerine küçük araç çubuğu çıkar, doğrudan bilgisayardan yazılır |
 | Node / npm | 24 / 11 | |
 | Supabase CLI | 2.121, kökte npm devDependency | `npx supabase ...` kökten çalıştırılır |
 | Docker Desktop | kurulu | Yalnızca `supabase test db` için açık olmalı |
@@ -50,4 +50,6 @@ Mobil ve admin komutları kendi bölgelerinde: [mobil.md](mobil.md), [admin.md](
 - **`db query --linked`** açık transaction'ları destekler, son sonuç kümesini döner, `postgres` rolüyle çalışır. Hata çıktısında SQLSTATE `ERROR:  22012: ...` biçiminde gelir.
 - **sdkmanager** paket adlarını eğik çizgiyle ister (`platforms/android-36`, `ndk/28.2.13676358`); noktalı virgüllü eski adları hata vermeden atlar.
 - **Önizleme aracı** (`preview_start`) bu oturumun eski klasörüne bakabilir; admin sunucusu gerekirse `npm --prefix admin run dev` ile başlatılıp `http://localhost:3000` açılır. `.claude/launch.json`'da `admin` tanımı var.
+- **`adb shell input text`** Türkçe harf (ı, ş, ğ...) yazamaz (Java hatası verir); pano paylaşımı da güvenilir değil. Test verisinde ASCII kullan.
+- **İlk Flutter Android derlemesi** CMake 3.22.1'i SDK'ya kendisi kurar (bir kez, ~2 dk).
 - **Supabase advisors** `public.rls_auto_enable()` için uyarı verir: Supabase'in kendi tetikleyici fonksiyonu, doğrudan çağrılamaz; dokunulmaz.

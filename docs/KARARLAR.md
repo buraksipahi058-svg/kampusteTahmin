@@ -28,6 +28,7 @@ Bu dosya `MIMARI.md`'nin yanında yaşar: kesinleşen kararları ve henüz onay 
 | 2026-10-20 | İlk süperadmin | Fonksiyonla atanmaz; proje sahibi bir kez SQL ile atar (aşağıda). |
 | 2026-10-20 | Hesap silme | `auth.users` satırı profil varken silinemez (ledger bütünlüğü). Hesap silme Adım 11'de soft delete + anonimleştirme olarak yapılacak. |
 | 2026-10-20 | Testler | pgTAP, `npm run db:test` (= `supabase test db --linked`) ile buluttaki veritabanında çalışır; her test dosyası tek transaction'dır ve sonunda geri alınır. Docker Desktop açık olmalı. |
+| 2026-10-20 | Mobil temel | Flutter'da durum yönetimi Riverpod, yönlendirme go_router. Supabase URL + publishable key `mobile/.env`'den (`--dart-define-from-file`, git'e girmez). Sunucu hataları tek eşlemeyle (`lib/core/error_messages.dart`) kullanıcı diline çevrilir, ham sunucu metni gösterilmez. Görünen ad `AppInfo.name`'de; platform dosyaları testle denetlenir. Riverpod'un otomatik yeniden denemesi kapalı (RPC'ler habersiz tekrarlanmasın). |
 
 ### İlk süperadmini atama
 

@@ -66,6 +66,7 @@ Buluttaki gerçek durumu görmek daha ucuzsa: `npx supabase db query --linked "s
 | `42501` | Yetki yok / giriş gerekli |
 | `23514` | Geçersiz değer (kısıt) |
 | `23505` | Tekrar (benzersizlik) |
+| `23503` | Bağlı kayıt yok (ör. üst küme bulunamadı) |
 | `P0002` | Bulunamadı (görme yetkisi olmayan kayıt dahil) |
 | `55000` | Yalnızca eklenen tabloda değişiklik denemesi |
 | `22003` | Üst sınır aşıldı (admin para işlemi) |

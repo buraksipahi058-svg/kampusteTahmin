@@ -1,6 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Supabase'e bağlanmak için; debug/profile manifestlerinde var, release için burada da gerekli. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
     <application
-        android:label="kampusbet"
+        android:label="KampüsBet"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
