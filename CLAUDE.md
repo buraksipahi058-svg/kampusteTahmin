@@ -23,3 +23,10 @@
 - Testler buluttaki veritabanında tek transaction içinde çalışır ve `rollback` ile biter; veri bırakmamalı.
 - CLI'ın test rolü `postgres` yetkilerini devralmaz: her test dosyası `set local role postgres;` ile başlar, kullanıcı rolünden geri dönerken de `reset role` yerine bu kullanılır.
 - Her yeni tablo, RLS politikası ve fonksiyon için en az bir izin + bir ret testi yazılır.
+- Yarış koşulu testleri `supabase/tests/concurrency/` altında: `npm run db:test:concurrency` (kökteki `.env.local` içinde `SUPABASE_DB_PASSWORD` gerekir). Şifresiz `supabase` CLI komutları paralel çalıştırılmaz.
+
+## Para kuralları
+
+- Bakiye yalnızca `private.post_ledger` ile değişir; başka hiçbir kod `balances` veya `ledger_entries`'e yazmaz.
+- Birden fazla kullanıcının bakiyesine dokunan işlemler kullanıcıları `user_id` sırasıyla işler.
+- `KB001` = yetersiz bakiye.
