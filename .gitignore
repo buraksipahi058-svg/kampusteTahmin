@@ -1,0 +1,13 @@
+node_modules/
+
+# Ortam değişkenleri ve gizli bilgiler
+.env
+.env.*
+!.env.example
+
+# İşletim sistemi / editör
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.log
