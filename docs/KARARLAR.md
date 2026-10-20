@@ -20,6 +20,11 @@ Bu dosya `MIMARI.md`'nin yanında yaşar: kesinleşen kararları ve henüz onay 
 | 2026-10-20 | Ekonomi ayarları (taslak) | `economy_settings` tek satır: başlangıç 1000 SP; günlük ödül 50 + 10 × (seri − 1), en fazla 150; seri kilometre taşları 7. gün +200, 14. gün +500, 30. gün +1500. Gün İstanbul saatine göre değişir. Rakamlar market fiyatlarıyla (Adım 9) kalibre edilecek. |
 | 2026-10-20 | Süperadmin para işlemleri | `admin_grant` (yalnızca artı) ve `admin_adjust` (iki yönlü). Gerekçe zorunlu, tek işlemde en fazla 1.000.000, süperadmin kendi bakiyesini değiştiremez. |
 | 2026-10-20 | Eşzamanlılık testi | `npm run db:test:concurrency` gerçek paralel isteklerle çalışır ve veritabanı şifresi ister (kökteki `.env.local` içinde `SUPABASE_DB_PASSWORD`, git'e girmez). Sebep: şifresiz CLI her çağrıda geçici giriş rolünün şifresini yeniler, paralel çağrılar birbirini bozar. |
+| 2026-10-20 | Okul maili doğrulaması | Bahis açmak da bahse yatırım yapmak da doğrulanmış okul maili ister (hata kodu `KB002`). Bir okul maili yalnızca bir hesaba bağlanır. (Eski öneri 2.) |
+| 2026-10-20 | Bahis çekirdeği | Bahis açma / kilitleme / sonuçlandırma / iptal iç fonksiyonlardır (`private.create_bet`, `lock_bet`, `settle_bet`, `cancel_bet`); türe özel ve yetki kontrollü RPC'ler Adım 6-8'de bunları çağırır. İstemciye açık tek bahis yazma işlemi `place_wager`. v1'de kapsam yalnızca `school` ve `private` (grup/kulüp/bölüm). |
+| 2026-10-20 | Yatırım kuralları | Kişi bir bahse bir kez yatırım yapar (`KB004`). Sonucu belirleyen (sosyal bahiste hakem, resmi bahiste açan) yatırım yapamaz. Bahis yalnızca kümesinin üyelerine görünür; bireysel yatırımlar gizli, havuz toplamları açık. Kapanış zamanı geçen ya da kilitlenen bahse yatırım yapılamaz (`KB003`). |
+| 2026-10-20 | Pari-mutuel dağıtım | Kesinti yok. Kazananlar tüm havuzu yatırımları oranında paylaşır; tam sayı bölmeden kalan SP'ler kesirli payı en büyük olandan başlayarak 1'er dağıtılır (havuzun tamamı dağıtılır). Kazanan seçeneğe kimse yatırmadıysa herkese iade. Resmi bahislerde sabit oran seçeneği (MIMARI §13.6) Adım 6'da konuşulacak. |
+| 2026-10-20 | Bahis sonuçlandırma | Yalnızca kilitli ya da kapanış zamanı geçmiş bahis sonuçlandırılır (`KB005`); sonuçlanmış/iptal edilmiş bahse tekrar dokunulamaz (`KB006`). Ledger'da her yatırımın tek yatırma ve tek ödeme/iade kaydı olabilir (benzersiz indeks). İptal gerekçe ister ve herkese iade eder. |
 | 2026-10-20 | İlk süperadmin | Fonksiyonla atanmaz; proje sahibi bir kez SQL ile atar (aşağıda). |
 | 2026-10-20 | Hesap silme | `auth.users` satırı profil varken silinemez (ledger bütünlüğü). Hesap silme Adım 11'de soft delete + anonimleştirme olarak yapılacak. |
 | 2026-10-20 | Testler | pgTAP, `npm run db:test` (= `supabase test db --linked`) ile buluttaki veritabanında çalışır; her test dosyası tek transaction'dır ve sonunda geri alınır. Docker Desktop açık olmalı. |
@@ -54,8 +59,8 @@ Her adımın sonunda durulur, rapor verilir, onay beklenir.
 ## Onay bekleyen öneriler
 
 1. ~~Kullanıcılar arası SP/SSP transferi yok.~~ Kesinleşti (2026-10-20). Kalan risk: düello / sosyal havuzla bilerek kaybedip SP aktarma; düşük limit ve aynı kişilerin sık eşleşmesinin izlenmesiyle sınırlanacak (Adım 7-8).
-2. **Bahse katılmak da okul maili doğrulaması ister**, yalnızca bahis açmak değil. Bir okul maili yalnızca bir hesaba bağlanır. Aksi halde doğrulanmamış hesaplarla başlangıç SP'si ve günlük ödül toplanıp ana hesaba akıtılabilir.
-3. **Para hareketleri yalnızca sunucu fonksiyonlarıyla.** İstemci ledger / wagers / balances tablolarına doğrudan yazamaz. İşlem sırasında bakiye satırı kilitlenir, bakiye negatife düşemez.
+2. ~~Bahse katılmak da okul maili doğrulaması ister.~~ Kesinleşti (2026-10-20).
+3. ~~Para hareketleri yalnızca sunucu fonksiyonlarıyla.~~ Adım 2'de bu şekilde uygulandı (bkz. "Para hareketinin tek kapısı").
 4. **Mini oyunlarda kontrol sunucuda:** trivia'nın doğru cevabı istemciye gitmez, cevap ve süre sunucuda kontrol edilir; reflex oyunu SP'siz (yalnızca skor); zar / çark sonucu sunucuda üretilir.
 5. **v1'de düello = trivia düellosu** (aynı soruları çözen iki kişi). Gerçek dünya olayına bağlı düello Tip-2 sosyal havuz sayılır.
 6. **İsim ve "bahis" dili** mağaza incelemesinde ve okullar nezdinde risk taşır; "tahmin" dili düşünülebilir. Görünen ad kodda tek bir yerde tutulur. Yayın öncesi hukuki görüş alınmalı.
@@ -64,7 +69,6 @@ Her adımın sonunda durulur, rapor verilir, onay beklenir.
 
 ## İlgili adımda çözülecek ayrıntılar
 
-- Pari-mutuel: kazanan seçeneğe kimse yatırmadıysa herkese iade; tam sayı bölmeden kalan artığın nereye gideceği.
 - Bahis kilitleme (`locks_at`) ve itiraz penceresi kapanışı için zamanlanmış iş (pg_cron).
 - Para dışı admin işlemleri (ban, yetki verme) için ayrı denetim kaydı.
 - MIMARI §13'teki rakamlar (başlangıç SP, limitler, itibar eşikleri) bir ayar tablosunda tutulur, sonra kalibre edilir.
