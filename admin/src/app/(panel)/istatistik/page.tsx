@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getStaff } from "@/lib/auth";
 import { dbErrorMessage } from "@/lib/errors";
-import { formatAmount, formatDateTime } from "@/lib/format";
+import { formatAmount, formatDate, formatDateTime } from "@/lib/format";
 import type { Database } from "@/lib/supabase/database.types";
 import { createClient } from "@/lib/supabase/server";
 
@@ -109,7 +109,7 @@ export default async function StatsPage({ searchParams }: PageProps<"/istatistik
       <section className="flex flex-col gap-3">
         <h2 className="text-lg font-semibold">
           {school.name}
-          {stats && <span className="text-sm font-normal text-zinc-500"> · hafta başı {stats.week_start}</span>}
+          {stats && <span className="text-sm font-normal text-zinc-500"> · hafta başı {formatDate(stats.week_start)}</span>}
         </h2>
         {statsError && <p className="text-sm text-red-700">Özet alınamadı: {dbErrorMessage(statsError)}</p>}
         <dl className="grid grid-cols-2 gap-3 sm:grid-cols-5">

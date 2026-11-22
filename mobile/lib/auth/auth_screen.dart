@@ -70,7 +70,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       return;
     }
     await _run((auth) async {
-      final response = await auth.signUp(email: email, password: password);
+      final response = await auth.signUp(email: email, password: password, emailRedirectTo: AppInfo.authRedirectUrl);
       // Mail onayı açıkken oturum gelmez; açık oturum geldiyse yönlendirici devralır.
       if (response.session == null) {
         _awaitingConfirmation = email;
@@ -86,8 +86,26 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     final email = _awaitingConfirmation;
     if (email == null) return;
     await _run((auth) async {
-      await auth.resend(type: OtpType.signup, email: email);
+      await auth.resend(type: OtpType.signup, email: email, emailRedirectTo: AppInfo.authRedirectUrl);
       _notice = 'Onay linkini $email adresine yeniden gönderdik.';
+    });
+  }
+
+  /// Şifre sıfırlama linki telefonda açılınca uygulamada oturum açılır; yeni şifre Profil'den belirlenir.
+  Future<void> _forgotPassword() async {
+    final email = _emailValue;
+    if (!email.contains('@') || email.startsWith('@') || email.endsWith('@')) {
+      setState(() {
+        _notice = null;
+        _error = 'Şifre sıfırlama linki için önce e-posta adresini yaz.';
+      });
+      return;
+    }
+    await _run((auth) async {
+      await auth.resetPasswordForEmail(email, redirectTo: AppInfo.authRedirectUrl);
+      _notice =
+          '$email adresine bir şifre sıfırlama linki gönderdik. Linki bu telefonda aç: uygulamada oturumun açılır, '
+          'sonra Profil > Şifreyi değiştir\'den yeni şifreni belirle.';
     });
   }
 
@@ -186,6 +204,11 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                       TextButton(
                         onPressed: () => context.push(Routes.privacy),
                         child: const Text('Kişisel verilerin nasıl işlenir: KVKK Aydınlatma Metni', textAlign: TextAlign.center),
+                      ),
+                    if (!signUp)
+                      TextButton(
+                        onPressed: _busy ? null : _forgotPassword,
+                        child: const Text('Şifremi unuttum'),
                       ),
                     if (_awaitingConfirmation != null && !signUp)
                       TextButton(

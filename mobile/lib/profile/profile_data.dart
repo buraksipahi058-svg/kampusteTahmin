@@ -97,7 +97,7 @@ final schoolsProvider = FutureProvider<List<School>>((ref) async {
       .from('clusters')
       .select('id, name')
       .eq('type', 'school')
-      .order('name');
+      .order('name', ascending: true);
   return rows.map(School.fromJson).toList();
 });
 
@@ -109,7 +109,8 @@ Future<void> createProfile(
   required String schoolId,
   String? department,
 }) async {
-  await ref.read(supabaseProvider).rpc(
+  final c = containerOf(ref);
+  await c.read(supabaseProvider).rpc(
     'create_profile',
     params: {
       'p_first_name': firstName,
@@ -118,5 +119,5 @@ Future<void> createProfile(
       'p_department': department,
     },
   );
-  ref.invalidate(myProfileProvider);
+  c.invalidate(myProfileProvider);
 }

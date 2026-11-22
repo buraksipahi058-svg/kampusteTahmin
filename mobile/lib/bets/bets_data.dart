@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/supabase.dart';
 import '../leaderboard/leaderboard_data.dart';
 import '../progress/progress_data.dart';
+import '../quests/quests_data.dart';
 import '../wallet/wallet_data.dart';
 
 class BetOption {
@@ -114,7 +115,14 @@ class Bet {
 }
 
 class Wager {
-  const Wager({required this.betId, required this.optionId, required this.amount, this.odds, this.payout});
+  const Wager({
+    required this.betId,
+    required this.optionId,
+    required this.amount,
+    this.odds,
+    this.payout,
+    this.createdAt,
+  });
 
   final String betId;
   final String optionId;
@@ -124,12 +132,16 @@ class Wager {
   /// Sonuçlanınca ya da iptalde yazılır (kaybeden 0, iade = yatırılan).
   final int? payout;
 
+  /// Yatırım zamanı (yalnızca geçmiş sorgusu çeker).
+  final DateTime? createdAt;
+
   factory Wager.fromJson(Map<String, dynamic> json) => Wager(
     betId: json['bet_id'] as String,
     optionId: json['option_id'] as String,
     amount: json['amount'] as int,
     odds: (json['odds'] as num?)?.toDouble(),
     payout: json['payout'] as int?,
+    createdAt: json['created_at'] == null ? null : DateTime.parse(json['created_at'] as String),
   );
 }
 
@@ -203,7 +215,7 @@ final myWagerHistoryProvider = FutureProvider<List<WagerEntry>>((ref) async {
   final rows = await ref
       .watch(supabaseProvider)
       .from('wagers')
-      .select('bet_id, option_id, amount, odds, payout, bet:bets!bet_id($_betColumns)')
+      .select('bet_id, option_id, amount, odds, payout, created_at, bet:bets!bet_id($_betColumns)')
       .eq('user_id', userId)
       .order('created_at', ascending: false)
       .limit(100);
@@ -213,25 +225,28 @@ final myWagerHistoryProvider = FutureProvider<List<WagerEntry>>((ref) async {
   ];
 });
 
-void _refreshBets(WidgetRef ref) {
-  ref.invalidate(officialBetsProvider);
-  ref.invalidate(socialBetsProvider);
-  ref.invalidate(dailyPredictionsProvider);
-  ref.invalidate(myWagersProvider);
-  ref.invalidate(myDisputedBetIdsProvider);
-  ref.invalidate(myWagerHistoryProvider);
-  ref.invalidate(myStatsProvider);
-  ref.invalidate(balanceProvider);
-  refreshProgress(ref);
+/// Bahis / düello işleminden sonra: bakiye, kartlar, geçmiş, istatistik, görev ilerlemesi, XP.
+void refreshAfterBet(ProviderContainer c) {
+  c.invalidate(officialBetsProvider);
+  c.invalidate(socialBetsProvider);
+  c.invalidate(dailyPredictionsProvider);
+  c.invalidate(myWagersProvider);
+  c.invalidate(myDisputedBetIdsProvider);
+  c.invalidate(myWagerHistoryProvider);
+  c.invalidate(myStatsProvider);
+  c.invalidate(questsProvider);
+  c.invalidate(balanceProvider);
+  refreshProgress(c);
 }
 
 /// `public.place_wager`: bakiye, sınırlar ve kurallar sunucuda denetlenir.
 Future<void> placeWager(WidgetRef ref, {required String betId, required String optionId, required int amount}) async {
-  await ref.read(supabaseProvider).rpc(
+  final c = containerOf(ref);
+  await c.read(supabaseProvider).rpc(
     'place_wager',
     params: {'p_bet_id': betId, 'p_option_id': optionId, 'p_amount': amount},
   );
-  _refreshBets(ref);
+  refreshAfterBet(c);
 }
 
 /// `public.create_social_bet`: hakem sensin; kişi başı sınır ayardaki üst sınırı aşamaz.
@@ -244,7 +259,8 @@ Future<void> createSocialBet(
   required DateTime locksAt,
   int? maxStake,
 }) async {
-  await ref.read(supabaseProvider).rpc(
+  final c = containerOf(ref);
+  await c.read(supabaseProvider).rpc(
     'create_social_bet',
     params: {
       'p_cluster_id': clusterId,
@@ -255,27 +271,30 @@ Future<void> createSocialBet(
       'p_max_stake': ?maxStake,
     },
   );
-  _refreshBets(ref);
+  refreshAfterBet(c);
 }
 
 /// `public.submit_social_result`: yalnızca hakem; itiraz süresinin bitişini döner.
 Future<DateTime> submitSocialResult(WidgetRef ref, {required String betId, required String optionId}) async {
-  final until = await ref.read(supabaseProvider).rpc(
+  final c = containerOf(ref);
+  final until = await c.read(supabaseProvider).rpc(
     'submit_social_result',
     params: {'p_bet_id': betId, 'p_option_id': optionId},
   );
-  _refreshBets(ref);
+  refreshAfterBet(c);
   return DateTime.parse(until as String);
 }
 
 /// `public.dispute_social_result`: yalnızca yatırım yapanlar, itiraz süresi içinde.
 Future<void> disputeSocialResult(WidgetRef ref, {required String betId, required String reason}) async {
-  await ref.read(supabaseProvider).rpc('dispute_social_result', params: {'p_bet_id': betId, 'p_reason': reason});
-  _refreshBets(ref);
+  final c = containerOf(ref);
+  await c.read(supabaseProvider).rpc('dispute_social_result', params: {'p_bet_id': betId, 'p_reason': reason});
+  refreshAfterBet(c);
 }
 
 /// `public.cancel_social_bet`: açan, henüz kimse yatırmamışken geri çekebilir.
 Future<void> cancelSocialBet(WidgetRef ref, {required String betId, required String reason}) async {
-  await ref.read(supabaseProvider).rpc('cancel_social_bet', params: {'p_bet_id': betId, 'p_reason': reason});
-  _refreshBets(ref);
+  final c = containerOf(ref);
+  await c.read(supabaseProvider).rpc('cancel_social_bet', params: {'p_bet_id': betId, 'p_reason': reason});
+  refreshAfterBet(c);
 }

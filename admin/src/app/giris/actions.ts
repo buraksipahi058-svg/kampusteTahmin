@@ -26,6 +26,7 @@ export async function login(_prev: ActionState, formData: FormData): Promise<Act
 
 export async function logout() {
   const supabase = await createClient();
-  await supabase.auth.signOut();
+  // Yalnızca bu tarayıcı: varsayılan (global) yetkilinin telefondaki uygulama oturumunu da kapatırdı.
+  await supabase.auth.signOut({ scope: "local" });
   redirect("/giris");
 }

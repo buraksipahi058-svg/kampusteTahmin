@@ -28,6 +28,7 @@ Yapılandırma: `admin/.env.local` (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUP
 | `lib/format.ts` | Tarih (İstanbul), tutar, oran biçimi; `datetime-local` ↔ ISO (+03:00; `istanbulLocalToIso`, `isoToIstanbulLocal`) |
 | `components/ui.tsx`, `user-search.tsx` | Gönder düğmesi, form mesajı; ada göre kullanıcı arama |
 | `app/giris/` | Giriş formu + `login` / `logout` server action'ları |
+| `app/gizlilik/`, `app/hesap-silme/` | **Oturumsuz** metin sayfaları (mağaza bağlantıları; `proxy.ts` `PUBLIC_PATHS`). KVKK metni `src/legal/kvkk_aydinlatma.txt` (mobildeki asset'in kopyası; mobil test aynılığını denetler), `lib/legal.ts` (`use cache` ile okur, derlemede statik), `components/legal-page.tsx` |
 | `app/(panel)/layout.tsx` | `instant = false`; rol kontrolü (öğrenciye "yetkin yok"), menü |
 | `app/(panel)/resmi-bahisler/` | Liste (seçenek, oran, yatırılan, olası ödeme), kilitle / sonuçlandır / iptal; `yeni/` açma formu |
 | `app/(panel)/itirazlar/` | Moderatör (`kullanici_bahsi_denetle` / süperadmin): açık itirazlı sosyal bahisler, hakemin sonucu, havuz, itiraz gerekçeleri; onayla / değiştir / iptal (`resolve_social_dispute`) |
@@ -40,6 +41,10 @@ Yapılandırma: `admin/.env.local` (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUP
 | `app/(panel)/bakiye/` | Süperadmin: `admin_grant` / `admin_adjust`, son yönetim işlemleri |
 
 ## Bu Next.js sürümünün tuzakları
+
+- **Formlar `ActionForm` ile** (`components/ui.tsx`): `<form action>` React 19'da her gönderimden sonra formu boşaltır, hata alan formda girilenler kaybolurdu. `ActionForm` eylemi elle çağırır (basılan düğmenin değeri dahil), başarıda boşaltır; `useActionState`'in üçüncü değeri (`pending`) verilir, `SubmitButton` onu kullanır.
+- Çıkış `signOut({ scope: "local" })`: varsayılan global çıkış yetkilinin telefondaki oturumunu da kapatır.
+- Güvenlik başlıkları `next.config.ts`'te (çerçeveleme yasak vb.); `env.ts` yalnızca `sb_publishable_` anahtarı kabul eder.
 
 - `admin/AGENTS.md`: kod yazmadan önce `admin/node_modules/next/dist/docs/` altındaki ilgili rehberi oku.
 - `cacheComponents` açık: oturum (çerez) okuyan sayfa ya `<Suspense>` içinde olmalı ya da segmentte `export const instant = false` olmalı; panel düzeni ikincisini kullanır.

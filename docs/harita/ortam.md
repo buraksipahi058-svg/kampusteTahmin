@@ -54,5 +54,7 @@ Mobil ve admin komutları kendi bölgelerinde: [mobil.md](mobil.md), [admin.md](
 - **`adb` Bash aracının PATH'inde yok:** `"$LOCALAPPDATA/Android/Sdk/platform-tools/adb.exe"` ile çağır (Git Bash'te `MSYS_NO_PATHCONV=1`). APK: `flutter build apk --debug --dart-define-from-file=.env` + `adb install -r build/app/outputs/flutter-apk/app-debug.apk`.
 - **Emülatörde klavye açıkken `adb shell input swipe`** klavyenin üstüne denk gelirse kaydırmalı yazım olarak harf yazar; önce `input keyevent KEYCODE_BACK` ile klavyeyi kapat.
 - **`adb shell input text`** Türkçe harf (ı, ş, ğ...) yazamaz (Java hatası verir); pano paylaşımı da güvenilir değil. Test verisinde ASCII kullan.
+- **Release APK / AAB:** `flutter build apk --release --dart-define-from-file=.env` (≈80 sn, 55 MB), `flutter build appbundle --release ...` (`build/app/outputs/bundle/release/`). `android/key.properties` yoksa debug anahtarıyla imzalanır; aynı anahtarla imzalı debug kurulumunun üstüne `adb install -r` ile kurulur. Release'te Flutter logu: `adb logcat --pid=$(adb shell pidof com.kampusbet.kampusbet)`.
+- **Linki emülatörde açmak:** `adb shell am start -a android.intent.action.VIEW -d "com.kampusbet.kampusbet://giris-callback"`.
 - **İlk Flutter Android derlemesi** CMake 3.22.1'i SDK'ya kendisi kurar (bir kez, ~2 dk).
 - **Supabase advisors** `public.rls_auto_enable()` için uyarı verir: Supabase'in kendi tetikleyici fonksiyonu, doğrudan çağrılamaz; dokunulmaz.

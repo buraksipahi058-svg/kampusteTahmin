@@ -6,6 +6,9 @@ const dateTime = new Intl.DateTimeFormat("tr-TR", {
 const number = new Intl.NumberFormat("tr-TR");
 
 export const formatDateTime = (iso: string) => dateTime.format(new Date(iso));
+// "2026-11-16" gibi tarih → "16 Kas 2026".
+export const formatDate = (date: string) =>
+  new Intl.DateTimeFormat("tr-TR", { dateStyle: "medium", timeZone: "UTC" }).format(new Date(`${date}T00:00:00Z`));
 export const formatAmount = (value: number) => number.format(value);
 export const formatOdds = (value: number | null) =>
   value == null ? "–" : value.toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });

@@ -1,17 +1,17 @@
 "use client";
 
 import { useActionState } from "react";
-import { FormAlert, SubmitButton, inputClass, type ActionState } from "@/components/ui";
+import { ActionForm, FormAlert, SubmitButton, inputClass, type ActionState } from "@/components/ui";
 import { createDailyPrediction } from "./actions";
 
 type School = { id: string; name: string };
 
 // Seçenekler her zaman Evet / Hayır; kişi başı üst sınır ekonomi ayarından gelir.
 export function PredictionForm({ schools }: { schools: School[] }) {
-  const [state, action] = useActionState(createDailyPrediction, {} as ActionState);
+  const [state, action, actionPending] = useActionState(createDailyPrediction, {} as ActionState);
 
   return (
-    <form action={action} className="flex max-w-xl flex-col gap-3 rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
+    <ActionForm action={action} state={state} pending={actionPending} className="flex max-w-xl flex-col gap-3 rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
       <h2 className="font-medium">Yeni günün tahmini</h2>
       <label className="flex flex-col gap-1 text-sm">
         Okul
@@ -46,6 +46,6 @@ export function PredictionForm({ schools }: { schools: School[] }) {
       <div>
         <SubmitButton pendingText="Açılıyor…">Tahmini aç</SubmitButton>
       </div>
-    </form>
+    </ActionForm>
   );
 }

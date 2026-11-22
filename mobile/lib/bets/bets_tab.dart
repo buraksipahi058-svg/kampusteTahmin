@@ -178,7 +178,7 @@ class BetCard extends StatelessWidget {
 String betStatusText(Bet bet, bool open) => switch (bet.status) {
   _ when open => 'Kapanış: ${formatIstanbul(bet.locksAt)}',
   'settling' => 'Hakemin sonucu: ${bet.proposedOption?.label ?? '?'}'
-      '${bet.disputeUntil == null ? '' : ' · itiraz süresi ${formatIstanbul(bet.disputeUntil!)}\'e kadar'}',
+      '${bet.disputeUntil == null ? '' : ' · itiraz süresi sonu: ${formatIstanbul(bet.disputeUntil!)}'}',
   'open' || 'locked' => bet.type == 'sp_social' ? 'Yatırımlar kapandı, hakemin sonucu bekleniyor' : 'Yatırımlar kapandı, sonuç bekleniyor',
   'settled' => 'Sonuçlandı',
   'cancelled' => 'İptal edildi${bet.cancelReason == null ? '' : ': ${bet.cancelReason}'}',
@@ -195,7 +195,9 @@ String wagerText(Bet bet, Wager wager, BetOption chosen) {
       'Kazanan tarafa kimse yatırmadığı için yatırımın ($stake) iade edildi.',
     // Doğru taraf ama kazanç yok (karşı tarafta para yoktu ya da yuvarlama).
     ('settled', final payout?) when payout == wager.amount => 'Doğru bildin ama kazanç çıkmadı: yatırımın ($stake) geri döndü.',
-    ('settled', final payout?) when payout > 0 => 'Kazandın: +${formatAmount(payout)} ${bet.currency} ($stake)',
+    ('settled', final payout?) when payout > 0 =>
+      'Kazandın: net +${formatAmount(payout - wager.amount)} ${bet.currency} · '
+          '${formatAmount(payout)} ${bet.currency} aldın ($stake)',
     ('settled', _) => 'Kaybettin ($stake).',
     _ when wager.odds != null =>
       'Yatırımın: $stake · Olası kazanç: ${formatAmount(potentialPayout(wager.amount, wager.odds!))} ${bet.currency}',
@@ -205,6 +207,7 @@ String wagerText(Bet bet, Wager wager, BetOption chosen) {
 
 Future<void> showWagerSheet(BuildContext context, Bet bet, BetOption option) => showModalBottomSheet<void>(
   context: context,
+  useRootNavigator: true,
   isScrollControlled: true,
   builder: (_) => WagerSheet(bet: bet, option: option),
 );

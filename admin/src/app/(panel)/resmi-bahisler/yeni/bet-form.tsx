@@ -1,18 +1,18 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { FormAlert, SubmitButton, inputClass, type ActionState } from "@/components/ui";
+import { ActionForm, FormAlert, SubmitButton, inputClass, type ActionState } from "@/components/ui";
 import { createOfficialBet } from "../actions";
 
 type School = { id: string; name: string };
 
 export function OfficialBetForm({ schools }: { schools: School[] }) {
-  const [state, action] = useActionState(createOfficialBet, {} as ActionState);
+  const [state, action, actionPending] = useActionState(createOfficialBet, {} as ActionState);
   const [rows, setRows] = useState([0, 1]);
   const [nextKey, setNextKey] = useState(2);
 
   return (
-    <form action={action} className="flex max-w-xl flex-col gap-4">
+    <ActionForm action={action} state={state} pending={actionPending} className="flex max-w-xl flex-col gap-4">
       <label className="flex flex-col gap-1 text-sm">
         Okul
         <select name="school_id" required className={inputClass} defaultValue={schools[0]?.id}>
@@ -74,6 +74,6 @@ export function OfficialBetForm({ schools }: { schools: School[] }) {
       <div>
         <SubmitButton pendingText="Açılıyor…">Resmi bahsi aç</SubmitButton>
       </div>
-    </form>
+    </ActionForm>
   );
 }

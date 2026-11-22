@@ -67,8 +67,8 @@ export default async function MarketPage() {
                   </p>
                   <p className="text-xs text-zinc-500">
                     {item.school?.name ?? "Tüm okullar"}
-                    {item.available_from && ` · ${formatDateTime(item.available_from)}'den`}
-                    {item.available_until && ` · ${formatDateTime(item.available_until)}'e kadar`}
+                    {item.available_from && ` · satış başlangıcı ${formatDateTime(item.available_from)}`}
+                    {item.available_until && ` · satış sonu ${formatDateTime(item.available_until)}`}
                     {!item.active && " · satışta değil"}
                   </p>
                 </div>

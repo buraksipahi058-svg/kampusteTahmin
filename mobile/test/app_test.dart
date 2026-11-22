@@ -112,6 +112,32 @@ void main() {
     expect(find.text('1. Veri sorumlusu'), findsOneWidget);
   });
 
+  testWidgets('şifremi unuttum önce e-posta ister', (tester) async {
+    await pumpApp(tester);
+    await tester.tap(find.text('Şifremi unuttum'));
+    await tester.pumpAndSettle();
+    expect(find.text('Şifre sıfırlama linki için önce e-posta adresini yaz.'), findsOneWidget);
+  });
+
+  testWidgets('şifre değiştirme kısa ve uyuşmayan şifreyi göndermez', (tester) async {
+    await pumpApp(tester, userId: 'u1', profile: _profile);
+    await tester.tap(find.text('Profil'));
+    await tester.pumpAndSettle();
+    final profileList = find.descendant(of: find.byType(ProfileTab), matching: find.byType(Scrollable)).first;
+    await tester.drag(profileList, const Offset(0, -3000));
+    tester.state<ScaffoldMessengerState>(find.byType(ScaffoldMessenger)).clearSnackBars();
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Şifreyi değiştir'));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.widgetWithText(TextFormField, 'Yeni şifre'), 'kisa');
+    await tester.enterText(find.widgetWithText(TextFormField, 'Yeni şifre (tekrar)'), 'baska');
+    await tester.tap(find.widgetWithText(FilledButton, 'Kaydet'));
+    await tester.pumpAndSettle();
+    expect(find.text('Şifre en az 8 karakter olmalı.'), findsOneWidget);
+    expect(find.text('Şifreler aynı değil.'), findsOneWidget);
+  });
+
   testWidgets('giriş formu geçersiz e-postayı sunucuya göndermez', (tester) async {
     await pumpApp(tester);
 
@@ -225,7 +251,7 @@ void main() {
     );
 
     expect(find.text('Sonuçlandı'), findsOneWidget);
-    expect(find.text('Kazandın: +180 SSP (100 SSP · Kırmızı @ 1,80)'), findsOneWidget);
+    expect(find.text('Kazandın: net +80 SSP · 180 SSP aldın (100 SSP · Kırmızı @ 1,80)'), findsOneWidget);
   });
 
   testWidgets('okul maili doğrulanmamışsa uyarı çıkar, seçenekler yatırım açmaz', (tester) async {
@@ -394,7 +420,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Ada Yılmaz vs Veli Demir'), findsOneWidget);
-    expect(find.text('20 SP · Kazandın: +40 SP · skor 5 - 3'), findsOneWidget);
+    expect(find.text('20 SP · Kazandın: net +20 SP · skor 5 - 3'), findsOneWidget);
     expect(find.widgetWithText(FilledButton, 'Kabul et (20 SP)'), findsNothing);
   });
 
@@ -441,7 +467,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Sonuçlandı'), findsOneWidget);
-    expect(find.text('Kazandın: +37 SP (30 SP · Evet)'), findsOneWidget);
+    expect(find.text('Kazandın: net +7 SP · 37 SP aldın (30 SP · Evet)'), findsOneWidget);
     await tester.tap(find.text('Hayır'));
     await tester.pumpAndSettle();
     expect(find.textContaining('Havuz sistemi'), findsNothing);
@@ -469,7 +495,7 @@ void main() {
     expect(find.widgetWithText(FilledButton, 'Kuşan'), findsOneWidget);
     expect(find.text('Kampüs Efsanesi'), findsNothing);
     // Seviye 2'deki kişi 3. seviye ürününü alamaz: düğme kilitli.
-    expect(find.textContaining('3. seviyede açılır'), findsOneWidget);
+    expect(find.textContaining('3. seviyede açılır'), findsOneWidget);
     final locked = tester.widget<OutlinedButton>(find.widgetWithText(OutlinedButton, 'Seviye 3'));
     expect(locked.onPressed, isNull);
     expect(find.widgetWithText(FilledButton, '100 SP'), findsNothing);
@@ -486,6 +512,32 @@ void main() {
     expect(find.text('Kampüs Efsanesi'), findsOneWidget);
     expect(find.widgetWithText(FilledButton, '150 SSP'), findsOneWidget);
     expect(find.text('Kehanet Ustası'), findsNothing);
+  });
+
+  testWidgets('satış tarihi geçen ürün "Satış bitti", başlamayan "Yakında"', (tester) async {
+    final ended = MarketItem(
+      id: 'm6',
+      name: 'Bahar rozeti',
+      category: 'badge',
+      icon: '🌸',
+      price: 100,
+      currency: 'SP',
+      availableUntil: DateTime.utc(2020, 1, 1),
+    );
+    final upcoming = MarketItem(
+      id: 'm7',
+      name: 'Yaz rozeti',
+      category: 'badge',
+      icon: '☀',
+      price: 100,
+      currency: 'SP',
+      availableFrom: DateTime.utc(2100, 1, 1),
+    );
+    await pumpApp(tester, userId: 'u1', profile: _profile, items: [ended, upcoming]);
+    await tester.tap(find.text('Market'));
+    await tester.pumpAndSettle();
+    expect(find.text('Satış bitti'), findsOneWidget);
+    expect(find.text('Yakında'), findsOneWidget);
   });
 
   testWidgets('profilde kuşanılmış unvan ve rozet görünür', (tester) async {
@@ -676,7 +728,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Bugün yemekhanede mercimek çorbası çıkar mı?'), findsOneWidget);
     expect(find.textContaining('Günün tahmini · Sonuçlandı'), findsOneWidget);
-    expect(find.textContaining('Kazandın: +37 SP'), findsOneWidget);
+    expect(find.textContaining('Kazandın: net +7 SP'), findsOneWidget);
     expect(find.byIcon(Icons.check_circle), findsOneWidget);
   });
 
@@ -711,7 +763,7 @@ void main() {
     const evet = BetOption(id: 'y', label: 'Evet', position: 1, isWinner: true);
     const hayir = BetOption(id: 'n', label: 'Hayır', position: 2, isWinner: false);
     expect(wagerText(yes, const Wager(betId: 'p1', optionId: 'y', amount: 30, payout: 37), evet),
-        'Kazandın: +37 SP (30 SP · Evet)');
+        'Kazandın: net +7 SP · 37 SP aldın (30 SP · Evet)');
     expect(wagerText(yes, const Wager(betId: 'p1', optionId: 'y', amount: 30, payout: 30), evet),
         'Doğru bildin ama kazanç çıkmadı: yatırımın (30 SP · Evet) geri döndü.');
     expect(wagerText(yes, const Wager(betId: 'p1', optionId: 'n', amount: 30, payout: 30), hayir),

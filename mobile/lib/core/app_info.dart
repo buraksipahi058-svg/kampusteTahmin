@@ -5,6 +5,13 @@
 /// - `android/app/src/main/AndroidManifest.xml` (`android:label`)
 /// - `ios/Runner/Info.plist` (`CFBundleDisplayName`)
 /// - `web/index.html` (`<title>`, `apple-mobile-web-app-title`), `web/manifest.json` (`name`, `short_name`)
+///
+/// E-posta linklerinin (kayıt onayı, şifre sıfırlama) uygulamayı açtığı adres de burada; şeması
+/// `AndroidManifest.xml` (intent-filter) ve `Info.plist`'te (CFBundleURLSchemes) yazılı, aynı test denetler.
+/// Supabase Auth'ta "Redirect URLs" listesinde `$authScheme://**` olmalı (docs/harita/yayin.md).
 abstract final class AppInfo {
   static const name = 'KampüsBet';
+  static const authScheme = 'com.kampusbet.kampusbet';
+  static const authCallbackHost = 'giris-callback';
+  static const authRedirectUrl = '$authScheme://$authCallbackHost';
 }

@@ -185,7 +185,8 @@ class DuelCard extends ConsumerWidget {
         if (!duel.isPlayer(userId)) return 'Sonuçlandı';
         final score = 'skor ${me?.score ?? 0} - ${other?.score ?? 0}';
         final payout = wager?.payout ?? 0;
-        return payout > 0 ? 'Kazandın: +${formatAmount(payout)} SP · $score' : 'Kaybettin · $score';
+        final stake = wager?.amount ?? duel.stake;
+        return payout > 0 ? 'Kazandın: net +${formatAmount(payout - stake)} SP · $score' : 'Kaybettin · $score';
       default:
         if (me?.submitted ?? false) return 'Skorun ${me!.score}; rakibin oynaması bekleniyor';
         if (duel.opponentId == null) return duel.challengerId == userId ? 'Rakip bekleniyor' : 'Rakip aranıyor';

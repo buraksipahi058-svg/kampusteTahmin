@@ -45,9 +45,10 @@ class ConfirmResult {
 
 /// `public.confirm_student_email`: yanlış kod hata değil, kalan hakla döner.
 Future<ConfirmResult> confirmStudentEmail(WidgetRef ref, String code) async {
-  final rows = await ref.read(supabaseProvider).rpc('confirm_student_email', params: {'p_code': code}) as List;
+  final c = containerOf(ref);
+  final rows = await c.read(supabaseProvider).rpc('confirm_student_email', params: {'p_code': code}) as List;
   final row = rows.first as Map<String, dynamic>;
   final result = ConfirmResult(verified: row['verified'] as bool, attemptsLeft: row['attempts_left'] as int);
-  if (result.verified) ref.invalidate(studentEmailProvider);
+  if (result.verified) c.invalidate(studentEmailProvider);
   return result;
 }

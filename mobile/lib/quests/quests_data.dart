@@ -74,10 +74,11 @@ final questsProvider = FutureProvider<List<Quest>>((ref) async {
 
 /// `public.claim_quest_reward`: tamamlanan görevin ödülü (dönem başına bir kez).
 Future<({String currency, int amount})> claimQuest(WidgetRef ref, String questId) async {
-  final rows = await ref.read(supabaseProvider).rpc('claim_quest_reward', params: {'p_quest_id': questId}) as List;
-  ref.invalidate(questsProvider);
-  ref.invalidate(balanceProvider);
-  refreshProgress(ref);
+  final c = containerOf(ref);
+  final rows = await c.read(supabaseProvider).rpc('claim_quest_reward', params: {'p_quest_id': questId}) as List;
+  c.invalidate(questsProvider);
+  c.invalidate(balanceProvider);
+  refreshProgress(c);
   final row = rows.first as Map<String, dynamic>;
   return (currency: row['reward_currency'] as String, amount: row['reward_amount'] as int);
 }

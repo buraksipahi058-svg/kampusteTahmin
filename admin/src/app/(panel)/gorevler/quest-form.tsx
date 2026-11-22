@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import { FormAlert, SubmitButton, inputClass, type ActionState } from "@/components/ui";
+import { ActionForm, FormAlert, SubmitButton, inputClass, type ActionState } from "@/components/ui";
 import { isoToIstanbulLocal } from "@/lib/format";
 import { saveQuest, toggleQuest } from "./actions";
 import { actionLabels, periodHints, periodLabels, type Quest } from "./labels";
@@ -18,10 +18,10 @@ export function QuestForm({
   isSuper: boolean;
   initial?: Quest;
 }) {
-  const [state, action] = useActionState(saveQuest, {} as ActionState);
+  const [state, action, actionPending] = useActionState(saveQuest, {} as ActionState);
 
   return (
-    <form action={action} className="flex max-w-xl flex-col gap-3 rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
+    <ActionForm action={action} state={state} pending={actionPending} className="flex max-w-xl flex-col gap-3 rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
       <h2 className="font-medium">{initial ? "Görevi düzenle" : "Yeni görev"}</h2>
       {initial && <input type="hidden" name="id" value={initial.id} />}
       <label className="flex flex-col gap-1 text-sm">
@@ -78,7 +78,7 @@ export function QuestForm({
           Para birimi
           <select name="reward_currency" className={inputClass} defaultValue={initial?.reward_currency ?? "SP"}>
             <option value="SP">SP</option>
-            {isSuper && <option value="SSP">SSP (yalnızca süperadmin)</option>}
+            {(isSuper || initial?.reward_currency === "SSP") && <option value="SSP">SSP (yalnızca süperadmin)</option>}
           </select>
         </label>
         <label className="flex flex-col gap-1 text-sm">
@@ -106,19 +106,19 @@ export function QuestForm({
       <div>
         <SubmitButton pendingText="Kaydediliyor…">{initial ? "Kaydet" : "Görevi ekle"}</SubmitButton>
       </div>
-    </form>
+    </ActionForm>
   );
 }
 
 export function ToggleQuest({ id, active }: { id: string; active: boolean }) {
-  const [state, action] = useActionState(toggleQuest, {} as ActionState);
+  const [state, action, actionPending] = useActionState(toggleQuest, {} as ActionState);
   return (
-    <form action={action} className="flex items-center gap-2">
+    <ActionForm action={action} state={state} pending={actionPending} className="flex items-center gap-2">
       <input type="hidden" name="id" value={id} />
       <SubmitButton tone="neutral" pendingText="…">
         {active ? "Kapat" : "Aç"}
       </SubmitButton>
       <FormAlert state={state} />
-    </form>
+    </ActionForm>
   );
 }

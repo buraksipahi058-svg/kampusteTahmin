@@ -1,0 +1,6 @@
+# Yayın imzası için örnek. Kopyala: android/key.properties (git'e girmez). Anahtarı oluşturma: docs/harita/yayin.md
+# storeFile app/ klasörüne göredir; anahtar dosyasını repo dışında tutmak için tam yol yaz.
+storePassword=
+keyPassword=
+keyAlias=upload
+storeFile=C:/Users/KULLANICI/kampusbet-upload.jks

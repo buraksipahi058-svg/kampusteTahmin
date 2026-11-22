@@ -82,7 +82,8 @@ class _QuizState extends ConsumerState<_Quiz> {
       if (!mounted) return;
       setState(() => _result = late
           ? 'Süre doldu, cevapların sayılmadı (0 puan).'
-          : '${widget.game.questions.length} sorudan $score doğru. Rakip de oynayınca sonuç belli olur.');
+          : '${widget.game.questions.length} sorudan $score doğru. Sonucu Oyunlar sekmesindeki düello kartında '
+                'görürsün (rakip henüz oynamadıysa o oynayınca belli olur).');
     } catch (e) {
       if (mounted) setState(() => _result = userMessage(e));
     } finally {
@@ -110,6 +111,31 @@ class _QuizState extends ConsumerState<_Quiz> {
     }
 
     final q = questions[_index];
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) async {
+        if (didPop) return;
+        final leave = await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Düellodan çıkılsın mı?'),
+            content: const Text('Şimdiye kadar verdiğin cevaplar gönderilir; boş bıraktıkların yanlış sayılır.'),
+            actions: [
+              TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text('Devam et')),
+              FilledButton(onPressed: () => Navigator.of(context).pop(true), child: const Text('Gönder ve çık')),
+            ],
+          ),
+        );
+        if (leave != true || !mounted) return;
+        await _submit();
+        if (mounted) Navigator.of(this.context).pop();
+      },
+      child: _question(theme, q),
+    );
+  }
+
+  Widget _question(ThemeData theme, TriviaQuestion q) {
+    final questions = widget.game.questions;
     return Padding(
       padding: const EdgeInsets.all(24),
       child: Column(

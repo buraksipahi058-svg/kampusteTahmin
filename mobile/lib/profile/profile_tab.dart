@@ -40,7 +40,7 @@ class ProfileTab extends ConsumerWidget {
         ref.invalidate(myInventoryProvider);
         ref.invalidate(questsProvider);
         ref.invalidate(myStatsProvider);
-        refreshProgress(ref);
+        refreshProgress(containerOf(ref));
         await ref.read(balanceProvider.future);
       },
       child: ListView(
@@ -146,6 +146,15 @@ class ProfileTab extends ConsumerWidget {
               subtitle: const Text('Katıldığın bahisler ve sonuçları'),
               trailing: const Icon(Icons.chevron_right),
               onTap: () => context.push(Routes.history),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.password),
+              title: const Text('Şifreyi değiştir'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => context.push(Routes.changePassword),
             ),
           ),
           const SizedBox(height: 8),

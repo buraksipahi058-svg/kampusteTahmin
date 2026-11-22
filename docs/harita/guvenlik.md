@@ -38,6 +38,20 @@ Her test çalışmasında bütün `public` / `private` şeması taranır; yeni k
 | Mobil / admin istemcisinde secret key | Yok (yalnızca publishable key; mobil `sb_secret_` görürse çalışmaz) |
 | Storage bucket, Realtime, view | Yok |
 
+## Kalite kontrolü ve çift kontrol (2026-11-22, Adım 12 sonrası)
+
+- **Canlı API'ye anonim deneme** (yalnızca publishable key): şema (OpenAPI) gizli; 24 tablonun hepsi 42501; 37 RPC'nin hepsi doğru parametrelerle çağrılınca 42501; GraphQL kapalı; depolama boş. Auth: e-posta onayı zorunlu, anonim giriş kapalı, yalnızca e-posta sağlayıcısı.
+- **Düzeltilen** (migration `20261122173731_qa_duzeltmeleri.sql`, testler 11 / 13, `para.mjs` 4b):
+  - Aynı kişinin eşzamanlı XP'li görev ödülleri `40P01 deadlock` veriyordu (5 istekten 3'ü; testle yeniden üretildi):
+    profil kilidi `FOR UPDATE` → `FOR NO KEY UPDATE` (`award_xp`, `delete_my_account`, `request_student_email_code`).
+  - Silinen hesap, anahtarı geçerliyken okul maili kodu isteyip yeniden doğrulanabiliyor, düello açabiliyordu:
+    `is_verified` / `current_school_id` silinmiş profili saymaz, kod isteği reddedilir.
+  - Düello başlığındaki ad silmede temizlenir; Auth engeli `infinity` yerine 100 yıl; silinen kişi sıralamada gösterilmez.
+  - Okulunda `gorev_yonet` olan o okulun görev ödülünü alamaz (kendine SP / XP basma).
+  - Admin: çıkış `scope: local` (telefondaki oturumu kapatmaz); güvenlik başlıkları (çerçeveleme yasak, nosniff,
+    referrer, izinler), `X-Powered-By` yok; anahtar `sb_publishable_` değilse çalışmaz. Mobil: aynı anahtar kuralı;
+    `allowBackup=false` + veri aktarma kuralları (oturum anahtarları yedeğe girmez).
+
 Kalan riskler [acik-isler](acik-isler.md)'de: hız sınırı yok, silinen hesabın anahtarı ≤ 1 saat geçerli, Supabase
 güvenlik kayıtlarında e-posta.
 

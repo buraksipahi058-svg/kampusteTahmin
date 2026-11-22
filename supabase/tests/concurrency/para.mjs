@@ -85,6 +85,26 @@ select (now() < ${at}) as on_time, balance from public.claim_quest_reward('${que
     showUnexpected(res, ["KB020"]);
   }
 
+  // 4b) Aynı kişi XP veren 5 farklı görevin ödülünü aynı anda ister: hepsi geçer (kilitlenme yok), XP bir kez yazılır.
+  // (QA'da bulundu: XP profil satırını FOR UPDATE ile kilitleyince yabancı anahtar kilitleriyle çakışıp 40P01 veriyordu.)
+  {
+    const quests = Array.from({ length: 5 }, () => randomUUID());
+    await mustRun(`insert into public.quests (id, school_id, title, period, action, target, reward_currency, reward_amount, reward_xp)
+select q, '${w.school}', 'XP görevi ' || n, 'daily', 'wager', 1, 'SP', 10, 20
+from unnest(array['${quests.join("','")}']::uuid[]) with ordinality as t(q, n);`);
+    const [{ xp: xpBefore }] = await mustRun(`select xp from public.profiles where id = '${users.gorev}'`);
+    const res = await parallel(5, (at, i) => `${asUser(users.gorev)}
+select (now() < ${at}) as on_time, balance from public.claim_quest_reward('${quests[i]}');`);
+    const passed = res.filter((r) => r.ok).length;
+    const [{ xp, events }] = await mustRun(`select
+      (select xp from public.profiles where id = '${users.gorev}') as xp,
+      (select count(*)::int from public.xp_events where user_id = '${users.gorev}' and reason = 'quest') as events`);
+    check("aynı kişinin XP'li 5 farklı görev ödülü aynı anda: hepsi geçer, kilitlenme yok",
+      passed === 5 && xp - xpBefore === 100 && events === 5,
+      `geçen: ${passed}, XP artışı: ${xp - xpBefore}, XP olayı: ${events}, ${onTime(res)}`);
+    showUnexpected(res);
+  }
+
   // 5) Aynı ürün aynı anda 10 kez satın alınır: bir kez alınır, para bir kez düşer.
   {
     const item = randomUUID();

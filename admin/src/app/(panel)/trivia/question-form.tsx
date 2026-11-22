@@ -1,17 +1,17 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { FormAlert, SubmitButton, inputClass, type ActionState } from "@/components/ui";
+import { ActionForm, FormAlert, SubmitButton, inputClass, type ActionState } from "@/components/ui";
 import { saveQuestion, toggleQuestion } from "./actions";
 
 type School = { id: string; name: string };
 
 export function QuestionForm({ schools, canGlobal }: { schools: School[]; canGlobal: boolean }) {
-  const [state, action] = useActionState(saveQuestion, {} as ActionState);
+  const [state, action, actionPending] = useActionState(saveQuestion, {} as ActionState);
   const [count, setCount] = useState(4);
 
   return (
-    <form action={action} className="flex max-w-xl flex-col gap-3 rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
+    <ActionForm action={action} state={state} pending={actionPending} className="flex max-w-xl flex-col gap-3 rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
       <h2 className="font-medium">Yeni soru</h2>
       <label className="flex flex-col gap-1 text-sm">
         Kapsam
@@ -57,19 +57,19 @@ export function QuestionForm({ schools, canGlobal }: { schools: School[]; canGlo
       <div>
         <SubmitButton pendingText="Ekleniyor…">Soruyu ekle</SubmitButton>
       </div>
-    </form>
+    </ActionForm>
   );
 }
 
 export function ToggleQuestion({ id, active }: { id: string; active: boolean }) {
-  const [state, action] = useActionState(toggleQuestion, {} as ActionState);
+  const [state, action, actionPending] = useActionState(toggleQuestion, {} as ActionState);
   return (
-    <form action={action} className="flex items-center gap-2">
+    <ActionForm action={action} state={state} pending={actionPending} className="flex items-center gap-2">
       <input type="hidden" name="id" value={id} />
       <SubmitButton tone="neutral" pendingText="…">
         {active ? "Kapat" : "Aç"}
       </SubmitButton>
       <FormAlert state={state} />
-    </form>
+    </ActionForm>
   );
 }

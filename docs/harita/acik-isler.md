@@ -16,6 +16,9 @@ parantez ortaya çıktığı adım.
 - [10] **Hafta dönümü** (pazartesi 00:00 İstanbul): geçen haftanın son kez hesaplanıp donması bulutta gözlenmedi; pgTAP sınadı. 10 dakikalık `kampusbet_liderlik` işi bulutta kendiliğinden çalıştı (gözlendi).
 - [10] **XP'nin günlük giriş ve doğru tahminden gelmesi, seviye atlama ve seviyeli ürünü satın alma** uygulamada gözlenmedi: emülatörde yalnızca görev ödülünün XP'si (+20) gerçek veriyle görüldü (bugünkü giriş ödülü XP'den önce alınmıştı). Hepsi pgTAP'te, giriş ve bahis XP'si eşzamanlılık testlerinde de sınandı.
 - [11] **Gerçek bir hesabın uygulamadan silinmesi**: emülatördeki tek gerçek hesap (kullanıcının test hesabı) silinmedi; yalnızca onay penceresi görüldü. Silme bulutta geri alınan SQL denemesi ve pgTAP ile sınandı. Silinen hesapla giriş denemesinin ve aynı e-postayla yeniden kaydın Supabase Auth'ta nasıl davrandığı gerçek istekle denenmedi.
+- [12] **Gerçek onay / şifre sıfırlama mailinin linkiyle uygulamanın açılıp oturumun başlaması**: Supabase'te Redirect URLs ayarı (kullanıcının işi) yapılmadan çalışmaz; emülatörde yalnızca şemanın uygulamayı açtığı (adb) ve release derlemesinin çalıştığı denendi. Gerçek mail gönderilmedi. Şifre değiştirme ekranı yalnızca widget testinde.
+- [12] iOS URL şeması, mağazaya yükleme ve Play'in AAB'yi işlemesi denenmedi.
+- [12-QA] Admin formlarının yeni davranışı (`ActionForm`: hata alınca girilenler kalır) tarayıcıda denenmedi (giriş gerekir); tip kontrolü ve derleme geçti.
 - [5] **Okul maili kodunun gerçek mail olarak gitmesi** (Brevo yolu). Yalnızca isteğin pg_net kuyruğuna girdiği test edildi; gerçek gönderim yok.
 - [4] **iOS derlemesi** hiç denenmedi (Mac ya da bulut CI gerekir).
 
@@ -32,7 +35,6 @@ parantez ortaya çıktığı adım.
 - [7] Hakem ihtarını geri alma / af mekanizması yok.
 - [2-7] Aynı kişilerin sık eşleşmesini (SP aktarma şüphesi) izleme yok (KARARLAR öneri 1'deki kalan risk).
 - [6] Resmi bahiste oran sonradan değiştirilemiyor (yalnızca açarken).
-- [4] Mail onay linki uygulamayı açmıyor (deep link yok; Supabase Site URL'sine gidiyor).
 - [10] Eski kayıtlar için **geriye dönük XP** verilmedi: XP yalnızca bu sürümden sonraki giriş, görev ve sonuçlanan bahislerden gelir (bulutta herkes 0 XP'den başladı).
 - [10] Seviye yalnızca **market ürünü** açıyor; seviyeyle özellik açma (ör. sosyal bahis açmak için en az seviye) yok.
 - [10] Seviye atlayınca **bildirim / kutlama** yok; günlük ödül bildirimi XP'yi yazmıyor.
@@ -41,9 +43,15 @@ parantez ortaya çıktığı adım.
 - [9-10] Kuşanılan kozmetikler kişinin profilinde ve liderlikte görünüyor; sosyal bahis kartında (açan / hakem) ve düello rakibinde görünmüyor.
 - [10] Liderlikten başkasının profiline / istatistiğine bakma yok.
 - [10] Sıralamadan çıkma (gizlilik) tercihi yok: okul arkadaşları adı, soyadının baş harfini ve değerleri görür (profil tablosu zaten okula açık). KVKK metninde anıldı.
+- [12] **Bildirimler** yok (push için Firebase projesi gerekir; uygulama içi bildirim kutusu da yok).
+- [12] Uygulama **ikonu ve açılış ekranı** Flutter varsayılanı; hata / çökme raporlama (Crashlytics, Sentry) yok.
+- [12] Şifre sıfırlama linkiyle gelince doğrudan yeni şifre ekranı açılmıyor; kullanıcı Profil > Şifreyi değiştir'e gider (maildeki ve uygulamadaki metin bunu söylüyor).
+- [12] Canlı Supabase projesi kurulmadı, admin paneli yayında değil (rehber: [yayin](yayin.md)).
+- [12] Bağımlılıklar güncellenmedi: `shared_preferences_android` 2.5.1 (release'te R8 kuralı gerekiyor, `proguard-rules.pro`); `flutter pub upgrade` ile 2.5.5+ / jni 1.1.2+'ya geçilince o blok kaldırılabilir.
 - [11] **Veri dışa aktarma** (KVKK m. 11 bilgi isteme) uygulamada yok; metinde e-postayla başvuru yazıyor.
 - [11] **Kullanım koşulları** metni, yaş sınırı ve (gerekirse) açık rıza akışı yok; yalnızca aydınlatma metni var.
 - [11] Admin'den **kullanıcı yasaklama / silme** yok; süperadmin hesabı uygulamadan silinemez (önce rolü SQL ile alınır).
+- [12-QA] Ödül al / Kuşan / Kabul et düğmelerinde çift dokunma koruması yok (ikinci istek sunucuda reddedilir, fazladan hata bildirimi çıkar). Süperadmin öğrenci uygulamasında tüm okulların bahis ve ürünlerini görür (sorgular okula göre süzülmüyor). Trivia soru formunda ilk şık doğru diye seçili gelir.
 - [11] RPC'lerde **hız sınırı** yok (Supabase Auth'un kendi giriş / kayıt sınırları dışında); okul maili kodunda kendi sınırımız var.
 - [10] Canlı güncelleme (Supabase Realtime) yok; sıralama 10 dakikada bir hesaplanır.
 - [10] Başarım / rozet koleksiyonu (MIMARI §11) yok.
@@ -65,12 +73,16 @@ parantez ortaya çıktığı adım.
 - [5] Supabase ücretsiz plan bir hafta işlem olmazsa projeyi duraklatıyor; açmak kullanıcının işi ([ortam](ortam.md)).
 - [1] Supabase advisors `public.rls_auto_enable()` için uyarı veriyor (Supabase'in kendi tetikleyicisi; zararsız, dokunulmuyor).
 - [1-11] Advisors her istemci RPC'si için "authenticated `SECURITY DEFINER` çağırabiliyor" uyarısı veriyor (38): Adım 11'de gözden geçirildi, tasarım gereği kabul edildi ([guvenlik](guvenlik.md)); uyarı kalır.
-- [11] Silinen kişinin erişim anahtarı (JWT) süresi dolana kadar (en fazla 1 saat) geçerli kalır: oturumu silinir, yenilenemez; bu sürede ad değiştiremez, yatıramaz, bahis açamaz; yalnızca zararsız işlemler (giriş ödülü, görev ödülü, market) mümkün.
+- [11] Silinen kişinin erişim anahtarı (JWT) süresi dolana kadar (en fazla 1 saat) geçerli kalır: oturumu silinir, yenilenemez; bu sürede ad değiştiremez, okul maili doğrulayamaz, yatıramaz, bahis / düello açamaz (QA'da kapatıldı); yalnızca zararsız işlemler (giriş ödülü, görev ödülü, market) mümkün. Kesin çözüm: PostgREST `db_pre_request` ile silinmiş profilin her isteğini reddetmek (yapılmadı).
+- [12-QA] Hesap silme ile eşzamanlı gelen bir yatırım `KB024` denetimini geçebilir (silinen hesapta açık yatırım kalır, sonuçta anonim hesaba ödenir; zararsız). Sosyal bahis başlıkları ve itiraz gerekçeleri serbest metin: kişi kendi adını yazdıysa silmede kalır.
+- [12-QA] Zamanlanmış işler (sosyal bahis, düello) birden çok bahsi tek transaction'da sonuçlandırır; aynı anda istemciden sonuçlandırılan ortak kişili bir bahisle nadiren kilitlenebilir (iş tarafı yakalar, istemci 40P01 alabilir).
+- [12-QA] Oturum anahtarları cihazda şifresiz (SharedPreferences) duruyor; yedeğe girmiyor ama köklü cihazda okunabilir. Gerekirse şifreli depolama (flutter_secure_storage) ile değiştirilebilir.
 - [11] Supabase'in kendi kayıtlarında (Auth güvenlik günlüğü `auth.audit_log_entries`, `pg_net` istek kayıtları) silinen kişinin e-postası bir süre kalabilir; hesap silme bunlara dokunmaz.
 - [6-10] Bulutta deneme verisi duruyor (liderlik satırları bunlardan hesaplanıyor): "Test Yetkili" profili (`e2e00000-...0001`), deneme resmi ve sosyal bahisleri, bir trivia düellosu, bir günün tahmini ("E2E: Bugun kampuste kar yagar mi?"); kullanıcının test hesabı örnek alan adıyla doğrulanmış, iki görev ödülü almış (ikincisi +20 XP ile, Adım 10 XP denemesi) ve "Mor isim"i satın alıp kuşanmış.
 
 ## Kullanıcı kararı / aksiyonu bekleyenler
 
+- **Canlıya geçiş** ([yayin](yayin.md) "Canlıya geçiş sırası"): canlı Supabase projesi; Auth'ta Site URL, Redirect URLs (`com.kampusbet.kampusbet://**`), Türkçe e-posta şablonları (`supabase/templates/`), **özel SMTP** (yerleşik mail saatte çok az gönderir); Android yükleme anahtarı (`keytool`) + `android/key.properties`; Play Console hesabı; admin için barındırma (ör. Vercel) ve alan adı; uygulama ikonu; inceleme için doğrulanmış demo hesap.
 - **KVKK aydınlatma metni** (`mobile/assets/legal/kvkk_aydinlatma.txt`) taslak: veri sorumlusu, adres, iletişim e-postası, yurt dışına aktarım dayanağı (KVKK m. 9), mail sağlayıcısı ve güvenlik kaydı süresi doldurulmalı; yayından önce hukuk incelemesi (sıralamada gösterim için açık rıza gerekip gerekmediği dahil).
 - Gerçek okulun adı ve öğrenci mail alan adı (şimdilik "Örnek Üniversitesi" / `ogr.ornek.edu.tr`).
 - Mail sağlayıcısı hesabı (öneri Brevo) ve API anahtarının Supabase Vault'a konması ([kimlik](kimlik.md)).

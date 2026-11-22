@@ -1,7 +1,7 @@
 "use client";
 
-import { useActionState } from "react";
-import { FormAlert, SubmitButton, inputClass, type ActionState } from "@/components/ui";
+import { useActionState, useState } from "react";
+import { ActionForm, FormAlert, SubmitButton, inputClass, type ActionState } from "@/components/ui";
 import type { PermissionKey } from "@/lib/auth";
 import { grantPermission, revokePermission } from "./actions";
 
@@ -16,8 +16,9 @@ export function PermissionRow({
   held: PermissionKey[];
   labels: Record<PermissionKey, string>;
 }) {
-  const [grantState, grantAction] = useActionState(grantPermission, {} as ActionState);
-  const [revokeState, revokeAction] = useActionState(revokePermission, {} as ActionState);
+  const [grantState, grantAction, grantActionPending] = useActionState(grantPermission, {} as ActionState);
+  const [revokeState, revokeAction, revokeActionPending] = useActionState(revokePermission, {} as ActionState);
+  const [last, setLast] = useState<"grant" | "revoke">("grant");
   const missing = (Object.keys(labels) as PermissionKey[]).filter((k) => !held.includes(k));
 
   return (
@@ -25,7 +26,10 @@ export function PermissionRow({
       <div className="flex flex-wrap gap-2">
         {held.length === 0 && <span className="text-sm text-zinc-500">İzni yok</span>}
         {held.map((key) => (
-          <form key={key} action={revokeAction} className="flex items-center gap-1 rounded-full border border-zinc-300 px-2 py-0.5 text-xs dark:border-zinc-700">
+          <ActionForm key={key} action={(formData) => {
+            setLast("revoke");
+            revokeAction(formData);
+          }} state={revokeState} pending={revokeActionPending} className="flex items-center gap-1 rounded-full border border-zinc-300 px-2 py-0.5 text-xs dark:border-zinc-700">
             <input type="hidden" name="user_id" value={userId} />
             <input type="hidden" name="school_id" value={schoolId} />
             <input type="hidden" name="key" value={key} />
@@ -33,11 +37,14 @@ export function PermissionRow({
             <button type="submit" aria-label={`${labels[key]} iznini geri al`} className="ml-1 text-red-700">
               ×
             </button>
-          </form>
+          </ActionForm>
         ))}
       </div>
       {missing.length > 0 && (
-        <form action={grantAction} className="flex flex-wrap items-center gap-2">
+        <ActionForm action={(formData) => {
+            setLast("grant");
+            grantAction(formData);
+          }} state={grantState} pending={grantActionPending} className="flex flex-wrap items-center gap-2">
           <input type="hidden" name="user_id" value={userId} />
           <input type="hidden" name="school_id" value={schoolId} />
           <select name="key" required defaultValue="" className={inputClass}>
@@ -53,9 +60,9 @@ export function PermissionRow({
           <SubmitButton tone="neutral" pendingText="Veriliyor…">
             İzin ver
           </SubmitButton>
-        </form>
+        </ActionForm>
       )}
-      <FormAlert state={grantState.error || grantState.message ? grantState : revokeState} />
+      <FormAlert state={last === "grant" ? grantState : revokeState} />
     </div>
   );
 }

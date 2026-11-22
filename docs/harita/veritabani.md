@@ -23,6 +23,7 @@ Konu bölgeleri: [kimlik.md](kimlik.md), [para.md](para.md), [bahis.md](bahis.md
 | `20261122133546_liderlik_istatistik.sql` | 10 | sıralama ayarları, `leaderboard_snapshots` + RLS, `private.leaderboard_runs`, hesaplama (`week_bounds`, `settled_wagers`, `store_leaderboard`, `refresh_leaderboards`), `get_leaderboard`, `my_stats`, `school_stats`, 10 dakikalık pg_cron işi ([liderlik](liderlik.md)) |
 | `20261122145831_xp_seviye.sql` | 10 | XP ayarları, `quests.reward_xp`, `market_items.min_level`, `xp_events` (yalnızca eklenir) + RLS, seviye eğrisi (`xp_for_level`, `level_for_xp`), `award_xp`, ledger ve bahis tetikleyicileri, `my_progress`; `purchase_market_item` (`KB023`), `my_quests`, `save_quest`, `save_market_item`, `get_leaderboard` yeniden ([para](para.md)) |
 | `20261122152129_hesap_silme_guvenlik.sql` | 11 | denetim düzeltmeleri (tetikleyici fonksiyonu, kimlik dizileri, varsayılan yetkiler), `profiles.deleted_at`, `profiles_update_own` (silinmiş hariç), `settled_wagers` ve `school_stats` (silinmişleri saymaz), `delete_my_account` ([guvenlik](guvenlik.md)) |
+| `20261122173731_qa_duzeltmeleri.sql` | 12 | kalite kontrolü: `current_school_id` / `is_verified` silinmişi saymaz, `request_student_email_code`, `award_xp`, `delete_my_account` (`FOR NO KEY UPDATE`, düello başlığı, Auth 100 yıl), `claim_quest_reward` (görev yöneten alamaz), `get_leaderboard` (silinmiş gösterilmez) |
 | `20261122105335_gunun_tahmini.sql` | 8 | günün tahmini ayarları, `bets_settlement_by_type` (mini oyunda `admin` de olur), `place_wager` (yalnızca `auto` mini oyuna kapalı; admin sonuçlandırmalıda açan / kapatan yatıramaz), `create/settle/cancel_daily_prediction`, saatlik pg_cron işi |
 
 ## Koda inmek gerekirse
@@ -47,6 +48,7 @@ Aynı fonksiyon birden fazla migration'da tanımlıysa **en yeni dosyadaki** ge�
 | `public.purchase_market_item`, `my_quests`, `save_quest`, `save_market_item` | `20261122145831_xp_seviye.sql` | `20261122114042_...` |
 | `public.get_leaderboard` | `20261122145831_xp_seviye.sql` | `20261122133546_...` |
 | `private.settled_wagers`, `public.school_stats` | `20261122152129_hesap_silme_guvenlik.sql` | `20261122133546_...` |
+| `private.current_school_id`, `private.is_verified`, `public.request_student_email_code`, `private.award_xp`, `public.delete_my_account`, `public.claim_quest_reward`, `public.get_leaderboard` | `20261122173731_qa_duzeltmeleri.sql` | önceki tanımlar |
 
 **İki tablo arasına ikinci bir yabancı anahtar ekleme:** PostgREST istemci sorgularında gömme
 (`bets?select=...,bet_options(...)`) belirsizleşir (PGRST201) ve mobil/admin sorguları bozulur.
@@ -66,7 +68,7 @@ Buluttaki gerçek durumu görmek daha ucuzsa: `npx supabase db query --linked "s
 - **Yalnızca eklenen tablolar:** `private.forbid_change()` tetikleyicisi (update/delete/truncate → `55000`). Şu an: `ledger_entries`, `admin_audit_log`, `quest_claims`, `xp_events`.
 - **Metin kolonları:** `char_length` aralığı + `= btrim(...)` + kontrol karakteri yasağı (`!~ '[[:cntrl:]]'`).
 - **Görünmeyen kayıt:** yetkisi olmayana "bulunamadı" (`P0002`) dönülür, "yetkin yok" değil (varlığı sızdırmamak için).
-- **Kilit sırası:** bahis satırı → bakiyeler (`user_id` sırasıyla) → profil satırları (XP, `user_id` sırasıyla). XP tetikleyicileri bakiye kilitlerinden sonra çalışır.
+- **Kilit sırası:** bahis satırı → bakiyeler (`user_id` sırasıyla) → profil satırları (XP, `user_id` sırasıyla). Profil satırı **`FOR NO KEY UPDATE`** ile kilitlenir, asla `FOR UPDATE` değil: profile yabancı anahtarla bağlı her ekleme (ledger, yatırım, görev ödülü) profilde `FOR KEY SHARE` tutar, `FOR UPDATE` onunla çakışıp kilitlenme yapar (QA'da görüldü). XP tetikleyicileri bakiye kilitlerinden sonra çalışır.
 
 ## Yeni migration kontrol listesi
 

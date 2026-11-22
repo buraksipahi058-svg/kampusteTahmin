@@ -5,10 +5,10 @@ gerektirdiği bölgeleri aç. Kod dosyalarını baştan sona okuma; bölge dosya
 
 ## Şu an
 
-- **Commit:** yalnızca kullanıcı onay verince, yalnızca yerel (push yok). Adım 7-9 `f45f3dc`'de; Adım 10 + XP / seviye `0ca9789`'da; Adım 11 çalışma ağacında, commit edilmedi.
-- **Son tamamlanan:** Adım 11 — güvenlik denetimi (şema genelinde kalıcı test, bulunan 3 küçük açık kapatıldı, yeni nesneler istemcilere kapalı başlar), hesap silme (soft delete + anonimleştirme, Auth temizliği, `KB024`), KVKK aydınlatma metni taslağı (uygulamada `/kvkk`, kayıt ekranında bağlantı). 581 pgTAP, 41 Flutter testi; admin lint / tip / build temiz. Emülatörde Profil'in altı (Gizlilik ve KVKK, Hesabımı sil), silme onayı ve KVKK ekranı görüldü; gerçek hesap silinmedi (SQL denemesi + pgTAP). Ayrıntı: [guvenlik](harita/guvenlik.md).
+- **Commit:** yalnızca kullanıcı onay verince, yalnızca yerel (push yok). Adım 7-9 `f45f3dc`'de; Adım 10 + XP / seviye `0ca9789`'da, Adım 11 `2fa4c08`'de; Adım 12 çalışma ağacında, commit edilmedi.
+- **Son tamamlanan:** baştan sona kalite kontrolü ve güvenlik çift kontrolü (Adım 12 üstüne): iki bağımsız kod incelemesi, canlı API'ye anonim deneme (37 RPC, 24 tablo), emülatörde tüm ekranlar. Düzeltilen: eşzamanlı görev ödüllerinde veritabanı kilitlenmesi (testle yakalandı), silinen hesabın anahtarı geçerliyken yeniden doğrulanması, düello başlığında silinen ad, görev yöneticisinin kendine ödül basması, admin çıkışının telefonu da kapatması, admin formlarının hata alınca boşalması, bahis sonrası görev / XP / istatistik yenilenmemesi, okul listesi sırası, kazanç metinleri, güvenlik başlıkları, Android yedek ayarı (ayrıntı: [guvenlik](harita/guvenlik.md) "Kalite kontrolü"). 586 pgTAP, eşzamanlılık para 8/8 + bahis 6/6, 46 Flutter testi, admin lint / tip / build temiz. Adım 12: yayına hazırlık ([yayin](harita/yayin.md)); Adım 11: güvenlik, hesap silme, KVKK.
 - **Bulutta deneme verisi:** giriş yapamayan "Test Yetkili" profili (`e2e00000-...0001`), sonuçlanmış resmi ve sosyal deneme bahisleri, bir trivia düellosu, bir günün tahmini; kullanıcının test hesabı `deneme@ogr.ornek.edu.tr` ile doğrulanmış (820 SP, 20 XP, "Mor isim" kuşanılı). Seed'de 5 genel görev, 8 genel ürün.
-- **Sıradaki:** plandaki adımlar bitti (0–11). Bekleyenler [acik-isler](harita/acik-isler.md)'de: kullanıcının kararları (gerçek okul, mail sağlayıcısı, KVKK metninin doldurulması, ekonomi / XP rakamları) ve denenmemişler.
+- **Sıradaki:** kullanıcının canlıya geçiş adımları ([yayin](harita/yayin.md) "Canlıya geçiş sırası"); uygulama tarafında kalanlar [acik-isler](harita/acik-isler.md)'de (bildirimler, ikon, admin panelinin girişle denenmesi, eksik özellikler).
 - **Açık işler** (denenmemiş, eksik, çözülmemiş, kullanıcıdan beklenen): [harita/acik-isler.md](harita/acik-isler.md).
 
 | # | Adım | Durum | Commit |
@@ -24,7 +24,8 @@ gerektirdiği bölgeleri aç. Kod dosyalarını baştan sona okuma; bölge dosya
 | 8 | Mini oyunlar (trivia düellosu, günün tahmini) | Bitti | `f45f3dc` |
 | 9 | Görevler + market | Bitti | `f45f3dc` |
 | 10 | Liderlik + istatistik, XP / seviye | Bitti | `0ca9789` |
-| 11 | Güvenlik denetimi, hesap silme, KVKK | Bitti (commit yok) | |
+| 11 | Güvenlik denetimi, hesap silme, KVKK | Bitti | `2fa4c08` |
+| 12 | Yayına hazırlık (linkler, şifre, Android imza, mağaza sayfaları) + kalite kontrolü | Bitti (commit yok) | |
 
 ## Görev → ne okunur
 
@@ -38,6 +39,7 @@ gerektirdiği bölgeleri aç. Kod dosyalarını baştan sona okuma; bölge dosya
 | Resmi / sosyal / mini oyun bahisleri (Adım 6-8) | [bahis](harita/bahis.md) | |
 | Liderlik, kişisel istatistik, admin okul özeti (Adım 10) | [liderlik](harita/liderlik.md) | |
 | Güvenlik kuralları, hesap silme, KVKK metni (Adım 11) | [guvenlik](harita/guvenlik.md) | |
+| Canlıya geçiş, Android yayın derlemesi, e-posta linkleri, mağaza (Adım 12) | [yayin](harita/yayin.md) | |
 | Komut çalıştırma, araç, emülatör, CLI hatası | [ortam](harita/ortam.md) | |
 | Test yazma / çalıştırma | [testler](harita/testler.md) | |
 | Denenmemiş / eksik / çözülmemiş ne var, kullanıcıdan ne bekleniyor | [acik-isler](harita/acik-isler.md) | |

@@ -102,7 +102,8 @@ class MarketItemCard extends ConsumerWidget {
     final subtitle = [
       marketCategoryLabels[item.category] ?? item.category,
       ?item.description,
-      if (item.minLevel > 1) '${item.minLevel}. seviyede açılır',
+      // Bölünmez boşluk: "5." satır sonunda tek kalmasın.
+      if (item.minLevel > 1) '${item.minLevel}.\u00A0seviyede açılır',
     ].join(' · ');
 
     return Card(
@@ -118,7 +119,9 @@ class MarketItemCard extends ConsumerWidget {
             child: const Text('Çıkar'),
           ),
           OwnedItem() => FilledButton.tonal(onPressed: () => _equip(context, ref, true), child: const Text('Kuşan')),
-          null when !onSale => const Text('Yakında'),
+          // Satış tarihi geçmişse "Satış bitti", başlamamışsa ya da kapalıysa "Yakında".
+          null when !onSale =>
+            Text(item.availableUntil != null && !DateTime.now().isBefore(item.availableUntil!) ? 'Satış bitti' : 'Yakında'),
           null when locked => OutlinedButton.icon(
             onPressed: null,
             icon: const Icon(Icons.lock_outline, size: 18),

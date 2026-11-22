@@ -1,9 +1,47 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { createContext, startTransition, useContext, useEffect, useRef, type ReactNode } from "react";
 import { useFormStatus } from "react-dom";
 
 export type ActionState = { error?: string; message?: string };
+
+// <form action={...}> React 19'da her gönderimden sonra formu boşaltır; hata alan formda girilenler
+// kaybolur. ActionForm eylemi elle çağırır: hata olursa girilenler kalır, başarılı olunca form boşalır.
+const PendingContext = createContext<boolean | null>(null);
+
+export function ActionForm({
+  action,
+  state,
+  pending,
+  className,
+  children,
+}: {
+  action: (formData: FormData) => void;
+  state: ActionState;
+  pending: boolean;
+  className?: string;
+  children: ReactNode;
+}) {
+  const ref = useRef<HTMLFormElement>(null);
+  useEffect(() => {
+    if (state.message && !state.error) ref.current?.reset();
+  }, [state]);
+  return (
+    <form
+      ref={ref}
+      className={className}
+      onSubmit={(event) => {
+        event.preventDefault();
+        // Basılan düğmenin name / value'su da gönderilsin (ör. itiraz kararı düğmeleri).
+        const submitter = (event.nativeEvent as SubmitEvent).submitter;
+        const formData = new FormData(event.currentTarget, submitter);
+        startTransition(() => action(formData));
+      }}
+    >
+      <PendingContext.Provider value={pending}>{children}</PendingContext.Provider>
+    </form>
+  );
+}
 
 export function SubmitButton({
   children,
@@ -14,7 +52,9 @@ export function SubmitButton({
   pendingText?: string;
   tone?: "primary" | "danger" | "neutral";
 }) {
-  const { pending } = useFormStatus();
+  const actionPending = useContext(PendingContext);
+  const { pending: formPending } = useFormStatus();
+  const pending = actionPending ?? formPending;
   const tones = {
     primary: "bg-zinc-900 text-white hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300",
     danger: "bg-red-700 text-white hover:bg-red-600",

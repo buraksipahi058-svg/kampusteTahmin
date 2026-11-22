@@ -1,10 +1,14 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- Supabase'e bağlanmak için; debug/profile manifestlerinde var, release için burada da gerekli. -->
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- allowBackup / dataExtractionRules: oturum anahtarları yedeğe girmez (güvenlik kontrolü, Adım 12). -->
     <application
         android:label="KampüsBet"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:allowBackup="false"
+        android:fullBackupContent="false"
+        android:dataExtractionRules="@xml/data_extraction_rules">
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -26,6 +30,16 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+            <!-- E-posta linkleri (kayıt onayı, şifre sıfırlama) uygulamayı açar; Supabase oturumu kendisi alır
+                 (AppInfo.authRedirectUrl). -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="com.kampusbet.kampusbet" android:host="giris-callback"/>
+            </intent-filter>
+            <!-- Linki yönlendiriciye (go_router) iletme: yalnızca Supabase işlesin. -->
+            <meta-data android:name="flutter_deeplinking_enabled" android:value="false"/>
         </activity>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->

@@ -148,14 +148,16 @@ final myCosmeticsProvider = Provider<Cosmetics>((ref) {
 
 /// `public.purchase_market_item`: yeni bakiyeyi döner.
 Future<int> purchaseItem(WidgetRef ref, String itemId) async {
-  final balance = await ref.read(supabaseProvider).rpc('purchase_market_item', params: {'p_item_id': itemId});
-  ref.invalidate(myInventoryProvider);
-  ref.invalidate(balanceProvider);
+  final c = containerOf(ref);
+  final balance = await c.read(supabaseProvider).rpc('purchase_market_item', params: {'p_item_id': itemId});
+  c.invalidate(myInventoryProvider);
+  c.invalidate(balanceProvider);
   return balance as int;
 }
 
 /// `public.set_item_equipped`: kuşanınca aynı türdeki diğer ürün çıkarılır.
 Future<void> setItemEquipped(WidgetRef ref, String itemId, bool equipped) async {
-  await ref.read(supabaseProvider).rpc('set_item_equipped', params: {'p_item_id': itemId, 'p_equipped': equipped});
-  ref.invalidate(myInventoryProvider);
+  final c = containerOf(ref);
+  await c.read(supabaseProvider).rpc('set_item_equipped', params: {'p_item_id': itemId, 'p_equipped': equipped});
+  c.invalidate(myInventoryProvider);
 }

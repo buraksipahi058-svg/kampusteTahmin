@@ -13,7 +13,7 @@ set local search_path = public, extensions;
 -- kullanıcı rolüyle de çağrılır. Transaction sonunda geri alınır.
 alter default privileges for role postgres grant execute on functions to public;
 
-select plan(25);
+select plan(29);
 
 -- ---------------------------------------------------------------------------
 -- Hazırlık
@@ -74,6 +74,14 @@ begin
                               'Açık bahis', null, array['Bir', 'İki'], now() + interval '1 hour');
   perform private.stake_wager(v_bet, (select id from public.bet_options where bet_id = v_bet and position = 1), pg_temp.uid(2), 10);
 
+  -- Ali'nin açıp iptal edilen düellosu: başlık "Trivia düellosu: Ali".
+  insert into public.trivia_questions (school_id, question, options, correct_index)
+  select 'a0000000-0000-4000-8000-000000000001', 'Soru ' || n || '?', array['A', 'B'], 0 from generate_series(1, 10) n;
+  perform set_config('request.jwt.claims', json_build_object('sub', pg_temp.uid(1), 'role', 'authenticated')::text, true);
+  v_bet := public.create_trivia_duel(10);
+  insert into t values ('duel', v_bet);
+  perform private.cancel_bet(v_bet, 'Test iptali', null);
+
   -- Hakem'in hakemi olduğu açık sosyal bahis.
   v_bet := private.create_bet(pg_temp.uid(3), 'a0000000-0000-4000-8000-000000000001', 'sp_social', 'school',
                               'Hakemli bahis', null, array['Evet', 'Hayır'], now() + interval '1 hour', pg_temp.uid(3));
@@ -118,6 +126,9 @@ select throws_ok($$select public.delete_my_account()$$, 'P0002', null, 'silinmi�
 update public.profiles set first_name = 'Ali' where id = 'c0000000-0000-4000-8000-000000000001';
 select throws_ok($$select public.place_wager(gen_random_uuid(), gen_random_uuid(), 10)$$, 'KB002', null,
   'silinen kişi yatırım yapamaz (okul maili silindi)');
+select throws_ok($$select * from public.request_student_email_code('kisi1@ogr.test.edu.tr')$$, 'P0002', null,
+  'silinen kişi okul maili kodu isteyemez');
+select throws_ok($$select public.create_trivia_duel(10)$$, 'KB002', null, 'silinen kişi düello açamaz');
 
 set local request.jwt.claims to '{"sub":"c0000000-0000-4000-8000-000000000005","role":"authenticated"}';
 select is(
@@ -145,10 +156,12 @@ select is(
 select is((select count(*)::int from public.leaderboard_snapshots where user_id = pg_temp.uid(1)), 0,
   'sıralama satırları silindi');
 select is(
-  (select row(u.email, u.phone, u.encrypted_password, u.banned_until, u.deleted_at is not null)::text
+  (select row(u.email, u.phone, u.encrypted_password, u.banned_until > now() + interval '99 years', u.deleted_at is not null)::text
    from auth.users u where u.id = pg_temp.uid(1)),
-  '(,,"",infinity,t)', 'Auth: e-posta, telefon, şifre silindi; hesap süresiz engellendi'
+  '(,,"",t,t)', 'Auth: e-posta, telefon, şifre silindi; hesap 100 yıl engellendi'
 );
+select is((select title from public.bets where id = (select id from t where k = 'duel')), 'Trivia düellosu: Silinmiş Kullanıcı',
+  'düello başlığındaki ad silindi');
 select is(
   (select count(*)::int from auth.identities where user_id = pg_temp.uid(1))
     + (select count(*)::int from auth.sessions where user_id = pg_temp.uid(1)),
@@ -167,7 +180,14 @@ do $$ begin perform private.refresh_leaderboards(); end $$;
 select is((select count(*)::int from public.leaderboard_snapshots where user_id = pg_temp.uid(1)), 0,
   'yeniden hesaplanan sıralamaya silinen kişi girmez');
 
+-- Eşzamanlı hesaplamada yazılmış gibi: silinen kişinin satırı olsa da sıralamada görünmez.
+insert into public.leaderboard_snapshots (school_id, period, period_start, metric, user_id, rank, value, sample, computed_at)
+values ('a0000000-0000-4000-8000-000000000001', 'all_time', null, 'sp_profit', pg_temp.uid(1), 1, 999, 1, now());
 set local role authenticated;
+set local request.jwt.claims to '{"sub":"c0000000-0000-4000-8000-000000000005","role":"authenticated"}';
+select is((select count(*)::int from public.get_leaderboard('sp_profit', 'all_time') l where l.user_id = 'c0000000-0000-4000-8000-000000000001'),
+  0, 'silinen kişi sıralamada gösterilmez');
+
 set local request.jwt.claims to '{"sub":"c0000000-0000-4000-8000-000000000004","role":"authenticated"}';
 select is((select s.members from public.school_stats('a0000000-0000-4000-8000-000000000001') s), 4,
   'okul özetinde üye sayısı silineni saymaz');

@@ -1,15 +1,15 @@
 "use client";
 
 import { useActionState } from "react";
-import { FormAlert, SubmitButton, inputClass, type ActionState } from "@/components/ui";
+import { ActionForm, FormAlert, SubmitButton, inputClass, type ActionState } from "@/components/ui";
 import { changeBalance } from "./actions";
 
 type User = { id: string; label: string };
 
 export function BalanceForm({ users }: { users: User[] }) {
-  const [state, action] = useActionState(changeBalance, {} as ActionState);
+  const [state, action, actionPending] = useActionState(changeBalance, {} as ActionState);
   return (
-    <form action={action} className="flex max-w-xl flex-col gap-3">
+    <ActionForm action={action} state={state} pending={actionPending} className="flex max-w-xl flex-col gap-3">
       <label className="flex flex-col gap-1 text-sm">
         Kullanıcı
         <select name="user_id" required defaultValue="" className={inputClass}>
@@ -51,6 +51,6 @@ export function BalanceForm({ users }: { users: User[] }) {
       <div>
         <SubmitButton pendingText="Yapılıyor…">Uygula</SubmitButton>
       </div>
-    </form>
+    </ActionForm>
   );
 }

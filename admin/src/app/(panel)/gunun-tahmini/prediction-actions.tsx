@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import { FormAlert, SubmitButton, inputClass, type ActionState } from "@/components/ui";
+import { ActionForm, FormAlert, SubmitButton, inputClass, type ActionState } from "@/components/ui";
 import { cancelDailyPrediction, settleDailyPrediction } from "./actions";
 
 type Option = { id: string; label: string };
@@ -17,13 +17,13 @@ export function PredictionActions({
   options: Option[];
   canSettle: boolean;
 }) {
-  const [settleState, settleAction] = useActionState(settleDailyPrediction, {} as ActionState);
-  const [cancelState, cancelAction] = useActionState(cancelDailyPrediction, {} as ActionState);
+  const [settleState, settleAction, settleActionPending] = useActionState(settleDailyPrediction, {} as ActionState);
+  const [cancelState, cancelAction, cancelActionPending] = useActionState(cancelDailyPrediction, {} as ActionState);
 
   return (
     <div className="mt-3 flex flex-col gap-3 border-t border-zinc-200 pt-3 dark:border-zinc-800">
       {canSettle && (
-        <form action={settleAction} className="flex flex-wrap items-center gap-2">
+        <ActionForm action={settleAction} state={settleState} pending={settleActionPending} className="flex flex-wrap items-center gap-2">
           <input type="hidden" name="bet_id" value={betId} />
           <select name="winning_option_id" required defaultValue="" className={inputClass}>
             <option value="" disabled>
@@ -37,16 +37,16 @@ export function PredictionActions({
           </select>
           <SubmitButton pendingText="Dağıtılıyor…">Sonucu gir ve dağıt</SubmitButton>
           <FormAlert state={settleState} />
-        </form>
+        </ActionForm>
       )}
-      <form action={cancelAction} className="flex flex-wrap items-center gap-2">
+      <ActionForm action={cancelAction} state={cancelState} pending={cancelActionPending} className="flex flex-wrap items-center gap-2">
         <input type="hidden" name="bet_id" value={betId} />
         <input name="reason" placeholder="İptal gerekçesi (ör. soru yanlış yazıldı)" required minLength={3} className={`${inputClass} min-w-64`} />
         <SubmitButton tone="danger" pendingText="İptal ediliyor…">
           İptal et ve iade et
         </SubmitButton>
         <FormAlert state={cancelState} />
-      </form>
+      </ActionForm>
     </div>
   );
 }

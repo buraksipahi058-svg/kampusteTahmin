@@ -14,7 +14,7 @@ set local search_path = public, extensions;
 -- kullanıcı rolüyle de çağrılır. Transaction sonunda geri alınır.
 alter default privileges for role postgres grant execute on functions to public;
 
-select plan(37);
+select plan(38);
 
 -- ---------------------------------------------------------------------------
 -- Hazırlık
@@ -150,6 +150,10 @@ select is(
   '(40,1)', 'my_quests görevin XP''sini döner'
 );
 select lives_ok($$select public.claim_quest_reward(pg_temp.id('q40'))$$, 'görev ödülü alınır');
+set local request.jwt.claims to '{"sub":"c0000000-0000-4000-8000-000000000004","role":"authenticated"}';
+select throws_ok($$select public.claim_quest_reward(pg_temp.id('q40'))$$, '42501', null,
+  'görevleri yöneten kendi okulunun görev ödülünü alamaz');
+set local request.jwt.claims to '{"sub":"c0000000-0000-4000-8000-000000000001","role":"authenticated"}';
 select lives_ok($$select public.claim_quest_reward(pg_temp.id('q0'))$$, 'XP''siz görevin ödülü alınır');
 
 set local role postgres;

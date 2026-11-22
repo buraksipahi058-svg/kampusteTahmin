@@ -98,7 +98,7 @@ final xpEventsProvider = FutureProvider<List<XpEvent>>((ref) async {
 });
 
 /// XP değişmiş olabilecek her işlemden sonra (giriş ödülü, görev, bahis sonucu) çağrılır.
-void refreshProgress(WidgetRef ref) {
-  ref.invalidate(myProgressProvider);
-  ref.invalidate(xpEventsProvider);
+void refreshProgress(ProviderContainer c) {
+  c.invalidate(myProgressProvider);
+  c.invalidate(xpEventsProvider);
 }

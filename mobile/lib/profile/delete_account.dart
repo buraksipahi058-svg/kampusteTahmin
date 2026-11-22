@@ -8,7 +8,7 @@ import '../core/supabase.dart';
 /// `public.delete_my_account`: profil anonimleşir, giriş bilgileri silinir (KVKK). Sonra cihazdaki oturum kapanır;
 /// sunucudaki oturumlar zaten silindiği için çıkış yalnızca yerel yapılır.
 Future<void> deleteMyAccount(WidgetRef ref) async {
-  final client = ref.read(supabaseProvider);
+  final client = containerOf(ref).read(supabaseProvider);
   await client.rpc('delete_my_account');
   await client.auth.signOut(scope: SignOutScope.local);
 }

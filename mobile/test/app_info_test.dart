@@ -18,4 +18,18 @@ void main() {
     expect(read('web/index.html'), contains('name="apple-mobile-web-app-title" content="$name"'));
     expect(read('web/manifest.json'), allOf(contains('"name": "$name"'), contains('"short_name": "$name"')));
   });
+
+  // KVKK metni mobilde (asset) ve admin'in herkese açık /gizlilik sayfasında; iki kopya aynı kalmalı.
+  test('KVKK metninin admin kopyası mobildekiyle aynı', () {
+    expect(read('../admin/src/legal/kvkk_aydinlatma.txt'), read('assets/legal/kvkk_aydinlatma.txt'));
+  });
+
+  test('e-posta linklerinin şeması platform dosyalarında AppInfo ile aynı', () {
+    expect(AppInfo.authRedirectUrl, '${AppInfo.authScheme}://${AppInfo.authCallbackHost}');
+    expect(
+      read('android/app/src/main/AndroidManifest.xml'),
+      contains('<data android:scheme="${AppInfo.authScheme}" android:host="${AppInfo.authCallbackHost}"/>'),
+    );
+    expect(read('ios/Runner/Info.plist'), contains('<string>${AppInfo.authScheme}</string>'));
+  });
 }

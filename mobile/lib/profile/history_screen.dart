@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../bets/bets_data.dart';
-import '../bets/bets_tab.dart' show wagerText;
+import '../bets/bets_tab.dart' show formatIstanbul, wagerText;
 import '../core/error_messages.dart';
 
 /// `/gecmis`: kişinin yatırımları (son 100), en yeni önce; sonuç metni bahis kartlarıyla aynı.
@@ -59,6 +59,8 @@ String _statusLabel(Bet bet) => switch (bet.status) {
   'cancelled' => 'İptal',
   'settling' => 'Sonuç girildi, itiraz süresi',
   'locked' => 'Kapandı, sonuç bekleniyor',
+  // Durum "open" kalsa da kapanış geçtiyse yatırıma kapalıdır.
+  _ when !DateTime.now().isBefore(bet.locksAt) => 'Kapandı, sonuç bekleniyor',
   _ => 'Açık',
 };
 
@@ -77,7 +79,11 @@ class _EntryCard extends StatelessWidget {
         title: Text(bet.title),
         subtitle: Text(
           [
-            '${betKindLabel(bet)} · ${_statusLabel(bet)}',
+            [
+              betKindLabel(bet),
+              _statusLabel(bet),
+              if (entry.wager.createdAt != null) formatIstanbul(entry.wager.createdAt!),
+            ].join(' · '),
             if (chosen != null) wagerText(bet, entry.wager, chosen),
           ].join('\n'),
         ),

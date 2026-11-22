@@ -2,7 +2,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../bets/bets_data.dart';
 import '../core/supabase.dart';
-import '../wallet/wallet_data.dart';
 
 /// Bir oyuncunun düello oyunu. Düello bitmeden yalnızca kişinin kendi oyunu görünür (RLS).
 class DuelPlay {
@@ -145,31 +144,34 @@ final duelGameProvider = FutureProvider.autoDispose.family<DuelGame, String>((re
   );
 });
 
-void _refresh(WidgetRef ref) {
-  ref.invalidate(triviaDuelsProvider);
-  ref.invalidate(myWagersProvider);
-  ref.invalidate(balanceProvider);
+/// Düello işleminden sonra: düello listesi ve bahsin etkiledikleri (bakiye, geçmiş, istatistik, görev, XP).
+void _refresh(ProviderContainer c) {
+  c.invalidate(triviaDuelsProvider);
+  refreshAfterBet(c);
 }
 
 /// `public.create_trivia_duel`: payın hemen düşer; okula açık meydan okuma.
 Future<String> createDuel(WidgetRef ref, {required int stake}) async {
-  final betId = await ref.read(supabaseProvider).rpc('create_trivia_duel', params: {'p_stake': stake});
-  _refresh(ref);
+  final c = containerOf(ref);
+  final betId = await c.read(supabaseProvider).rpc('create_trivia_duel', params: {'p_stake': stake});
+  _refresh(c);
   return betId as String;
 }
 
 /// `public.accept_trivia_duel`: aynı tutar yatırılır.
 Future<void> acceptDuel(WidgetRef ref, String betId) async {
-  await ref.read(supabaseProvider).rpc('accept_trivia_duel', params: {'p_bet_id': betId});
-  _refresh(ref);
+  final c = containerOf(ref);
+  await c.read(supabaseProvider).rpc('accept_trivia_duel', params: {'p_bet_id': betId});
+  _refresh(c);
 }
 
 /// `public.submit_trivia_answers`: puanı sunucu hesaplar. (puan, geç kaldı mı)
 Future<(int, bool)> submitAnswers(WidgetRef ref, String betId, List<int?> answers) async {
-  final row = await ref
+  final c = containerOf(ref);
+  final row = await c
       .read(supabaseProvider)
       .rpc('submit_trivia_answers', params: {'p_bet_id': betId, 'p_answers': answers})
       .single();
-  _refresh(ref);
+  _refresh(c);
   return (row['score'] as int, row['late'] as bool);
 }

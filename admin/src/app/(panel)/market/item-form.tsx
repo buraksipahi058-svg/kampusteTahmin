@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { FormAlert, SubmitButton, inputClass, type ActionState } from "@/components/ui";
+import { ActionForm, FormAlert, SubmitButton, inputClass, type ActionState } from "@/components/ui";
 import { isoToIstanbulLocal } from "@/lib/format";
 import { saveItem, toggleItem } from "./actions";
 import { categoryLabels, usesColor, type MarketCategory, type MarketItem } from "./labels";
@@ -10,11 +10,11 @@ type School = { id: string; name: string };
 
 // Yeni ürün ya da (initial verilirse) düzenleme formu. Ürünün türü düzenlemede değişmez.
 export function ItemForm({ schools, isSuper, initial }: { schools: School[]; isSuper: boolean; initial?: MarketItem }) {
-  const [state, action] = useActionState(saveItem, {} as ActionState);
+  const [state, action, actionPending] = useActionState(saveItem, {} as ActionState);
   const [category, setCategory] = useState<MarketCategory>(initial?.category ?? "title");
 
   return (
-    <form action={action} className="flex max-w-xl flex-col gap-3 rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
+    <ActionForm action={action} state={state} pending={actionPending} className="flex max-w-xl flex-col gap-3 rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
       <h2 className="font-medium">{initial ? "Ürünü düzenle" : "Yeni ürün"}</h2>
       {initial && <input type="hidden" name="id" value={initial.id} />}
       <label className="flex flex-col gap-1 text-sm">
@@ -103,19 +103,19 @@ export function ItemForm({ schools, isSuper, initial }: { schools: School[]; isS
       <div>
         <SubmitButton pendingText="Kaydediliyor…">{initial ? "Kaydet" : "Ürünü ekle"}</SubmitButton>
       </div>
-    </form>
+    </ActionForm>
   );
 }
 
 export function ToggleItem({ id, active }: { id: string; active: boolean }) {
-  const [state, action] = useActionState(toggleItem, {} as ActionState);
+  const [state, action, actionPending] = useActionState(toggleItem, {} as ActionState);
   return (
-    <form action={action} className="flex items-center gap-2">
+    <ActionForm action={action} state={state} pending={actionPending} className="flex items-center gap-2">
       <input type="hidden" name="id" value={id} />
       <SubmitButton tone="neutral" pendingText="…">
         {active ? "Satıştan kaldır" : "Satışa aç"}
       </SubmitButton>
       <FormAlert state={state} />
-    </form>
+    </ActionForm>
   );
 }

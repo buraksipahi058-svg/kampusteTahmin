@@ -12,6 +12,7 @@ abstract final class Routes {
   static const quests = '/gorevler';
   static const history = '/gecmis';
   static const privacy = '/kvkk';
+  static const changePassword = '/sifre';
   static const duelPlayPattern = '/duello/:id';
   static String duelPlay(String betId) => '/duello/$betId';
 }

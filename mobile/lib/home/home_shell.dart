@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../bets/bets_tab.dart';
 import '../core/error_messages.dart';
 import '../core/routes.dart';
+import '../core/supabase.dart';
 import '../games/games_tab.dart';
 import '../leaderboard/leaderboard_tab.dart';
 import '../market/market_tab.dart';
@@ -83,7 +84,7 @@ class HomeShell extends ConsumerWidget {
       final messenger = ScaffoldMessenger.of(context);
       switch (next) {
         case AsyncData(value: DailyReward(claimed: true, :final amount, :final streak)):
-          refreshProgress(ref);
+          refreshProgress(containerOf(ref));
           messenger.showSnackBar(
             SnackBar(content: Text('Günlük giriş ödülü: +${formatAmount(amount)} SP · Seri: $streak gün')),
           );

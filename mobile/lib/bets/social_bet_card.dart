@@ -102,6 +102,22 @@ class SocialBetCard extends ConsumerWidget {
     );
   }
 
+  /// Geri alınamayan işlemlerden önce onay.
+  Future<bool> _confirm(BuildContext context, String title, String content, String action) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(title),
+        content: Text(content),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text('Vazgeç')),
+          FilledButton(onPressed: () => Navigator.of(context).pop(true), child: Text(action)),
+        ],
+      ),
+    );
+    return ok == true;
+  }
+
   Future<void> _run(BuildContext context, Future<void> Function() action, String done) async {
     final messenger = ScaffoldMessenger.of(context);
     try {
@@ -124,6 +140,18 @@ class SocialBetCard extends ConsumerWidget {
       ),
     );
     if (optionId == null || !context.mounted) return;
+    final label = bet.options.firstWhere((o) => o.id == optionId).label;
+    final early = DateTime.now().isBefore(bet.locksAt);
+    final ok = await _confirm(
+      context,
+      'Sonuç: $label',
+      [
+        if (early) 'Bahis henüz kapanmadı; sonucu girince yatırımlar hemen kapanır.',
+        'Katılanlar itiraz süresi boyunca itiraz edebilir; sonuç değişirse sana ihtar yazılır.',
+      ].join('\n\n'),
+      'Sonucu gir',
+    );
+    if (!ok || !context.mounted) return;
     await _run(
       context,
       () => submitSocialResult(ref, betId: bet.id, optionId: optionId),
@@ -138,6 +166,8 @@ class SocialBetCard extends ConsumerWidget {
   }
 
   Future<void> _withdraw(BuildContext context, WidgetRef ref) async {
+    final ok = await _confirm(context, 'Bahis geri çekilsin mi?', 'Bahis iptal edilir; bu geri alınamaz.', 'Geri çek');
+    if (!ok || !context.mounted) return;
     await _run(context, () => cancelSocialBet(ref, betId: bet.id, reason: 'Açan geri çekti'), 'Bahis geri çekildi.');
   }
 }

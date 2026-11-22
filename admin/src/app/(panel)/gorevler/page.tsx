@@ -59,8 +59,8 @@ export default async function QuestsPage() {
                 </p>
                 <p className="text-xs text-zinc-500">
                   {q.school?.name ?? "Tüm okullar"}
-                  {q.starts_at && ` · ${formatDateTime(q.starts_at)}'den`}
-                  {q.ends_at && ` · ${formatDateTime(q.ends_at)}'e kadar`}
+                  {q.starts_at && ` · başlangıç ${formatDateTime(q.starts_at)}`}
+                  {q.ends_at && ` · bitiş ${formatDateTime(q.ends_at)}`}
                   {!q.active && " · kapalı"}
                 </p>
               </div>

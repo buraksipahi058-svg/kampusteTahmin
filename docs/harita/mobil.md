@@ -26,12 +26,12 @@ Ekran görüntüsü: `adb shell screencap -p /sdcard/x.png` + `adb pull`.
 | Dosya | Ne yapar |
 |---|---|
 | `main.dart`, `app.dart` | Yapılandırma denetimi, `Supabase.initialize`, `ProviderScope` (Riverpod'un kendiliğinden yeniden denemesi kapalı), tema |
-| `core/app_info.dart` | **Görünen ad tek yerde** (`AppInfo.name`). Android/iOS/web dosyalarındaki ad `test/app_info_test.dart` ile denetlenir |
+| `core/app_info.dart` | **Görünen ad ve e-posta link adresi tek yerde** (`AppInfo.name`, `authRedirectUrl`). Android/iOS/web dosyalarındaki ad ve link şeması `test/app_info_test.dart` ile denetlenir (KVKK metninin admin kopyası da) |
 | `core/env.dart` | `--dart-define-from-file` değerleri |
 | `core/error_messages.dart` | **Tek hata eşlemesi**: `userMessage(hata)`; veritabanı kodları (KB001-006, 42501...) + Auth kodları + ağ hatası. Yeni SQLSTATE önce [veritabani.md](veritabani.md) tablosuna, sonra buraya; test ikisini karşılaştırır |
 | `core/supabase.dart` | `supabaseProvider`, `currentUserIdProvider` (oturum değişince yenilenir) |
 | `core/router.dart`, `routes.dart` | go_router; yönlendirme kuralı `redirectFor` (saf fonksiyon, testli) |
-| `auth/auth_screen.dart` | E-posta + şifre giriş/kayıt, onay mailini yeniden gönderme |
+| `auth/auth_screen.dart` | E-posta + şifre giriş/kayıt, onay mailini yeniden gönderme, "Şifremi unuttum" (linkler `AppInfo.authRedirectUrl`'e döner), KVKK bağlantısı |
 | `profile/profile_data.dart` | `myProfileProvider`, `schoolsProvider`, `createProfile` (`public.create_profile`) |
 | `profile/create_profile_screen.dart`, `profile_tab.dart` | Profil oluşturma; Profil sekmesi (kuşanılmış kozmetikler: çerçeve, isim rengi, unvan, rozet; okul maili; Görevler kartı + hazır ödül sayısı; bakiye, seri; seviye kartı; İstatistiklerim; Geçmiş bahislerim; Gizlilik ve KVKK; çıkış; Hesabımı sil) |
 | `profile/student_email_data.dart` | `studentEmailProvider` (`profile_private`), `requestStudentEmailCode`, `confirmStudentEmail` |
@@ -57,6 +57,7 @@ Ekran görüntüsü: `adb shell screencap -p /sdcard/x.png` + `adb pull`.
 | `profile/history_screen.dart` | `/gecmis`: son 100 yatırım (`myWagerHistoryProvider`, `bets_data.dart`; `wagers` + `bets!bet_id` gömmesi), tür, durum, `wagerText` sonucu |
 | `progress/progress_data.dart` | `Progress` + `myProgressProvider` (`my_progress`), `xpRulesProvider` (ekonomi ayarları), `xpEventsProvider` (son 20 XP olayı), `refreshProgress` (giriş ödülü, görev, bahis sonrası) |
 | `progress/level_card.dart` | Profil'de "Seviye N", ilerleme çubuğu, sonraki seviyeye kalan XP; dokununca kök navigator'da XP kuralları ve son kazançlar sayfası |
+| `profile/change_password_screen.dart` | `/sifre`: yeni şifre + tekrar (en az 8), `auth.updateUser`; Profil'den açılır (şifre sıfırlama linkiyle gelindiğinde de buradan) |
 | `legal/privacy_screen.dart` | `/kvkk`: KVKK aydınlatma metni, `assets/legal/kvkk_aydinlatma.txt`'ten (tek kaynak; `# ` / `## ` / `- ` biçimi). Girişten önce de açılır (`redirectFor`), kayıt ekranında ve Profil'de bağlantısı var |
 | `profile/delete_account.dart` | "Hesabımı sil": onay penceresi (kutu işaretlenmeden düğme kapalı), `delete_my_account`, yerel çıkış |
 | `bets/create_social_bet_screen.dart` | `/sosyal-bahis-ac`: soru, 2–4 seçenek, kapanış (tarih + saat seçici), kişi başı en fazla (≤ 100); okul kümesinde açar (`Profile.schoolId`) |
@@ -68,7 +69,7 @@ Profil yok → `/profil-olustur` (okullar `clusters where type = 'school'`). Pro
 Kabuk açılınca `claim_daily_login()` bir kez çağrılır; ödül alındıysa bildirim + bakiye/seri sunucudan yeniden okunur.
 Sağlayıcılar `currentUserIdProvider`'a bağlı: çıkış/giriş olunca kendiliğinden yeniden çalışır.
 
-## Testler (`mobile/test/`, 41)
+## Testler (`mobile/test/`, 46)
 
 `app_test.dart` `pumpApp` test ekranını telefon boyutuna (1080×2400, dpr 2.625) ayarlar; varsayılan 800×600'de
 düğmeler görünür alanın dışında kalır, ayrıca alttaki günlük ödül bildirimi düğmeleri örtebilir.
@@ -84,11 +85,14 @@ bir fonksiyonla değiştirilir (`pumpApp(leaderboard: ...)`).
 
 - **Toplu `dart format` çalıştırma:** bu SDK'nın biçimlendiricisi mevcut kodu (elle ~120 sütun) farklı biçimliyor, ilgisiz dosyalarda gürültü çıkar. Yalnızca yeni dosyaları biçimle.
 - Alt sayfa (`showModalBottomSheet`) sekme içinden açılınca alt menünün arkasında kalır; `useRootNavigator: true` ver.
+- **Yazma işlemleri** (`placeWager`, `claimQuest`, `purchaseItem`...) yenilemeyi `containerOf(ref)` ile alınan container üzerinden yapar (await'ten önce): işlem sürerken ekran kapanırsa `WidgetRef` kullanılamaz, başarılı işlem hata gibi görünürdü. Bahis / düello sonrası tek yenileme: `refreshAfterBet` (görev, istatistik, geçmiş, XP dahil).
+- Alt sayfalar `useRootNavigator: true` (yatırım sayfası, XP sayfası).
 - Para mantığı istemcide **hesaplanmaz**; bakiye, seri, ödül ve sonuçlar her zaman sunucudan okunur.
 - Sonuç metni `wagerText` (bets_tab) üç durumu ayırır: kazanç, ödeme = yatırım ("kazanç çıkmadı"), seçilen taraf kaybettiği halde ödeme var (kazanan tarafa kimse yatırmadı → iade).
 - Dart istemcisinde (postgrest-dart) `.order()` varsayılanı **azalan** (JS'tekinin tersi); artan sıra için `ascending: true` yaz.
 - Supabase Auth'ta "Confirm email" açık (bulut varsayılanı): kayıttan sonra oturum gelmez, kullanıcı mailindeki linke tıklayıp giriş yapar.
-- Onay linki şimdilik Supabase'in Site URL'sine gider (uygulamayı açmaz); deep link ileride (Redirect URLs + Android intent filter).
+- E-posta linkleri `com.kampusbet.kampusbet://giris-callback`'e döner (Android intent-filter, iOS URL şeması; Flutter'ın kendi derin bağlantısı kapalı, link go_router'a gitmez). Supabase'te Redirect URLs'e eklenmedikçe linkler Site URL'ye gider ([yayin](yayin.md)).
+- **Release derlemesi** (`flutter build apk --release`) R8 ile küçültülür; eklentilerin JNI ile çağrılan sınıfları `android/app/proguard-rules.pro`'da korunur. Release APK emülatörde açılıp denenmeden yayın yapılmaz (debug'da görünmeyen açılış takılması burada yakalandı).
 - Günlük ödül yalnızca açılışta/girişte istenir; uygulama arka planda gece yarısını geçerse ertesi açılışta alınır.
 - Yeni sekme sayfası: `homeTabs`'ta ilgili sekmeye `page:` ver.
 - Sorguda `clusters` gömülürken ilişki belirtilmeli: `profiles` ile `clusters` arasında üç yol var (`school_id`, `user_clusters`, `permissions`); `clusters(name)` yerine `clusters!school_id(name)`, yoksa PostgREST `PGRST201` verir.
