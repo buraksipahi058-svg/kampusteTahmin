@@ -18,6 +18,7 @@ parantez ortaya çıktığı adım.
 - [11] **Gerçek bir hesabın uygulamadan silinmesi**: emülatördeki tek gerçek hesap (kullanıcının test hesabı) silinmedi; yalnızca onay penceresi görüldü. Silme bulutta geri alınan SQL denemesi ve pgTAP ile sınandı. Silinen hesapla giriş denemesinin ve aynı e-postayla yeniden kaydın Supabase Auth'ta nasıl davrandığı gerçek istekle denenmedi.
 - [12] **Gerçek onay / şifre sıfırlama mailinin linkiyle uygulamanın açılıp oturumun başlaması**: Supabase'te Redirect URLs ayarı (kullanıcının işi) yapılmadan çalışmaz; emülatörde yalnızca şemanın uygulamayı açtığı (adb) ve release derlemesinin çalıştığı denendi. Gerçek mail gönderilmedi. Şifre değiştirme ekranı yalnızca widget testinde.
 - [12] iOS URL şeması, mağazaya yükleme ve Play'in AAB'yi işlemesi denenmedi.
+- [13] Admin'in yeni ekranları (Kullanıcılar, Sosyal bahisler, trivia düzenleme, oran formu) tarayıcıda denenmedi (giriş gerekir); veritabanı fonksiyonları pgTAP'te. İstek bekçisinin gerçek bir silinmiş / yasaklı hesabın isteğini canlıda `KB025` ile reddettiği denenmedi (fonksiyon pgTAP'te; canlıda anonim ve normal istekler geçiyor).
 - [12-QA] Admin formlarının yeni davranışı (`ActionForm`: hata alınca girilenler kalır) tarayıcıda denenmedi (giriş gerekir); tip kontrolü ve derleme geçti.
 - [5] **Okul maili kodunun gerçek mail olarak gitmesi** (Brevo yolu). Yalnızca isteğin pg_net kuyruğuna girdiği test edildi; gerçek gönderim yok.
 - [4] **iOS derlemesi** hiç denenmedi (Mac ya da bulut CI gerekir).
@@ -26,15 +27,11 @@ parantez ortaya çıktığı adım.
 
 - [8] Mobilde **belirli bir kişiye meydan okuma** yok (hep okula açık); veritabanı destekliyor (`p_invited_id`).
 - [8] Düello bitince **doğru cevapları gösterme** yok (oyuncu yalnızca skorunu görür).
-- [8] Admin'de trivia sorusunu **düzenleme** yok (yalnızca ekle, aç / kapa); `save_trivia_question` düzenlemeyi destekliyor.
 - [8] Günün tahmini için okul başına "günde bir soru" sınırı ya da ileri tarihli planlama yok; yetkili istediği kadar soru açabilir.
 - [7] **Grup oluşturma / gruba davetle katılma** yok; özel kapsamlı (grup) bahis veritabanında var ama oluşturulamıyor.
 - [7] Mobilde sosyal bahiste **başka hakem seçme** yok (hep açan); veritabanı destekliyor.
-- [7] Admin'de **sonuç girilmemiş / sorunlu sosyal bahisleri** listeleme ve iptal ekranı yok (`cancel_social_bet` var).
 - [7] **Bildirim** yok: itiraz gelince hakeme / moderatöre, sonuç kesinleşince katılanlara.
-- [7] Hakem ihtarını geri alma / af mekanizması yok.
 - [2-7] Aynı kişilerin sık eşleşmesini (SP aktarma şüphesi) izleme yok (KARARLAR öneri 1'deki kalan risk).
-- [6] Resmi bahiste oran sonradan değiştirilemiyor (yalnızca açarken).
 - [10] Eski kayıtlar için **geriye dönük XP** verilmedi: XP yalnızca bu sürümden sonraki giriş, görev ve sonuçlanan bahislerden gelir (bulutta herkes 0 XP'den başladı).
 - [10] Seviye yalnızca **market ürünü** açıyor; seviyeyle özellik açma (ör. sosyal bahis açmak için en az seviye) yok.
 - [10] Seviye atlayınca **bildirim / kutlama** yok; günlük ödül bildirimi XP'yi yazmıyor.
@@ -50,8 +47,8 @@ parantez ortaya çıktığı adım.
 - [12] Bağımlılıklar güncellenmedi: `shared_preferences_android` 2.5.1 (release'te R8 kuralı gerekiyor, `proguard-rules.pro`); `flutter pub upgrade` ile 2.5.5+ / jni 1.1.2+'ya geçilince o blok kaldırılabilir.
 - [11] **Veri dışa aktarma** (KVKK m. 11 bilgi isteme) uygulamada yok; metinde e-postayla başvuru yazıyor.
 - [11] **Kullanım koşulları** metni, yaş sınırı ve (gerekirse) açık rıza akışı yok; yalnızca aydınlatma metni var.
-- [11] Admin'den **kullanıcı yasaklama / silme** yok; süperadmin hesabı uygulamadan silinemez (önce rolü SQL ile alınır).
-- [12-QA] Ödül al / Kuşan / Kabul et düğmelerinde çift dokunma koruması yok (ikinci istek sunucuda reddedilir, fazladan hata bildirimi çıkar). Süperadmin öğrenci uygulamasında tüm okulların bahis ve ürünlerini görür (sorgular okula göre süzülmüyor). Trivia soru formunda ilk şık doğru diye seçili gelir.
+- [11] Admin'den **kullanıcı silme** yok (yasaklama Adım 13'te eklendi); süperadmin hesabı uygulamadan silinemez (önce rolü SQL ile alınır). Yasaklanan kişi mobilde hata mesajı görür, uygulama kendiliğinden çıkış yapmaz.
+- [12-QA] Ödül al / Kuşan / Kabul et düğmelerinde çift dokunma koruması yok (ikinci istek sunucuda reddedilir, fazladan hata bildirimi çıkar). Süperadmin öğrenci uygulamasında tüm okulların bahis ve ürünlerini görür (sorgular okula göre süzülmüyor).
 - [11] RPC'lerde **hız sınırı** yok (Supabase Auth'un kendi giriş / kayıt sınırları dışında); okul maili kodunda kendi sınırımız var.
 - [10] Canlı güncelleme (Supabase Realtime) yok; sıralama 10 dakikada bir hesaplanır.
 - [10] Başarım / rozet koleksiyonu (MIMARI §11) yok.
@@ -73,7 +70,6 @@ parantez ortaya çıktığı adım.
 - [5] Supabase ücretsiz plan bir hafta işlem olmazsa projeyi duraklatıyor; açmak kullanıcının işi ([ortam](ortam.md)).
 - [1] Supabase advisors `public.rls_auto_enable()` için uyarı veriyor (Supabase'in kendi tetikleyicisi; zararsız, dokunulmuyor).
 - [1-11] Advisors her istemci RPC'si için "authenticated `SECURITY DEFINER` çağırabiliyor" uyarısı veriyor (38): Adım 11'de gözden geçirildi, tasarım gereği kabul edildi ([guvenlik](guvenlik.md)); uyarı kalır.
-- [11] Silinen kişinin erişim anahtarı (JWT) süresi dolana kadar (en fazla 1 saat) geçerli kalır: oturumu silinir, yenilenemez; bu sürede ad değiştiremez, okul maili doğrulayamaz, yatıramaz, bahis / düello açamaz (QA'da kapatıldı); yalnızca zararsız işlemler (giriş ödülü, görev ödülü, market) mümkün. Kesin çözüm: PostgREST `db_pre_request` ile silinmiş profilin her isteğini reddetmek (yapılmadı).
 - [12-QA] Hesap silme ile eşzamanlı gelen bir yatırım `KB024` denetimini geçebilir (silinen hesapta açık yatırım kalır, sonuçta anonim hesaba ödenir; zararsız). Sosyal bahis başlıkları ve itiraz gerekçeleri serbest metin: kişi kendi adını yazdıysa silmede kalır.
 - [12-QA] Zamanlanmış işler (sosyal bahis, düello) birden çok bahsi tek transaction'da sonuçlandırır; aynı anda istemciden sonuçlandırılan ortak kişili bir bahisle nadiren kilitlenebilir (iş tarafı yakalar, istemci 40P01 alabilir).
 - [12-QA] Oturum anahtarları cihazda şifresiz (SharedPreferences) duruyor; yedeğe girmiyor ama köklü cihazda okunabilir. Gerekirse şifreli depolama (flutter_secure_storage) ile değiştirilebilir.

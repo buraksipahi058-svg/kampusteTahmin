@@ -5,6 +5,7 @@ import { dbErrorMessage } from "@/lib/errors";
 import { formatAmount, formatDateTime, formatOdds, isPast } from "@/lib/format";
 import { createClient } from "@/lib/supabase/server";
 import { BetActions } from "./bet-actions";
+import { OddsForm } from "./odds-form";
 
 export const metadata: Metadata = { title: "Resmi bahisler · KampüsBet Yönetim" };
 
@@ -102,6 +103,9 @@ export default async function OfficialBetsPage() {
             </table>
             <p className="mt-1 text-sm text-zinc-500">Toplam yatırılan: {formatAmount(bet.pool_total)} SSP</p>
 
+            {bet.status === "open" && !lockPassed && bet.odds_mode === "fixed" && can(staff, bet.cluster_id, "resmi_bahis_ac") && (
+              <OddsForm betId={bet.id} options={options.map((o) => ({ id: o.id, label: o.label, odds: o.odds }))} />
+            )}
             {canClose && (
               <BetActions
                 betId={bet.id}

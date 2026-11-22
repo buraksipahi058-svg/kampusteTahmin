@@ -24,6 +24,8 @@ Konu bölgeleri: [kimlik.md](kimlik.md), [para.md](para.md), [bahis.md](bahis.md
 | `20261122145831_xp_seviye.sql` | 10 | XP ayarları, `quests.reward_xp`, `market_items.min_level`, `xp_events` (yalnızca eklenir) + RLS, seviye eğrisi (`xp_for_level`, `level_for_xp`), `award_xp`, ledger ve bahis tetikleyicileri, `my_progress`; `purchase_market_item` (`KB023`), `my_quests`, `save_quest`, `save_market_item`, `get_leaderboard` yeniden ([para](para.md)) |
 | `20261122152129_hesap_silme_guvenlik.sql` | 11 | denetim düzeltmeleri (tetikleyici fonksiyonu, kimlik dizileri, varsayılan yetkiler), `profiles.deleted_at`, `profiles_update_own` (silinmiş hariç), `settled_wagers` ve `school_stats` (silinmişleri saymaz), `delete_my_account` ([guvenlik](guvenlik.md)) |
 | `20261122173731_qa_duzeltmeleri.sql` | 12 | kalite kontrolü: `current_school_id` / `is_verified` silinmişi saymaz, `request_student_email_code`, `award_xp`, `delete_my_account` (`FOR NO KEY UPDATE`, düello başlığı, Auth 100 yıl), `claim_quest_reward` (görev yöneten alamaz), `get_leaderboard` (silinmiş gösterilmez) |
+| `20261122182015_yonetim_guvenlik.sql` | 13 | `profiles.banned_at`, `guard.check_request` + `pgrst.db_pre_request` (istek bekçisi), `set_user_ban`, `reset_referee_strikes`, `update_official_bet_odds` ([guvenlik](guvenlik.md)) |
+| `20261122182256_yasak_gerekcesi.sql` | 13 | yasak gerekçesi profilden kaldırıldı (okula açıktı), yalnızca denetim kaydında; `set_user_ban` yeniden |
 | `20261122105335_gunun_tahmini.sql` | 8 | günün tahmini ayarları, `bets_settlement_by_type` (mini oyunda `admin` de olur), `place_wager` (yalnızca `auto` mini oyuna kapalı; admin sonuçlandırmalıda açan / kapatan yatıramaz), `create/settle/cancel_daily_prediction`, saatlik pg_cron işi |
 
 ## Koda inmek gerekirse
@@ -60,7 +62,7 @@ Buluttaki gerçek durumu görmek daha ucuzsa: `npx supabase db query --linked "s
 
 ## Kalıplar (yeni kod da böyle yazılır)
 
-- **Şemalar:** `public` API'ye açık (tablolar, enum'lar, istemcinin çağırdığı RPC'ler). `private` API'ye kapalı (RLS yardımcıları, iç fonksiyonlar, tetikleyiciler).
+- **Şemalar:** `guard` yalnızca istek bekçisi (`check_request`; anonim ve giriş yapan çalıştırır, API'ye açık değil). `public` API'ye açık (tablolar, enum'lar, istemcinin çağırdığı RPC'ler). `private` API'ye kapalı (RLS yardımcıları, iç fonksiyonlar, tetikleyiciler).
 - **Tablo yetkileri:** her yeni tabloda `revoke all ... from anon, authenticated;` sonra yalnızca `grant select ... to authenticated;`. İstemci hiçbir tabloya ekleme/silme yapamaz. Tek istisna: `profiles` için `grant update (first_name, last_name, department)`.
 - **RLS:** her tabloda açık. Politikalarda `(select auth.uid())`, `(select private.is_superadmin())` gibi alt sorgu biçimi (her satırda tekrar çalışmasın). Kümeye göre görünürlük: `cluster_id in (select private.my_cluster_ids())`.
 - **Varsayılan yetkiler (Adım 11):** postgres'in oluşturduğu yeni tablo, dizi ve fonksiyon istemcilere ve PUBLIC'e kapalı başlar. Tablo için `grant select`, RPC için `grant execute ... to authenticated` açıkça yazılır; RLS politikasında kullanılan yeni `private` yardımcısı da `authenticated`'a açılmalı ve `12_guvenlik` testindeki listeye eklenmeli.
@@ -107,6 +109,7 @@ Buluttaki gerçek durumu görmek daha ucuzsa: `npx supabase db query --linked "s
 | `KB022` | Ürün zaten kişinin envanterinde |
 | `KB023` | Kişinin seviyesi ürünün en az seviyesine yetmiyor |
 | `KB024` | Sonuçlanmamış bahis / düello / hakemlik varken hesap silinemez |
+| `KB025` | Hesap silinmiş ya da yasaklı: istek bekçisi (`guard.check_request`) her API isteğini reddeder |
 | `42501` | Yetki yok / giriş gerekli |
 | `23514` | Geçersiz değer (kısıt) |
 | `23505` | Tekrar (benzersizlik) |

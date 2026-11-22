@@ -30,7 +30,13 @@ export default async function PanelLayout({ children }: LayoutProps<"/">) {
     staff.permissions.some((p) => p.key === "resmi_bahis_ac" || p.key === "resmi_bahis_kapat")
       ? [{ href: "/gunun-tahmini", label: "Günün tahmini" }]
       : []),
-    ...(isModerator ? [{ href: "/itirazlar", label: "İtirazlar" }] : []),
+    ...(isModerator
+      ? [
+          { href: "/itirazlar", label: "İtirazlar" },
+          { href: "/sosyal-bahisler", label: "Sosyal bahisler" },
+          { href: "/kullanicilar", label: "Kullanıcılar" },
+        ]
+      : []),
     ...(staff.role === "superadmin" || staff.permissions.some((p) => p.key === "trivia_yonet")
       ? [{ href: "/trivia", label: "Trivia soruları" }]
       : []),

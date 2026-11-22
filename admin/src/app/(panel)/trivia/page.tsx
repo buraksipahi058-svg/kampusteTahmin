@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { getStaff } from "@/lib/auth";
 import { dbErrorMessage } from "@/lib/errors";
 import { createClient } from "@/lib/supabase/server";
@@ -57,7 +58,12 @@ export default async function TriviaPage() {
                 {!q.active && " · kapalı"}
               </p>
             </div>
-            <ToggleQuestion id={q.id} active={q.active} />
+            <div className="flex items-center gap-3">
+              <Link href={`/trivia/${q.id}`} className="text-sm underline">
+                Düzenle
+              </Link>
+              <ToggleQuestion id={q.id} active={q.active} />
+            </div>
           </li>
         ))}
       </ul>

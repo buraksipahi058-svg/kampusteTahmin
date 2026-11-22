@@ -30,13 +30,15 @@ Yapılandırma: `admin/.env.local` (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUP
 | `app/giris/` | Giriş formu + `login` / `logout` server action'ları |
 | `app/gizlilik/`, `app/hesap-silme/` | **Oturumsuz** metin sayfaları (mağaza bağlantıları; `proxy.ts` `PUBLIC_PATHS`). KVKK metni `src/legal/kvkk_aydinlatma.txt` (mobildeki asset'in kopyası; mobil test aynılığını denetler), `lib/legal.ts` (`use cache` ile okur, derlemede statik), `components/legal-page.tsx` |
 | `app/(panel)/layout.tsx` | `instant = false`; rol kontrolü (öğrenciye "yetkin yok"), menü |
-| `app/(panel)/resmi-bahisler/` | Liste (seçenek, oran, yatırılan, olası ödeme), kilitle / sonuçlandır / iptal; `yeni/` açma formu |
+| `app/(panel)/resmi-bahisler/` | Liste (seçenek, oran, yatırılan, olası ödeme), açık sabit oranlıda oran değiştirme (`update_official_bet_odds`), kilitle / sonuçlandır / iptal; `yeni/` açma formu |
 | `app/(panel)/itirazlar/` | Moderatör (`kullanici_bahsi_denetle` / süperadmin): açık itirazlı sosyal bahisler, hakemin sonucu, havuz, itiraz gerekçeleri; onayla / değiştir / iptal (`resolve_social_dispute`) |
 | `app/(panel)/gunun-tahmini/` | `resmi_bahis_ac` / `resmi_bahis_kapat` / süperadmin: Evet / Hayır sorusu açma (okul, soru, kapanış), havuzlar, kapanıştan sonra sonuç girme, iptal (`create/settle/cancel_daily_prediction`) |
 | `app/(panel)/gorevler/` | `gorev_yonet` / süperadmin: görev ekleme (SP / SSP ödül + XP), `[id]/` düzenleme, aç / kapa (`save_quest`); eylem ve dönem etiketleri `labels.ts` |
 | `app/(panel)/market/` | `market_yonet` / süperadmin: ürün ekleme (türe göre simge ya da renk, en az seviye), `[id]/` düzenleme (tür sabit), satışa aç / kaldır (`save_market_item`) |
-| `app/(panel)/trivia/` | `trivia_yonet` / süperadmin: soru ekleme (okul ya da genel, 2–4 şık, doğru şık), açma / kapama (`save_trivia_question`) |
+| `app/(panel)/trivia/` | `trivia_yonet` / süperadmin: soru ekleme (okul ya da genel, 2–4 şık, doğru şık hazır seçili gelmez), `[id]/` düzenleme, açma / kapama (`save_trivia_question`) |
 | `app/(panel)/istatistik/` | `analitik_gor` / süperadmin: okul seçimi, bu haftanın okul özeti (`school_stats`), liderlik tablosu (seviye sütunlu; dönem ve ölçüt bağlantıları `?okul=&olcut=&donem=`, `get_leaderboard` ilk 50). Menüde ilk sırada |
+| `app/(panel)/kullanicilar/` | Süperadmin ve moderatör: kişi arama; yasakla / yasağı kaldır (süperadmin, `set_user_ban`), hakem ihtarını sıfırla (`reset_referee_strikes`) |
+| `app/(panel)/sosyal-bahisler/` | Moderatör: kapanışı geçmiş ve sonucu girilmemiş, ayrıca açık sosyal bahisler; gerekçeyle iptal (`cancel_social_bet`) |
 | `app/(panel)/yetkiler/` | Süperadmin: izin ver / geri al (`grant/revoke_permission`) |
 | `app/(panel)/bakiye/` | Süperadmin: `admin_grant` / `admin_adjust`, son yönetim işlemleri |
 

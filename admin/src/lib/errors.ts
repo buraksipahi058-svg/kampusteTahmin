@@ -25,6 +25,7 @@ const messages: Record<string, string> = {
   KB022: "Bu ürün zaten alınmış.",
   KB023: "Kişinin seviyesi bu ürün için yetmiyor.",
   KB024: "Sonuçlanmamış bahsi varken hesap silinemez.",
+  KB025: "Bu hesap kullanılamıyor (silinmiş ya da yasaklı).",
   "42501": "Bu işlem için yetkin yok.",
   "23514": "Girilen bilgilerden biri geçersiz.",
   "23505": "Bu kayıt zaten var.",

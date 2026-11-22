@@ -1,6 +1,7 @@
 "use server";
 
 import { refresh } from "next/cache";
+import { redirect } from "next/navigation";
 import type { ActionState } from "@/components/ui";
 import { dbErrorMessage } from "@/lib/errors";
 import { createClient } from "@/lib/supabase/server";
@@ -11,20 +12,23 @@ export async function saveQuestion(_prev: ActionState, formData: FormData): Prom
   const options = formData.getAll("option").map((v) => String(v).trim());
   const correct = Number(formData.get("correct"));
   const schoolId = String(formData.get("school_id") ?? "");
+  const id = String(formData.get("id") ?? "");
   if (options.some((o) => !o)) return { error: "Şıklar boş olamaz." };
   if (!Number.isInteger(correct) || correct < 0 || correct >= options.length) return { error: "Doğru şıkkı seç." };
 
   const supabase = await createClient();
   const { error } = await supabase.rpc("save_trivia_question", {
     // Genel soru için okul boş gönderilir (yalnızca süperadmin).
-    p_id: null as unknown as string,
+    p_id: (id || null) as unknown as string,
     p_school_id: (schoolId || null) as unknown as string,
     p_question: String(formData.get("question") ?? "").trim(),
     p_options: options,
     p_correct_index: correct,
     p_category: String(formData.get("category") ?? "").trim(),
+    p_active: id ? formData.get("active") === "on" : true,
   });
   if (error) return { error: dbErrorMessage(error) };
+  if (id) redirect("/trivia");
   refresh();
   return { message: "Soru eklendi." };
 }

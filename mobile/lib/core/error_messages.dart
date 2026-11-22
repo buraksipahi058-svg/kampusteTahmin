@@ -29,6 +29,7 @@ const databaseMessages = <String, String>{
   'KB021': 'Bu ürün şu an satışta değil.',
   'KB022': 'Bu ürün zaten sende.',
   'KB023': 'Bu ürün için seviyen henüz yetmiyor.',
+  'KB025': 'Bu hesap kullanılamıyor (silinmiş ya da yasaklı). Çıkış yapıp destek adresine yazabilirsin.',
   'KB024': 'Sonuçlanmamış bahsin, düellon ya da hakemliğin varken hesabını silemezsin. Önce sonuçlanmalarını bekle.',
   '42501': 'Bu işlem için yetkin yok ya da oturumun kapanmış.',
   '23514': 'Girdiğin bilgilerden biri geçersiz. Kontrol edip tekrar dene.',

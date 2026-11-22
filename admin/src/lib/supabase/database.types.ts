@@ -751,6 +751,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          banned_at: string | null
           created_at: string
           deleted_at: string | null
           department: string | null
@@ -765,6 +766,7 @@ export type Database = {
           xp: number
         }
         Insert: {
+          banned_at?: string | null
           created_at?: string
           deleted_at?: string | null
           department?: string | null
@@ -779,6 +781,7 @@ export type Database = {
           xp?: number
         }
         Update: {
+          banned_at?: string | null
           created_at?: string
           deleted_at?: string | null
           department?: string | null
@@ -1399,6 +1402,7 @@ export type Database = {
           p_school_id: string
         }
         Returns: {
+          banned_at: string | null
           created_at: string
           deleted_at: string | null
           department: string | null
@@ -1548,6 +1552,10 @@ export type Database = {
           expires_at: string
         }[]
       }
+      reset_referee_strikes: {
+        Args: { p_note: string; p_user_id: string }
+        Returns: undefined
+      }
       resolve_social_dispute: {
         Args: {
           p_bet_id: string
@@ -1633,6 +1641,10 @@ export type Database = {
         Args: { p_equipped: boolean; p_item_id: string }
         Returns: undefined
       }
+      set_user_ban: {
+        Args: { p_banned: boolean; p_reason?: string; p_user_id: string }
+        Returns: undefined
+      }
       settle_daily_prediction: {
         Args: { p_bet_id: string; p_winning_option_id: string }
         Returns: undefined
@@ -1660,6 +1672,10 @@ export type Database = {
           late: boolean
           score: number
         }[]
+      }
+      update_official_bet_odds: {
+        Args: { p_bet_id: string; p_odds: number[] }
+        Returns: undefined
       }
     }
     Enums: {

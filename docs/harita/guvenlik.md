@@ -55,6 +55,13 @@ Her test çalışmasında bütün `public` / `private` şeması taranır; yeni k
 Kalan riskler [acik-isler](acik-isler.md)'de: hız sınırı yok, silinen hesabın anahtarı ≤ 1 saat geçerli, Supabase
 güvenlik kayıtlarında e-posta.
 
+## İstek bekçisi ve yasaklama (Adım 13)
+
+- `guard.check_request()`: PostgREST her API isteğinden önce çağırır (`alter role authenticator set pgrst.db_pre_request`). Oturumdaki kişinin profili silinmiş ya da yasaklıysa `KB025`; anonim ve normal isteklerde hiçbir şey yapmaz. **Bozulursa bütün API durur:** değiştirince canlı API'yi hemen dene (anonim RPC denemesi + uygulama).
+- `set_user_ban(user, banned, reason)`: yalnızca süperadmin; kendini ve süperadmini yasaklayamaz. Profilde `banned_at`, Auth'ta 100 yıl engel, oturumlar ve yenileme anahtarları silinir; gerekçe denetim kaydında (`user_ban` / `user_unban`).
+- `reset_referee_strikes(user, note)`: süperadmin ya da kişinin okulunda `kullanici_bahsi_denetle`; kendine yapamaz.
+- Admin: `/kullanicilar` (arama, yasakla / kaldır, ihtar sıfırla), `/sosyal-bahisler` (sonuç bekleyen ve açık sosyal bahisler, gerekçeyle iptal).
+
 ## Hesap silme
 
 `public.delete_my_account()` (giriş yapan, kendisi için):

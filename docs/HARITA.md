@@ -5,10 +5,10 @@ gerektirdiği bölgeleri aç. Kod dosyalarını baştan sona okuma; bölge dosya
 
 ## Şu an
 
-- **Commit:** yalnızca kullanıcı onay verince, yalnızca yerel (push yok). Adım 7-9 `f45f3dc`'de; Adım 10 + XP / seviye `0ca9789`'da, Adım 11 `2fa4c08`'de; Adım 12 çalışma ağacında, commit edilmedi.
-- **Son tamamlanan:** baştan sona kalite kontrolü ve güvenlik çift kontrolü (Adım 12 üstüne): iki bağımsız kod incelemesi, canlı API'ye anonim deneme (37 RPC, 24 tablo), emülatörde tüm ekranlar. Düzeltilen: eşzamanlı görev ödüllerinde veritabanı kilitlenmesi (testle yakalandı), silinen hesabın anahtarı geçerliyken yeniden doğrulanması, düello başlığında silinen ad, görev yöneticisinin kendine ödül basması, admin çıkışının telefonu da kapatması, admin formlarının hata alınca boşalması, bahis sonrası görev / XP / istatistik yenilenmemesi, okul listesi sırası, kazanç metinleri, güvenlik başlıkları, Android yedek ayarı (ayrıntı: [guvenlik](harita/guvenlik.md) "Kalite kontrolü"). 586 pgTAP, eşzamanlılık para 8/8 + bahis 6/6, 46 Flutter testi, admin lint / tip / build temiz. Adım 12: yayına hazırlık ([yayin](harita/yayin.md)); Adım 11: güvenlik, hesap silme, KVKK.
+- **Commit:** yalnızca kullanıcı onay verince, yalnızca yerel (push yok). Adım 7-9 `f45f3dc`'de; Adım 10 + XP / seviye `0ca9789`'da, Adım 11 `2fa4c08`'de, Adım 12 `ae29d5e`'de; Adım 13 çalışma ağacında, commit edilmedi.
+- **Son tamamlanan:** Adım 13 — açık işlerden yönetim ve güvenlik eksikleri: istek bekçisi (silinmiş / yasaklı hesabın her API isteği reddedilir, `KB025`), süperadmin yasaklama, hakem ihtarını sıfırlama, açık resmi bahiste oran değiştirme; admin'de Kullanıcılar, Sosyal bahisler (sonuç bekleyenler + iptal), trivia sorusu düzenleme. 617 pgTAP, 46 Flutter testi, admin lint / tip / build temiz; canlı API'de anonim 40 RPC reddediliyor, emülatörde giriş yapmış uygulama bekçiden geçiyor. Önceki: Adım 12 + kalite kontrolü (`ae29d5e`).
 - **Bulutta deneme verisi:** giriş yapamayan "Test Yetkili" profili (`e2e00000-...0001`), sonuçlanmış resmi ve sosyal deneme bahisleri, bir trivia düellosu, bir günün tahmini; kullanıcının test hesabı `deneme@ogr.ornek.edu.tr` ile doğrulanmış (820 SP, 20 XP, "Mor isim" kuşanılı). Seed'de 5 genel görev, 8 genel ürün.
-- **Sıradaki:** kullanıcının canlıya geçiş adımları ([yayin](harita/yayin.md) "Canlıya geçiş sırası"); uygulama tarafında kalanlar [acik-isler](harita/acik-isler.md)'de (bildirimler, ikon, admin panelinin girişle denenmesi, eksik özellikler).
+- **Sıradaki (öneri, açık işlerden):** Adım 14 gizlilik (sıralamadan çıkma, veri dışa aktarma, kullanım koşulları taslağı, hız sınırları); Adım 15 mobil eksikler (kişi seçerek meydan okuma / hakem, düello sonrası cevaplar, kartlarda kozmetik, başkasının profili, geçmiş sayfalama, seviye kutlaması); Adım 16 uygulama içi bildirimler; Adım 17 gruplar; Adım 18 izleme / analitik. Ayrıca kullanıcının canlıya geçiş adımları ([yayin](harita/yayin.md) "Canlıya geçiş sırası"); uygulama tarafında kalanlar [acik-isler](harita/acik-isler.md)'de (bildirimler, ikon, admin panelinin girişle denenmesi, eksik özellikler).
 - **Açık işler** (denenmemiş, eksik, çözülmemiş, kullanıcıdan beklenen): [harita/acik-isler.md](harita/acik-isler.md).
 
 | # | Adım | Durum | Commit |
@@ -25,7 +25,8 @@ gerektirdiği bölgeleri aç. Kod dosyalarını baştan sona okuma; bölge dosya
 | 9 | Görevler + market | Bitti | `f45f3dc` |
 | 10 | Liderlik + istatistik, XP / seviye | Bitti | `0ca9789` |
 | 11 | Güvenlik denetimi, hesap silme, KVKK | Bitti | `2fa4c08` |
-| 12 | Yayına hazırlık (linkler, şifre, Android imza, mağaza sayfaları) + kalite kontrolü | Bitti (commit yok) | |
+| 12 | Yayına hazırlık (linkler, şifre, Android imza, mağaza sayfaları) + kalite kontrolü | Bitti | `ae29d5e` |
+| 13 | Yönetim ve güvenlik eksikleri (istek bekçisi, yasaklama, ihtar, oran, admin ekranları) | Bitti (commit yok) | |
 
 ## Görev → ne okunur
 

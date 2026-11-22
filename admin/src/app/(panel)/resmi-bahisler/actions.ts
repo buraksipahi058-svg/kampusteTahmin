@@ -66,3 +66,14 @@ export async function cancelBet(_prev: ActionState, formData: FormData): Promise
   refresh();
   return { message: "Bahis iptal edildi, yatırımlar iade edildi." };
 }
+
+// update_official_bet_odds: açık sabit oranlı bahiste, açan okulun resmi_bahis_ac yetkilisi.
+export async function updateOdds(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const odds = formData.getAll("odds").map((v) => Number(String(v).replace(",", ".")));
+  if (odds.some((o) => !Number.isFinite(o) || o < 1.01 || o > 20)) return { error: "Oranlar 1,01 ile 20,00 arasında olmalı." };
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("update_official_bet_odds", { p_bet_id: text(formData, "bet_id"), p_odds: odds });
+  if (error) return { error: dbErrorMessage(error) };
+  refresh();
+  return { message: "Oranlar güncellendi." };
+}
