@@ -1,17 +1,18 @@
-// Eşzamanlılık testi (Adım 2): aynı anda gelen istekler para çoğaltmamalı, bakiyeyi negatife
-// düşürmemeli, başlangıç SP'sini iki kez vermemeli. Ayrıntılar: lib.mjs.
+// Eşzamanlılık testi (Adım 2, 9): aynı anda gelen istekler para çoğaltmamalı, bakiyeyi negatife
+// düşürmemeli, başlangıç SP'sini, görev ödülünü ya da market ürününü iki kez vermemeli. Ayrıntılar: lib.mjs.
 //
 // Kullanım (proje kökünde, Docker gerekmez): npm run db:test:concurrency
 
+import { randomUUID } from "node:crypto";
 import {
   asUser, check, checkLedgerIntegrity, createWorld, mustRun, onTime, parallel, runSuite, setupWorld, showUnexpected,
 } from "./lib.mjs";
 
-const w = createWorld(["gunluk", "harcama", "kayit"]);
+const w = createWorld(["gunluk", "harcama", "kayit", "gorev", "market"]);
 const { users } = w;
 
 await runSuite("Para eşzamanlılık testi", w, async () => {
-  await setupWorld(w, { withProfile: ["gunluk", "harcama"] });
+  await setupWorld(w, { withProfile: ["gunluk", "harcama", "gorev", "market"], verified: ["gorev"] });
 
   // 1) Aynı kullanıcı aynı anda 10 kez günlük ödül ister: yalnızca biri ödül almalı.
   {
@@ -57,6 +58,50 @@ select (now() < ${at}) as on_time, id from public.create_profile('Test', 'Kişi'
       passed === 1 && dup === 9 && bonus === 1 && sp === 1000,
       `geçen: ${passed}, çakışma: ${dup}, başlangıç kaydı: ${bonus}, bakiye: ${sp}`);
     showUnexpected(res, ["23505"]);
+  }
+
+  // 4) Tamamlanmış görevin ödülü aynı anda 10 kez istenir: ödül bir kez verilir.
+  {
+    const quest = randomUUID();
+    await mustRun(`do $$
+declare b uuid;
+begin
+  b := private.create_bet('${users.gorev}', '${w.school}', 'sp_social', 'school', 'Eşzamanlılık görevi bahsi', null,
+                          array['A', 'B'], now() + interval '1 hour', '${users.gorev}');
+  perform private.stake_wager(b, (select id from public.bet_options where bet_id = b and position = 1), '${users.gorev}', 10);
+end $$;
+insert into public.quests (id, school_id, title, period, action, target, reward_currency, reward_amount)
+values ('${quest}', '${w.school}', 'Eşzamanlılık görevi', 'daily', 'wager', 1, 'SP', 50);`);
+    const res = await parallel(10, (at) => `${asUser(users.gorev)}
+select (now() < ${at}) as on_time, balance from public.claim_quest_reward('${quest}');`);
+    const passed = res.filter((r) => r.ok).length;
+    const already = res.filter((r) => !r.ok && r.code === "KB020").length;
+    const [{ n, sp }] = await mustRun(`select
+      (select count(*)::int from public.ledger_entries where user_id = '${users.gorev}' and reason = 'quest_reward') as n,
+      (select sp_balance::int from public.balances where user_id = '${users.gorev}') as sp`);
+    check("aynı görev ödülü için 10 eşzamanlı istekten yalnızca biri geçer",
+      passed === 1 && already === 9 && n === 1 && sp === 1040,
+      `geçen: ${passed}, zaten alınmış: ${already}, ledger ödül kaydı: ${n}, bakiye: ${sp}, ${onTime(res)}`);
+    showUnexpected(res, ["KB020"]);
+  }
+
+  // 5) Aynı ürün aynı anda 10 kez satın alınır: bir kez alınır, para bir kez düşer.
+  {
+    const item = randomUUID();
+    await mustRun(`insert into public.market_items (id, school_id, name, category, icon, price, currency)
+values ('${item}', '${w.school}', 'Eşzamanlılık rozeti', 'badge', '⭐', 300, 'SP');`);
+    const res = await parallel(10, (at) => `${asUser(users.market)}
+select (now() < ${at}) as on_time, public.purchase_market_item('${item}') as balance;`);
+    const passed = res.filter((r) => r.ok).length;
+    const owned = res.filter((r) => !r.ok && r.code === "KB022").length;
+    const [{ inv, n, sp }] = await mustRun(`select
+      (select count(*)::int from public.user_inventory where user_id = '${users.market}') as inv,
+      (select count(*)::int from public.ledger_entries where user_id = '${users.market}' and reason = 'market_purchase') as n,
+      (select sp_balance::int from public.balances where user_id = '${users.market}') as sp`);
+    check("aynı ürün için 10 eşzamanlı satın almadan yalnızca biri geçer, para bir kez düşer",
+      passed === 1 && owned === 9 && inv === 1 && n === 1 && sp === 700,
+      `geçen: ${passed}, zaten sende: ${owned}, envanter: ${inv}, ledger kaydı: ${n}, bakiye: ${sp}, ${onTime(res)}`);
+    showUnexpected(res, ["KB022"]);
   }
 
   await checkLedgerIntegrity(w);

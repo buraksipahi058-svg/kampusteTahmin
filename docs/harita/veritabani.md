@@ -13,6 +13,14 @@ Konu bölgeleri: [kimlik.md](kimlik.md), [para.md](para.md), [bahis.md](bahis.md
 | `20261020160619_bahis_cekirdegi.sql` | 3 | Bahis, seçenek, yatırım, ledger'a bahis kısıtları, `create/lock/settle/cancel_bet`, `place_wager` |
 | `20261122080714_okul_maili_dogrulama.sql` | 5 | `pg_net`, mail ayarları + geliştirme kutusu, kod kayıtları (private), `send_mail`, `request_student_email_code`, `confirm_student_email` |
 | `20261122082914_resmi_bahisler.sql` | 6 | `odds_mode`, seçenek/yatırım oranı; `create_bet` (oranlı), `settle_bet` (sabit oran), `place_wager` (oran + sonuçlandırabilecek olan yatıramaz) yeniden; `create/lock/settle/cancel_official_bet` |
+| `20261122085500_sosyal_havuz.sql` | 7 | `pg_cron` + 5 dakikalık iş, sosyal ayarlar, `referee_strikes`, bahiste hakem sonucu kolonları, `bet_disputes`, `bets` RLS'ine moderatör, sosyal bahis RPC'leri, `process_social_bets` |
+| `20261122090045_sosyal_havuz_dogrulama_sirasi.sql` | 7 | `create_social_bet`: önce okul maili kontrolü (`KB002`) |
+| `20261122090304_onerilen_secenek_iliskisi.sql` | 7 | `bets.proposed_option_id` yabancı anahtarı kaldırıldı (PostgREST gömme belirsizliği) |
+| `20261122092401_trivia_izni.sql` | 8 | `permission_key`'e `trivia_yonet` (ayrı migration: yeni enum değeri aynı transaction'da kullanılamaz) |
+| `20261122092403_trivia_duellosu.sql` | 8 | trivia ayarları, soru / düello / oyun tabloları, `stake_wager`, `place_wager` (mini oyuna kapalı), düello RPC'leri, `save_trivia_question`, pg_cron düello işi |
+| `20261122114042_gorevler_market.sql` | 9 | görev / ödül / ürün / envanter tabloları ve RLS, ilerleme sayımı (`quest_window`, `quest_progress`), `my_quests`, `claim_quest_reward`, `purchase_market_item`, `set_item_equipped`, `save_quest`, `save_market_item` |
+| `20261122115132_market_sahip_gorunurlugu.sql` | 9 | `market_items` RLS: sahip olunan ve okul arkadaşının kuşandığı ürün satışta olmasa da görünür |
+| `20261122105335_gunun_tahmini.sql` | 8 | günün tahmini ayarları, `bets_settlement_by_type` (mini oyunda `admin` de olur), `place_wager` (yalnızca `auto` mini oyuna kapalı; admin sonuçlandırmalıda açan / kapatan yatıramaz), `create/settle/cancel_daily_prediction`, saatlik pg_cron işi |
 
 ## Koda inmek gerekirse
 
@@ -30,7 +38,13 @@ Aynı fonksiyon birden fazla migration'da tanımlıysa **en yeni dosyadaki** ge�
 |---|---|---|
 | `public.create_profile` | `20261020151007_para_cekirdegi.sql` | `20261020145105_...` |
 | `private.clusters_set_school` | `20261020145832_kume_ust_kume_hatasi.sql` | `20261020145105_...` |
-| `private.create_bet`, `private.settle_bet`, `public.place_wager` | `20261122082914_resmi_bahisler.sql` | `20261020160619_...` |
+| `private.create_bet`, `private.settle_bet` | `20261122082914_resmi_bahisler.sql` | `20261020160619_...` |
+| `public.place_wager` | `20261122105335_gunun_tahmini.sql` | `20261122092403_...`, `20261122082914_...`, `20261020160619_...` |
+| `public.create_social_bet` | `20261122090045_sosyal_havuz_dogrulama_sirasi.sql` | `20261122085500_...` |
+
+**İki tablo arasına ikinci bir yabancı anahtar ekleme:** PostgREST istemci sorgularında gömme
+(`bets?select=...,bet_options(...)`) belirsizleşir (PGRST201) ve mobil/admin sorguları bozulur.
+Gerekirse kontrolü fonksiyonda yap ya da istemcide `!kolon` ipucuyla göm.
 
 Buluttaki gerçek durumu görmek daha ucuzsa: `npx supabase db query --linked "select pg_get_functiondef('public.place_wager'::regproc)"`.
 
@@ -73,6 +87,15 @@ Buluttaki gerçek durumu görmek daha ucuzsa: `npx supabase db query --linked "s
 | `KB011` | Doğrulama kodunun süresi doldu |
 | `KB012` | Doğrulama kodunda deneme hakkı bitti |
 | `KB013` | Mail servisi yapılandırılmamış |
+| `KB014` | Hakemlik / sosyal bahis açma hakkı ihtar sınırı yüzünden kısıtlı |
+| `KB015` | Sosyal bahsin sonucu zaten girildi |
+| `KB016` | Sonuca şu an itiraz edilemez (itiraz süresi yok ya da bitti) |
+| `KB017` | Çözülecek açık itiraz yok |
+| `KB018` | Düello katılıma ya da oynamaya açık değil (rakibi var / süresi doldu / zaten oynandı) |
+| `KB019` | Görev henüz tamamlanmadı |
+| `KB020` | Görevin ödülü bu dönem zaten alındı |
+| `KB021` | Ürün satışta değil (kapalı / satış tarihi dışında) |
+| `KB022` | Ürün zaten kişinin envanterinde |
 | `42501` | Yetki yok / giriş gerekli |
 | `23514` | Geçersiz değer (kısıt) |
 | `23505` | Tekrar (benzersizlik) |
@@ -89,4 +112,6 @@ kullanici_bahsi_denetle, market_yonet, gorev_yonet, kullanici_yonet, analitik_go
 `currency` (SP, SSP) · `ledger_reason` (signup_bonus, daily_login, quest_reward, bet_stake, bet_payout,
 bet_refund, market_purchase, admin_grant, admin_adjust) · `ledger_ref_type` (bet, wager, quest, market_item) ·
 `bet_type` (ssp_official, sp_minigame, sp_social) · `bet_scope` (private, school, cross_school, global) ·
-`bet_status` (open, locked, settling, settled, cancelled) · `settlement_mode` (auto, admin, referee).
+`bet_status` (open, locked, settling, settled, cancelled) · `settlement_mode` (auto, admin, referee) ·
+`quest_period` (daily, weekly, seasonal) · `quest_action` (wager, prediction, duel, social_bet, win) ·
+`market_category` (title, badge, frame, name_color).

@@ -8,4 +8,8 @@ abstract final class Routes {
   static const leaderboard = '/liderlik';
   static const profile = '/profil';
   static const verifyEmail = '/okul-maili';
+  static const createSocialBet = '/sosyal-bahis-ac';
+  static const quests = '/gorevler';
+  static const duelPlayPattern = '/duello/:id';
+  static String duelPlay(String betId) => '/duello/$betId';
 }

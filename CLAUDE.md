@@ -5,6 +5,7 @@
 - Amaç az bağlamla anlamak: oturum başında `docs/HARITA.md`'yi oku (neredeyiz, sıradaki iş, görev → hangi bölge).
 - Sonra yalnızca görevin bölge dosyalarını aç (`docs/harita/*.md`). Migration, test ve `KARARLAR.md` / `MIMARI.md` dosyalarını baştan sona okuma; bölge dosyası nereye bakacağını söyler.
 - Adım bitince `HARITA.md`'nin "Şu an" bölümünü ve değişen bölge dosyasını güncelle; yeni karar `KARARLAR.md`'ye tek satır.
+- Denenmeyen, eksik kalan ve çözülemeyen her şey `docs/harita/acik-isler.md`'de birikir: adım sonunda yenileri ekle, çözüleni sil. Raporda bu listeden yeni eklenenleri söyle.
 
 ## Çalışma şekli
 

@@ -4,6 +4,9 @@ import 'package:go_router/go_router.dart';
 
 import '../core/routes.dart';
 import '../core/supabase.dart';
+import '../market/cosmetic_preview.dart';
+import '../market/market_data.dart';
+import '../quests/quests_data.dart';
 import '../wallet/wallet_data.dart';
 import 'profile_data.dart';
 import 'student_email_data.dart';
@@ -17,6 +20,8 @@ class ProfileTab extends ConsumerWidget {
     final balance = ref.watch(balanceProvider).value;
     final streak = ref.watch(loginStreakProvider).value;
     final studentEmail = ref.watch(studentEmailProvider).value;
+    final cosmetics = ref.watch(myCosmeticsProvider);
+    final readyRewards = (ref.watch(questsProvider).value ?? const <Quest>[]).where((q) => q.claimable).length;
     final theme = Theme.of(context);
 
     if (profile == null) return const Center(child: CircularProgressIndicator());
@@ -27,16 +32,45 @@ class ProfileTab extends ConsumerWidget {
         ref.invalidate(balanceProvider);
         ref.invalidate(loginStreakProvider);
         ref.invalidate(studentEmailProvider);
+        ref.invalidate(myInventoryProvider);
+        ref.invalidate(questsProvider);
         await ref.read(balanceProvider.future);
       },
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          Text(profile.fullName, style: theme.textTheme.headlineSmall),
-          const SizedBox(height: 4),
-          Text(
-            [profile.schoolName, ?profile.department].join(' · '),
-            style: theme.textTheme.bodyMedium,
+          // Kuşanılmış kozmetikler: çerçeve, isim rengi, unvan, rozet (yalnızca görünüm).
+          Row(
+            children: [
+              ProfileAvatar(initials: profile.initials, frame: cosmetics.frame),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      profile.fullName,
+                      style: theme.textTheme.headlineSmall?.copyWith(color: cosmetics.nameColor?.colorValue),
+                    ),
+                    if (cosmetics.title != null)
+                      Text(
+                        [?cosmetics.title!.icon, cosmetics.title!.name].join(' '),
+                        style: theme.textTheme.titleSmall?.copyWith(color: theme.colorScheme.primary),
+                      ),
+                    const SizedBox(height: 4),
+                    Text([profile.schoolName, ?profile.department].join(' · '), style: theme.textTheme.bodyMedium),
+                    if (cosmetics.badge != null) ...[
+                      const SizedBox(height: 6),
+                      Chip(
+                        avatar: Text(cosmetics.badge!.icon ?? '★'),
+                        label: Text(cosmetics.badge!.name),
+                        visualDensity: VisualDensity.compact,
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 16),
           Card(
@@ -55,6 +89,18 @@ class ProfileTab extends ConsumerWidget {
                 onTap: () => context.push(Routes.verifyEmail),
               ),
             },
+          ),
+          const SizedBox(height: 8),
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.flag_outlined),
+              title: const Text('Görevler'),
+              subtitle: Text(readyRewards > 0 ? '$readyRewards ödül alınmayı bekliyor' : 'Günlük ve haftalık görevler'),
+              trailing: readyRewards > 0
+                  ? Badge(label: Text('$readyRewards'), child: const Icon(Icons.chevron_right))
+                  : const Icon(Icons.chevron_right),
+              onTap: () => context.push(Routes.quests),
+            ),
           ),
           const SizedBox(height: 8),
           Card(

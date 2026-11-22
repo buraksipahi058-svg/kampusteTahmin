@@ -33,14 +33,25 @@ Ekran görüntüsü: `adb shell screencap -p /sdcard/x.png` + `adb pull`.
 | `core/router.dart`, `routes.dart` | go_router; yönlendirme kuralı `redirectFor` (saf fonksiyon, testli) |
 | `auth/auth_screen.dart` | E-posta + şifre giriş/kayıt, onay mailini yeniden gönderme |
 | `profile/profile_data.dart` | `myProfileProvider`, `schoolsProvider`, `createProfile` (`public.create_profile`) |
-| `profile/create_profile_screen.dart`, `profile_tab.dart` | Profil oluşturma; Profil sekmesi (okul maili durumu, bakiye, seri, seviye, çıkış) |
+| `profile/create_profile_screen.dart`, `profile_tab.dart` | Profil oluşturma; Profil sekmesi (kuşanılmış kozmetikler: çerçeve, isim rengi, unvan, rozet; okul maili; Görevler kartı + hazır ödül sayısı; bakiye, seri, seviye, çıkış) |
 | `profile/student_email_data.dart` | `studentEmailProvider` (`profile_private`), `requestStudentEmailCode`, `confirmStudentEmail` |
 | `profile/verify_email_screen.dart` | `/okul-maili`: mail → kod; okulun alan adını ipucu gösterir (profil sorgusu `school_email_domains`'i de çeker) |
 | `wallet/wallet_data.dart` | `balanceProvider`, `loginStreakProvider`, `dailyRewardProvider` (`claim_daily_login`), `formatAmount` |
 | `wallet/balance_bar.dart` | Üst çubukta SP / SSP; dokununca yenilenir |
 | `home/home_shell.dart` | Alt sekmeler (`homeTabs`), günlük ödül bildirimi; boş sekmeler `placeholder_tab.dart` |
-| `bets/bets_data.dart` | `Bet`, `BetOption`, `Wager`; `officialBetsProvider`, `myWagersProvider`, `placeWager` (`place_wager`), `potentialPayout` (bilgi için) |
-| `bets/bets_tab.dart` | Bahisler sekmesi: resmi bahisler (oran, kapanış İstanbul saati, kişinin yatırımı / sonucu), yatırım alt sayfası; doğrulanmamışsa uyarı |
+| `bets/bets_data.dart` | `Bet`, `BetOption`, `Wager`; `officialBetsProvider`, `socialBetsProvider`, `dailyPredictionsProvider`, `myWagersProvider`, `placeWager` (`place_wager`), `potentialPayout` (bilgi için) |
+| `bets/bets_tab.dart` | Bahisler sekmesi: "Resmi / Sosyal" seçici; resmi bahis kartı (oran, kapanış İstanbul saati, kişinin yatırımı / sonucu), yatırım alt sayfası (oranlı ya da havuz); doğrulanmamışsa uyarı |
+| `bets/social_bet_card.dart` | Sosyal bahis kartı: havuz miktarları, hakem; duruma göre "Sonucu gir" (hakem), "İtiraz et" (katılımcı, pencere içinde), "Geri çek" (açan, yatırım yokken) |
+| `games/trivia_data.dart` | `TriviaDuel`, `DuelPlay`, `triviaDuelsProvider`, `duelGameProvider(betId)` (`start_trivia_duel`), `createDuel`, `acceptDuel`, `submitAnswers` |
+| `games/games_tab.dart` | Oyunlar sekmesi: üstte günün tahmini kartları (`dailyPredictionsProvider`, `bets_data.dart`'ta), altta "Meydan oku" (tutar) ve düello kartları ("Kabul et", "Oyna", sonuç — kazanan kişinin yatırımının ödemesinden okunur) |
+| `games/daily_prediction_card.dart` | Günün tahmini kartı: Evet / Hayır havuzları, dokununca `WagerSheet` (havuz kipi, `place_wager`), sonuç metni `wagerText` (bets_tab ile ortak) |
+| `games/duel_play_screen.dart` | `/duello/:id`: sorular sırayla, geri sayım (sunucunun kalan süresi), süre bitince ya da son soruda gönderir |
+| `market/market_data.dart` | `MarketItem`, `OwnedItem`, `Cosmetics`; `marketItemsProvider` (satıştakiler, ucuzdan pahalıya), `myInventoryProvider`, `myCosmeticsProvider` (kuşanılmışlar), `purchaseItem`, `setItemEquipped` |
+| `market/market_tab.dart` | Market sekmesi: "SP vitrini / SSP özel"; ürün kartı (önizleme, fiyat düğmesi → onay penceresi; sahipse "Kuşan" / "Çıkar"; satış başlamadıysa "Yakında") |
+| `market/cosmetic_preview.dart` | `CosmeticPreview` (simge / çerçeve / isim rengi), `ProfileAvatar` (baş harfler + çerçeve rengi) |
+| `quests/quests_data.dart` | `Quest`, `questsProvider` (`my_quests`), `claimQuest` (`claim_quest_reward`) |
+| `quests/quests_screen.dart` | `/gorevler`: Günlük / Haftalık / Sezonluk; ilerleme çubuğu, "Ödülü al", "Alındı", yenilenme zamanı |
+| `bets/create_social_bet_screen.dart` | `/sosyal-bahis-ac`: soru, 2–4 seçenek, kapanış (tarih + saat seçici), kişi başı en fazla (≤ 100); okul kümesinde açar (`Profile.schoolId`) |
 
 ## Akış
 
@@ -49,7 +60,11 @@ Profil yok → `/profil-olustur` (okullar `clusters where type = 'school'`). Pro
 Kabuk açılınca `claim_daily_login()` bir kez çağrılır; ödül alındıysa bildirim + bakiye/seri sunucudan yeniden okunur.
 Sağlayıcılar `currentUserIdProvider`'a bağlı: çıkış/giriş olunca kendiliğinden yeniden çalışır.
 
-## Testler (`mobile/test/`, 22)
+## Testler (`mobile/test/`, 35)
+
+`app_test.dart` `pumpApp` test ekranını telefon boyutuna (1080×2400, dpr 2.625) ayarlar; varsayılan 800×600'de
+düğmeler görünür alanın dışında kalır, ayrıca alttaki günlük ödül bildirimi düğmeleri örtebilir.
+
 
 `error_messages_test` (eşleme + veritabani.md uyumu), `app_info_test` (platform adları), `router_test`
 (yönlendirme kuralları), `app_test` (sağlayıcılar sabit değerle değiştirilerek ekranlar; Supabase'e bağlanmaz).
@@ -57,6 +72,8 @@ Sağlayıcılar `currentUserIdProvider`'a bağlı: çıkış/giriş olunca kendi
 ## Dikkat
 
 - Para mantığı istemcide **hesaplanmaz**; bakiye, seri, ödül ve sonuçlar her zaman sunucudan okunur.
+- Sonuç metni `wagerText` (bets_tab) üç durumu ayırır: kazanç, ödeme = yatırım ("kazanç çıkmadı"), seçilen taraf kaybettiği halde ödeme var (kazanan tarafa kimse yatırmadı → iade).
+- Dart istemcisinde (postgrest-dart) `.order()` varsayılanı **azalan** (JS'tekinin tersi); artan sıra için `ascending: true` yaz.
 - Supabase Auth'ta "Confirm email" açık (bulut varsayılanı): kayıttan sonra oturum gelmez, kullanıcı mailindeki linke tıklayıp giriş yapar.
 - Onay linki şimdilik Supabase'in Site URL'sine gider (uygulamayı açmaz); deep link ileride (Redirect URLs + Android intent filter).
 - Günlük ödül yalnızca açılışta/girişte istenir; uygulama arka planda gece yarısını geçerse ertesi açılışta alınır.

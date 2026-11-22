@@ -120,6 +120,67 @@ export type Database = {
           },
         ]
       }
+      bet_disputes: {
+        Row: {
+          bet_id: string
+          created_at: string
+          decision: Database["public"]["Enums"]["dispute_decision"] | null
+          id: string
+          raised_by: string
+          reason: string
+          resolution_note: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          status: Database["public"]["Enums"]["dispute_status"]
+        }
+        Insert: {
+          bet_id: string
+          created_at?: string
+          decision?: Database["public"]["Enums"]["dispute_decision"] | null
+          id?: string
+          raised_by: string
+          reason: string
+          resolution_note?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: Database["public"]["Enums"]["dispute_status"]
+        }
+        Update: {
+          bet_id?: string
+          created_at?: string
+          decision?: Database["public"]["Enums"]["dispute_decision"] | null
+          id?: string
+          raised_by?: string
+          reason?: string
+          resolution_note?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: Database["public"]["Enums"]["dispute_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bet_disputes_bet_id_fkey"
+            columns: ["bet_id"]
+            isOneToOne: false
+            referencedRelation: "bets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bet_disputes_raised_by_fkey"
+            columns: ["raised_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bet_disputes_resolved_by_fkey"
+            columns: ["resolved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bet_options: {
         Row: {
           bet_id: string
@@ -168,6 +229,7 @@ export type Database = {
           creator_id: string
           currency: Database["public"]["Enums"]["currency"]
           description: string | null
+          dispute_until: string | null
           id: string
           locks_at: string
           max_stake: number | null
@@ -175,7 +237,9 @@ export type Database = {
           odds_mode: Database["public"]["Enums"]["odds_mode"]
           opens_at: string
           pool_total: number
+          proposed_option_id: string | null
           referee_id: string | null
+          result_submitted_at: string | null
           scope: Database["public"]["Enums"]["bet_scope"]
           settled_at: string | null
           settled_by: string | null
@@ -193,6 +257,7 @@ export type Database = {
           creator_id: string
           currency: Database["public"]["Enums"]["currency"]
           description?: string | null
+          dispute_until?: string | null
           id?: string
           locks_at: string
           max_stake?: number | null
@@ -200,7 +265,9 @@ export type Database = {
           odds_mode?: Database["public"]["Enums"]["odds_mode"]
           opens_at?: string
           pool_total?: number
+          proposed_option_id?: string | null
           referee_id?: string | null
+          result_submitted_at?: string | null
           scope: Database["public"]["Enums"]["bet_scope"]
           settled_at?: string | null
           settled_by?: string | null
@@ -218,6 +285,7 @@ export type Database = {
           creator_id?: string
           currency?: Database["public"]["Enums"]["currency"]
           description?: string | null
+          dispute_until?: string | null
           id?: string
           locks_at?: string
           max_stake?: number | null
@@ -225,7 +293,9 @@ export type Database = {
           odds_mode?: Database["public"]["Enums"]["odds_mode"]
           opens_at?: string
           pool_total?: number
+          proposed_option_id?: string | null
           referee_id?: string | null
+          result_submitted_at?: string | null
           scope?: Database["public"]["Enums"]["bet_scope"]
           settled_at?: string | null
           settled_by?: string | null
@@ -318,31 +388,64 @@ export type Database = {
         Row: {
           daily_base_sp: number
           daily_max_sp: number
+          daily_max_stake_sp: number
+          daily_result_deadline_days: number
           daily_step_sp: number
           day_timezone: string
+          duel_accept_hours: number
+          duel_max_stake_sp: number
+          duel_play_hours: number
           id: boolean
+          referee_strike_limit: number
           signup_bonus_sp: number
+          social_dispute_hours: number
+          social_max_stake_sp: number
+          social_result_deadline_days: number
           streak_milestones: Json
+          trivia_question_count: number
+          trivia_seconds_per_question: number
           updated_at: string
         }
         Insert: {
           daily_base_sp: number
           daily_max_sp: number
+          daily_max_stake_sp?: number
+          daily_result_deadline_days?: number
           daily_step_sp: number
           day_timezone?: string
+          duel_accept_hours?: number
+          duel_max_stake_sp?: number
+          duel_play_hours?: number
           id?: boolean
+          referee_strike_limit?: number
           signup_bonus_sp: number
+          social_dispute_hours?: number
+          social_max_stake_sp?: number
+          social_result_deadline_days?: number
           streak_milestones?: Json
+          trivia_question_count?: number
+          trivia_seconds_per_question?: number
           updated_at?: string
         }
         Update: {
           daily_base_sp?: number
           daily_max_sp?: number
+          daily_max_stake_sp?: number
+          daily_result_deadline_days?: number
           daily_step_sp?: number
           day_timezone?: string
+          duel_accept_hours?: number
+          duel_max_stake_sp?: number
+          duel_play_hours?: number
           id?: boolean
+          referee_strike_limit?: number
           signup_bonus_sp?: number
+          social_dispute_hours?: number
+          social_max_stake_sp?: number
+          social_result_deadline_days?: number
           streak_milestones?: Json
+          trivia_question_count?: number
+          trivia_seconds_per_question?: number
           updated_at?: string
         }
         Relationships: []
@@ -433,6 +536,75 @@ export type Database = {
           },
         ]
       }
+      market_items: {
+        Row: {
+          active: boolean
+          available_from: string | null
+          available_until: string | null
+          category: Database["public"]["Enums"]["market_category"]
+          color: string | null
+          created_at: string
+          created_by: string | null
+          currency: Database["public"]["Enums"]["currency"]
+          description: string | null
+          icon: string | null
+          id: string
+          name: string
+          price: number
+          school_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          available_from?: string | null
+          available_until?: string | null
+          category: Database["public"]["Enums"]["market_category"]
+          color?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency?: Database["public"]["Enums"]["currency"]
+          description?: string | null
+          icon?: string | null
+          id?: string
+          name: string
+          price: number
+          school_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          available_from?: string | null
+          available_until?: string | null
+          category?: Database["public"]["Enums"]["market_category"]
+          color?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency?: Database["public"]["Enums"]["currency"]
+          description?: string | null
+          icon?: string | null
+          id?: string
+          name?: string
+          price?: number
+          school_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "market_items_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "market_items_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "clusters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       permissions: {
         Row: {
           cluster_id: string
@@ -513,6 +685,7 @@ export type Database = {
           id: string
           last_name: string
           level: number
+          referee_strikes: number
           role: Database["public"]["Enums"]["user_role"]
           school_id: string
           updated_at: string
@@ -525,6 +698,7 @@ export type Database = {
           id: string
           last_name: string
           level?: number
+          referee_strikes?: number
           role?: Database["public"]["Enums"]["user_role"]
           school_id: string
           updated_at?: string
@@ -537,6 +711,7 @@ export type Database = {
           id?: string
           last_name?: string
           level?: number
+          referee_strikes?: number
           role?: Database["public"]["Enums"]["user_role"]
           school_id?: string
           updated_at?: string
@@ -545,6 +720,117 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "profiles_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "clusters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quest_claims: {
+        Row: {
+          claimed_at: string
+          period_start: string
+          quest_id: string
+          reward_amount: number
+          reward_currency: Database["public"]["Enums"]["currency"]
+          user_id: string
+        }
+        Insert: {
+          claimed_at?: string
+          period_start: string
+          quest_id: string
+          reward_amount: number
+          reward_currency: Database["public"]["Enums"]["currency"]
+          user_id: string
+        }
+        Update: {
+          claimed_at?: string
+          period_start?: string
+          quest_id?: string
+          reward_amount?: number
+          reward_currency?: Database["public"]["Enums"]["currency"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quest_claims_quest_id_fkey"
+            columns: ["quest_id"]
+            isOneToOne: false
+            referencedRelation: "quests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quest_claims_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quests: {
+        Row: {
+          action: Database["public"]["Enums"]["quest_action"]
+          active: boolean
+          created_at: string
+          created_by: string | null
+          description: string | null
+          ends_at: string | null
+          id: string
+          period: Database["public"]["Enums"]["quest_period"]
+          reward_amount: number
+          reward_currency: Database["public"]["Enums"]["currency"]
+          school_id: string | null
+          starts_at: string | null
+          target: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          action: Database["public"]["Enums"]["quest_action"]
+          active?: boolean
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          ends_at?: string | null
+          id?: string
+          period: Database["public"]["Enums"]["quest_period"]
+          reward_amount: number
+          reward_currency?: Database["public"]["Enums"]["currency"]
+          school_id?: string | null
+          starts_at?: string | null
+          target: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          action?: Database["public"]["Enums"]["quest_action"]
+          active?: boolean
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          ends_at?: string | null
+          id?: string
+          period?: Database["public"]["Enums"]["quest_period"]
+          reward_amount?: number
+          reward_currency?: Database["public"]["Enums"]["currency"]
+          school_id?: string | null
+          starts_at?: string | null
+          target?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quests_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quests_school_id_fkey"
             columns: ["school_id"]
             isOneToOne: false
             referencedRelation: "clusters"
@@ -571,6 +857,180 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "school_email_domains_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "clusters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trivia_duel_plays: {
+        Row: {
+          answers: number[] | null
+          bet_id: string
+          elapsed_ms: number | null
+          player_id: string
+          score: number | null
+          started_at: string
+          submitted_at: string | null
+        }
+        Insert: {
+          answers?: number[] | null
+          bet_id: string
+          elapsed_ms?: number | null
+          player_id: string
+          score?: number | null
+          started_at?: string
+          submitted_at?: string | null
+        }
+        Update: {
+          answers?: number[] | null
+          bet_id?: string
+          elapsed_ms?: number | null
+          player_id?: string
+          score?: number | null
+          started_at?: string
+          submitted_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trivia_duel_plays_bet_id_fkey"
+            columns: ["bet_id"]
+            isOneToOne: false
+            referencedRelation: "trivia_duels"
+            referencedColumns: ["bet_id"]
+          },
+          {
+            foreignKeyName: "trivia_duel_plays_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trivia_duels: {
+        Row: {
+          accept_deadline: string
+          bet_id: string
+          challenger_id: string
+          created_at: string
+          invited_id: string | null
+          opponent_id: string | null
+          play_deadline: string | null
+          question_ids: string[]
+          school_id: string
+          stake: number
+        }
+        Insert: {
+          accept_deadline: string
+          bet_id: string
+          challenger_id: string
+          created_at?: string
+          invited_id?: string | null
+          opponent_id?: string | null
+          play_deadline?: string | null
+          question_ids: string[]
+          school_id: string
+          stake: number
+        }
+        Update: {
+          accept_deadline?: string
+          bet_id?: string
+          challenger_id?: string
+          created_at?: string
+          invited_id?: string | null
+          opponent_id?: string | null
+          play_deadline?: string | null
+          question_ids?: string[]
+          school_id?: string
+          stake?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trivia_duels_bet_id_fkey"
+            columns: ["bet_id"]
+            isOneToOne: true
+            referencedRelation: "bets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trivia_duels_challenger_id_fkey"
+            columns: ["challenger_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trivia_duels_invited_id_fkey"
+            columns: ["invited_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trivia_duels_opponent_id_fkey"
+            columns: ["opponent_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trivia_duels_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "clusters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trivia_questions: {
+        Row: {
+          active: boolean
+          category: string | null
+          correct_index: number
+          created_at: string
+          created_by: string | null
+          id: string
+          options: string[]
+          question: string
+          school_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          category?: string | null
+          correct_index: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          options: string[]
+          question: string
+          school_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          category?: string | null
+          correct_index?: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          options?: string[]
+          question?: string
+          school_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trivia_questions_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trivia_questions_school_id_fkey"
             columns: ["school_id"]
             isOneToOne: false
             referencedRelation: "clusters"
@@ -607,6 +1067,51 @@ export type Database = {
           },
           {
             foreignKeyName: "user_clusters_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_inventory: {
+        Row: {
+          acquired_at: string
+          category: Database["public"]["Enums"]["market_category"]
+          currency: Database["public"]["Enums"]["currency"]
+          equipped: boolean
+          item_id: string
+          price_paid: number
+          user_id: string
+        }
+        Insert: {
+          acquired_at?: string
+          category: Database["public"]["Enums"]["market_category"]
+          currency: Database["public"]["Enums"]["currency"]
+          equipped?: boolean
+          item_id: string
+          price_paid: number
+          user_id: string
+        }
+        Update: {
+          acquired_at?: string
+          category?: Database["public"]["Enums"]["market_category"]
+          currency?: Database["public"]["Enums"]["currency"]
+          equipped?: boolean
+          item_id?: string
+          price_paid?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_inventory_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "market_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_inventory_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
@@ -677,6 +1182,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      accept_trivia_duel: { Args: { p_bet_id: string }; Returns: undefined }
       admin_adjust: {
         Args: {
           p_amount: number
@@ -695,7 +1201,15 @@ export type Database = {
         }
         Returns: number
       }
+      cancel_daily_prediction: {
+        Args: { p_bet_id: string; p_reason: string }
+        Returns: undefined
+      }
       cancel_official_bet: {
+        Args: { p_bet_id: string; p_reason: string }
+        Returns: undefined
+      }
+      cancel_social_bet: {
         Args: { p_bet_id: string; p_reason: string }
         Returns: undefined
       }
@@ -708,12 +1222,29 @@ export type Database = {
           sp_balance: number
         }[]
       }
+      claim_quest_reward: {
+        Args: { p_quest_id: string }
+        Returns: {
+          balance: number
+          reward_amount: number
+          reward_currency: Database["public"]["Enums"]["currency"]
+        }[]
+      }
       confirm_student_email: {
         Args: { p_code: string }
         Returns: {
           attempts_left: number
           verified: boolean
         }[]
+      }
+      create_daily_prediction: {
+        Args: {
+          p_description?: string
+          p_locks_at: string
+          p_question: string
+          p_school_id: string
+        }
+        Returns: string
       }
       create_official_bet: {
         Args: {
@@ -741,6 +1272,7 @@ export type Database = {
           id: string
           last_name: string
           level: number
+          referee_strikes: number
           role: Database["public"]["Enums"]["user_role"]
           school_id: string
           updated_at: string
@@ -753,6 +1285,26 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      create_social_bet: {
+        Args: {
+          p_cluster_id: string
+          p_description: string
+          p_locks_at: string
+          p_max_stake?: number
+          p_options: string[]
+          p_referee_id?: string
+          p_title: string
+        }
+        Returns: string
+      }
+      create_trivia_duel: {
+        Args: { p_invited_id?: string; p_stake: number }
+        Returns: string
+      }
+      dispute_social_result: {
+        Args: { p_bet_id: string; p_reason: string }
+        Returns: string
+      }
       grant_permission: {
         Args: {
           p_key: Database["public"]["Enums"]["permission_key"]
@@ -762,6 +1314,22 @@ export type Database = {
         Returns: undefined
       }
       lock_official_bet: { Args: { p_bet_id: string }; Returns: undefined }
+      my_quests: {
+        Args: never
+        Returns: {
+          action: Database["public"]["Enums"]["quest_action"]
+          claimed: boolean
+          description: string
+          period: Database["public"]["Enums"]["quest_period"]
+          period_ends_at: string
+          progress: number
+          quest_id: string
+          reward_amount: number
+          reward_currency: Database["public"]["Enums"]["currency"]
+          target: number
+          title: string
+        }[]
+      }
       place_wager: {
         Args: { p_amount: number; p_bet_id: string; p_option_id: string }
         Returns: {
@@ -782,12 +1350,22 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      purchase_market_item: { Args: { p_item_id: string }; Returns: number }
       request_student_email_code: {
         Args: { p_email: string }
         Returns: {
           email: string
           expires_at: string
         }[]
+      }
+      resolve_social_dispute: {
+        Args: {
+          p_bet_id: string
+          p_decision: Database["public"]["Enums"]["dispute_decision"]
+          p_note: string
+          p_option_id?: string
+        }
+        Returns: undefined
       }
       revoke_permission: {
         Args: {
@@ -797,9 +1375,83 @@ export type Database = {
         }
         Returns: undefined
       }
+      save_market_item: {
+        Args: {
+          p_active?: boolean
+          p_available_from?: string
+          p_available_until?: string
+          p_category: Database["public"]["Enums"]["market_category"]
+          p_color?: string
+          p_currency: Database["public"]["Enums"]["currency"]
+          p_description: string
+          p_icon?: string
+          p_id: string
+          p_name: string
+          p_price: number
+          p_school_id: string
+        }
+        Returns: string
+      }
+      save_quest: {
+        Args: {
+          p_action: Database["public"]["Enums"]["quest_action"]
+          p_active?: boolean
+          p_description: string
+          p_ends_at?: string
+          p_id: string
+          p_period: Database["public"]["Enums"]["quest_period"]
+          p_reward_amount: number
+          p_reward_currency: Database["public"]["Enums"]["currency"]
+          p_school_id: string
+          p_starts_at?: string
+          p_target: number
+          p_title: string
+        }
+        Returns: string
+      }
+      save_trivia_question: {
+        Args: {
+          p_active?: boolean
+          p_category?: string
+          p_correct_index: number
+          p_id: string
+          p_options: string[]
+          p_question: string
+          p_school_id: string
+        }
+        Returns: string
+      }
+      set_item_equipped: {
+        Args: { p_equipped: boolean; p_item_id: string }
+        Returns: undefined
+      }
+      settle_daily_prediction: {
+        Args: { p_bet_id: string; p_winning_option_id: string }
+        Returns: undefined
+      }
       settle_official_bet: {
         Args: { p_bet_id: string; p_winning_option_id: string }
         Returns: undefined
+      }
+      start_trivia_duel: {
+        Args: { p_bet_id: string }
+        Returns: {
+          options: string[]
+          question: string
+          question_no: number
+          seconds_left: number
+        }[]
+      }
+      submit_social_result: {
+        Args: { p_bet_id: string; p_option_id: string }
+        Returns: string
+      }
+      submit_trivia_answers: {
+        Args: { p_answers: number[]; p_bet_id: string }
+        Returns: {
+          late: boolean
+          score: number
+        }[]
       }
     }
     Enums: {
@@ -808,6 +1460,8 @@ export type Database = {
       bet_type: "ssp_official" | "sp_minigame" | "sp_social"
       cluster_type: "school" | "department" | "club" | "group"
       currency: "SP" | "SSP"
+      dispute_decision: "confirmed" | "changed" | "cancelled"
+      dispute_status: "open" | "resolved"
       ledger_reason:
         | "signup_bonus"
         | "daily_login"
@@ -819,6 +1473,7 @@ export type Database = {
         | "admin_grant"
         | "admin_adjust"
       ledger_ref_type: "bet" | "wager" | "quest" | "market_item"
+      market_category: "title" | "badge" | "frame" | "name_color"
       membership_role: "member" | "owner"
       odds_mode: "pool" | "fixed"
       permission_key:
@@ -829,6 +1484,9 @@ export type Database = {
         | "gorev_yonet"
         | "kullanici_yonet"
         | "analitik_gor"
+        | "trivia_yonet"
+      quest_action: "wager" | "prediction" | "duel" | "social_bet" | "win"
+      quest_period: "daily" | "weekly" | "seasonal"
       settlement_mode: "auto" | "admin" | "referee"
       user_role: "student" | "yetkili" | "superadmin"
     }
@@ -966,6 +1624,8 @@ export const Constants = {
       bet_type: ["ssp_official", "sp_minigame", "sp_social"],
       cluster_type: ["school", "department", "club", "group"],
       currency: ["SP", "SSP"],
+      dispute_decision: ["confirmed", "changed", "cancelled"],
+      dispute_status: ["open", "resolved"],
       ledger_reason: [
         "signup_bonus",
         "daily_login",
@@ -978,6 +1638,7 @@ export const Constants = {
         "admin_adjust",
       ],
       ledger_ref_type: ["bet", "wager", "quest", "market_item"],
+      market_category: ["title", "badge", "frame", "name_color"],
       membership_role: ["member", "owner"],
       odds_mode: ["pool", "fixed"],
       permission_key: [
@@ -988,7 +1649,10 @@ export const Constants = {
         "gorev_yonet",
         "kullanici_yonet",
         "analitik_gor",
+        "trivia_yonet",
       ],
+      quest_action: ["wager", "prediction", "duel", "social_bet", "win"],
+      quest_period: ["daily", "weekly", "seasonal"],
       settlement_mode: ["auto", "admin", "referee"],
       user_role: ["student", "yetkili", "superadmin"],
     },

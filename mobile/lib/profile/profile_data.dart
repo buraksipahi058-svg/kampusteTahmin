@@ -18,6 +18,7 @@ class Profile {
     required this.firstName,
     required this.lastName,
     required this.schoolName,
+    this.schoolId = '',
     this.schoolEmailDomains = const [],
     this.department,
     this.level = 1,
@@ -29,6 +30,9 @@ class Profile {
   final String lastName;
   final String schoolName;
 
+  /// Okul kümesinin kimliği (okul geneli sosyal bahis burada açılır).
+  final String schoolId;
+
   /// Okulun öğrenci mail alan adları (ör. `ogr.ornek.edu.tr`); okul maili doğrulamada ipucu.
   final List<String> schoolEmailDomains;
   final String? department;
@@ -37,6 +41,9 @@ class Profile {
 
   String get fullName => '$firstName $lastName';
 
+  /// Baş harfler (büyük harfe çevrilmez: Dart'ın toUpperCase'i Türkçe i/İ'yi bilmez).
+  String get initials => [firstName, lastName].where((s) => s.isNotEmpty).map((s) => s.substring(0, 1)).join();
+
   factory Profile.fromJson(Map<String, dynamic> json) {
     final school = json['school'] as Map<String, dynamic>?;
     return Profile(
@@ -44,6 +51,7 @@ class Profile {
       firstName: json['first_name'] as String,
       lastName: json['last_name'] as String,
       schoolName: school?['name'] as String? ?? '',
+      schoolId: json['school_id'] as String,
       schoolEmailDomains: [
         for (final d in (school?['school_email_domains'] as List? ?? const [])) (d as Map)['domain'] as String,
       ],
@@ -68,7 +76,7 @@ class ProfileStatus {
 // profiles ile clusters arasında birden çok ilişki var (school_id, user_clusters, permissions);
 // "!school_id" olmadan PostgREST hangisini kullanacağını bilemez (PGRST201).
 const _profileColumns =
-    'id, first_name, last_name, department, level, xp, school:clusters!school_id(name, school_email_domains(domain))';
+    'id, first_name, last_name, department, level, xp, school_id, school:clusters!school_id(name, school_email_domains(domain))';
 
 final myProfileProvider = FutureProvider<ProfileStatus>((ref) async {
   final userId = ref.watch(currentUserIdProvider);

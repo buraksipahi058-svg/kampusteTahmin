@@ -5,35 +5,58 @@ import 'package:go_router/go_router.dart';
 
 import '../core/error_messages.dart';
 import '../core/routes.dart';
+import '../core/supabase.dart';
 import '../profile/student_email_data.dart';
 import '../wallet/wallet_data.dart';
 import 'bets_data.dart';
+import 'social_bet_card.dart';
 
-/// Bahisler sekmesi: şimdilik okulun resmi SSP bahisleri (sosyal havuz Adım 7'de).
-class BetsTab extends ConsumerWidget {
+/// Bahisler sekmesi: resmi SSP bahisleri ve öğrencilerin açtığı sosyal havuzlar.
+class BetsTab extends ConsumerStatefulWidget {
   const BetsTab({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final bets = ref.watch(officialBetsProvider);
+  ConsumerState<BetsTab> createState() => _BetsTabState();
+}
+
+class _BetsTabState extends ConsumerState<BetsTab> {
+  var _social = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final bets = ref.watch(_social ? socialBetsProvider : officialBetsProvider);
     final wagers = ref.watch(myWagersProvider).value ?? const <String, Wager>{};
+    final disputed = ref.watch(myDisputedBetIdsProvider).value ?? const <String>{};
     final verified = ref.watch(studentEmailProvider).value?.verified;
+    final userId = ref.watch(currentUserIdProvider);
     final theme = Theme.of(context);
 
     return RefreshIndicator(
       onRefresh: () async {
         ref.invalidate(officialBetsProvider);
+        ref.invalidate(socialBetsProvider);
         ref.invalidate(myWagersProvider);
+        ref.invalidate(myDisputedBetIdsProvider);
         ref.invalidate(balanceProvider);
-        await ref.read(officialBetsProvider.future);
+        await ref.read((_social ? socialBetsProvider : officialBetsProvider).future);
       },
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          Text('Resmi bahisler', style: theme.textTheme.titleLarge),
-          const SizedBox(height: 4),
+          SegmentedButton<bool>(
+            segments: const [
+              ButtonSegment(value: false, label: Text('Resmi'), icon: Icon(Icons.emoji_events_outlined)),
+              ButtonSegment(value: true, label: Text('Sosyal'), icon: Icon(Icons.groups_outlined)),
+            ],
+            selected: {_social},
+            onSelectionChanged: (s) => setState(() => _social = s.first),
+          ),
+          const SizedBox(height: 12),
           Text(
-            'Okul etkinliklerine SSP ile oynanır. Oranlar sabittir: kazanırsan yatırdığın × oran kadar SSP alırsın.',
+            _social
+                ? 'Okul arkadaşlarınla SP ile oynanır, oran yoktur: kazananlar havuzu paylaşır. Hakem sonucu girer; '
+                      'itiraz edilmezse sonuç kendiliğinden kesinleşir.'
+                : 'Okul etkinliklerine SSP ile oynanır. Oranlar sabittir: kazanırsan yatırdığın × oran kadar SSP alırsın.',
             style: theme.textTheme.bodySmall,
           ),
           if (verified == false) ...[
@@ -47,21 +70,41 @@ class BetsTab extends ConsumerWidget {
               ),
             ),
           ],
+          if (_social && verified == true) ...[
+            const SizedBox(height: 12),
+            FilledButton.tonalIcon(
+              onPressed: () => context.push(Routes.createSocialBet),
+              icon: const Icon(Icons.add),
+              label: const Text('Sosyal bahis aç'),
+            ),
+          ],
           const SizedBox(height: 12),
           switch (bets) {
-            AsyncData(value: final list) when list.isEmpty => const Padding(
-              padding: EdgeInsets.symmetric(vertical: 32),
-              child: Center(child: Text('Şu an resmi bahis yok.')),
+            AsyncData(value: final list) when list.isEmpty => Padding(
+              padding: const EdgeInsets.symmetric(vertical: 32),
+              child: Center(child: Text(_social ? 'Henüz sosyal bahis yok.' : 'Şu an resmi bahis yok.')),
             ),
             AsyncData(value: final list) => Column(
               children: [
-                for (final bet in list) BetCard(bet: bet, wager: wagers[bet.id], canBet: verified == true),
+                for (final bet in list)
+                  _social
+                      ? SocialBetCard(
+                          bet: bet,
+                          wager: wagers[bet.id],
+                          userId: userId,
+                          canBet: verified == true,
+                          disputed: disputed.contains(bet.id),
+                        )
+                      : BetCard(bet: bet, wager: wagers[bet.id], canBet: verified == true),
               ],
             ),
             AsyncError(:final error) => Column(
               children: [
                 Text('Bahisler alınamadı. ${userMessage(error)}'),
-                TextButton(onPressed: () => ref.invalidate(officialBetsProvider), child: const Text('Tekrar dene')),
+                TextButton(
+                  onPressed: () => ref.invalidate(_social ? socialBetsProvider : officialBetsProvider),
+                  child: const Text('Tekrar dene'),
+                ),
               ],
             ),
             _ => const Padding(padding: EdgeInsets.all(32), child: Center(child: CircularProgressIndicator())),
@@ -95,7 +138,7 @@ class BetCard extends StatelessWidget {
           children: [
             ListTile(
               title: Text(bet.title, style: theme.textTheme.titleMedium),
-              subtitle: Text(_statusText(bet, open)),
+              subtitle: Text(betStatusText(bet, open)),
             ),
             if (bet.description != null)
               Padding(
@@ -112,17 +155,13 @@ class BetCard extends StatelessWidget {
                   style: theme.textTheme.titleMedium,
                 ),
                 onTap: open && wager == null && canBet && option.odds != null
-                    ? () => showModalBottomSheet<void>(
-                        context: context,
-                        isScrollControlled: true,
-                        builder: (_) => WagerSheet(bet: bet, option: option),
-                      )
+                    ? () => showWagerSheet(context, bet, option)
                     : null,
               ),
             if (wager != null && chosen != null)
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
-                child: Text(_wagerText(bet, wager, chosen), style: theme.textTheme.bodyMedium),
+                child: Text(wagerText(bet, wager, chosen), style: theme.textTheme.bodyMedium),
               )
             else if (open && canBet)
               Padding(
@@ -134,28 +173,41 @@ class BetCard extends StatelessWidget {
       ),
     );
   }
-
-  static String _statusText(Bet bet, bool open) => switch (bet.status) {
-    _ when open => 'Kapanış: ${formatIstanbul(bet.locksAt)}',
-    'open' || 'locked' || 'settling' => 'Yatırımlar kapandı, sonuç bekleniyor',
-    'settled' => 'Sonuçlandı',
-    'cancelled' => 'İptal edildi${bet.cancelReason == null ? '' : ': ${bet.cancelReason}'}',
-    _ => '',
-  };
-
-  static String _wagerText(Bet bet, Wager wager, BetOption chosen) {
-    final stake = '${formatAmount(wager.amount)} ${bet.currency} · ${chosen.label}'
-        '${wager.odds == null ? '' : ' @ ${formatOdds(wager.odds!)}'}';
-    return switch ((bet.status, wager.payout)) {
-      ('cancelled', _) => 'Yatırımın ($stake) iade edildi.',
-      ('settled', final payout?) when payout > 0 => 'Kazandın: +${formatAmount(payout)} ${bet.currency} ($stake)',
-      ('settled', _) => 'Kaybettin ($stake).',
-      _ when wager.odds != null =>
-        'Yatırımın: $stake · Olası kazanç: ${formatAmount(potentialPayout(wager.amount, wager.odds!))} ${bet.currency}',
-      _ => 'Yatırımın: $stake',
-    };
-  }
 }
+
+String betStatusText(Bet bet, bool open) => switch (bet.status) {
+  _ when open => 'Kapanış: ${formatIstanbul(bet.locksAt)}',
+  'settling' => 'Hakemin sonucu: ${bet.proposedOption?.label ?? '?'}'
+      '${bet.disputeUntil == null ? '' : ' · itiraz süresi ${formatIstanbul(bet.disputeUntil!)}\'e kadar'}',
+  'open' || 'locked' => bet.type == 'sp_social' ? 'Yatırımlar kapandı, hakemin sonucu bekleniyor' : 'Yatırımlar kapandı, sonuç bekleniyor',
+  'settled' => 'Sonuçlandı',
+  'cancelled' => 'İptal edildi${bet.cancelReason == null ? '' : ': ${bet.cancelReason}'}',
+  _ => '',
+};
+
+String wagerText(Bet bet, Wager wager, BetOption chosen) {
+  final stake = '${formatAmount(wager.amount)} ${bet.currency} · ${chosen.label}'
+      '${wager.odds == null ? '' : ' @ ${formatOdds(wager.odds!)}'}';
+  return switch ((bet.status, wager.payout)) {
+    ('cancelled', _) => 'Yatırımın ($stake) iade edildi.',
+    // Havuzda kazanan tarafa kimse yatırmadıysa herkese iade yapılır; seçtiğin taraf kazanmadı.
+    ('settled', final payout?) when payout > 0 && chosen.isWinner != true =>
+      'Kazanan tarafa kimse yatırmadığı için yatırımın ($stake) iade edildi.',
+    // Doğru taraf ama kazanç yok (karşı tarafta para yoktu ya da yuvarlama).
+    ('settled', final payout?) when payout == wager.amount => 'Doğru bildin ama kazanç çıkmadı: yatırımın ($stake) geri döndü.',
+    ('settled', final payout?) when payout > 0 => 'Kazandın: +${formatAmount(payout)} ${bet.currency} ($stake)',
+    ('settled', _) => 'Kaybettin ($stake).',
+    _ when wager.odds != null =>
+      'Yatırımın: $stake · Olası kazanç: ${formatAmount(potentialPayout(wager.amount, wager.odds!))} ${bet.currency}',
+    _ => 'Yatırımın: $stake',
+  };
+}
+
+Future<void> showWagerSheet(BuildContext context, Bet bet, BetOption option) => showModalBottomSheet<void>(
+  context: context,
+  isScrollControlled: true,
+  builder: (_) => WagerSheet(bet: bet, option: option),
+);
 
 class WagerSheet extends ConsumerStatefulWidget {
   const WagerSheet({super.key, required this.bet, required this.option});
@@ -210,7 +262,7 @@ class _WagerSheetState extends ConsumerState<WagerSheet> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final bet = widget.bet;
-    final odds = widget.option.odds!;
+    final odds = widget.option.odds;
     final amount = _value;
     final balance = ref.watch(balanceProvider).value;
 
@@ -222,9 +274,12 @@ class _WagerSheetState extends ConsumerState<WagerSheet> {
         children: [
           Text(bet.title, style: theme.textTheme.titleMedium),
           const SizedBox(height: 4),
-          Text('${widget.option.label} · oran ${formatOdds(odds)}'),
+          Text(odds == null ? widget.option.label : '${widget.option.label} · oran ${formatOdds(odds)}'),
           if (balance != null)
-            Text('SSP bakiyen: ${formatAmount(balance.ssp)}', style: theme.textTheme.bodySmall),
+            Text(
+              '${bet.currency} bakiyen: ${formatAmount(bet.currency == 'SSP' ? balance.ssp : balance.sp)}',
+              style: theme.textTheme.bodySmall,
+            ),
           const SizedBox(height: 16),
           TextField(
             controller: _amount,
@@ -242,7 +297,9 @@ class _WagerSheetState extends ConsumerState<WagerSheet> {
           ),
           const SizedBox(height: 8),
           Text(
-            amount == null || amount <= 0
+            odds == null
+                ? 'Havuz sistemi: kazananlar toplam havuzu yatırdıkları oranda paylaşır.'
+                : amount == null || amount <= 0
                 ? ' '
                 : 'Kazanırsan: ${formatAmount(potentialPayout(amount, odds))} ${bet.currency}',
           ),

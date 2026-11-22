@@ -35,13 +35,23 @@ class Bet {
     required this.locksAt,
     required this.currency,
     required this.options,
+    this.type = 'ssp_official',
     this.description,
     this.minStake = 1,
     this.maxStake,
+    this.poolTotal = 0,
     this.cancelReason,
+    this.creatorId,
+    this.refereeId,
+    this.refereeName,
+    this.proposedOptionId,
+    this.disputeUntil,
   });
 
   final String id;
+
+  /// ssp_official, sp_social, sp_minigame
+  final String type;
   final String title;
   final String? description;
 
@@ -51,25 +61,49 @@ class Bet {
   final String currency;
   final int minStake;
   final int? maxStake;
+  final int poolTotal;
   final String? cancelReason;
   final List<BetOption> options;
+
+  // Sosyal bahis: hakem, hakemin girdiği sonuç ve itiraz süresi.
+  final String? creatorId;
+  final String? refereeId;
+  final String? refereeName;
+  final String? proposedOptionId;
+  final DateTime? disputeUntil;
 
   /// Yatırım alıyor mu (sunucu da aynı kuralı denetler).
   bool acceptsWagers(DateTime now) => status == 'open' && now.isBefore(locksAt);
 
-  factory Bet.fromJson(Map<String, dynamic> json) => Bet(
-    id: json['id'] as String,
-    title: json['title'] as String,
-    description: json['description'] as String?,
-    status: json['status'] as String,
-    locksAt: DateTime.parse(json['locks_at'] as String),
-    currency: json['currency'] as String,
-    minStake: json['min_stake'] as int,
-    maxStake: json['max_stake'] as int?,
-    cancelReason: json['cancel_reason'] as String?,
-    options: [for (final o in json['bet_options'] as List) BetOption.fromJson(o as Map<String, dynamic>)]
-      ..sort((a, b) => a.position.compareTo(b.position)),
-  );
+  /// Hakemin sonucuna şu an itiraz edilebilir mi.
+  bool inDisputeWindow(DateTime now) => status == 'settling' && disputeUntil != null && now.isBefore(disputeUntil!);
+
+  BetOption? get proposedOption => options.where((o) => o.id == proposedOptionId).firstOrNull;
+
+  factory Bet.fromJson(Map<String, dynamic> json) {
+    final referee = json['referee'] as Map<String, dynamic>?;
+    final disputeUntil = json['dispute_until'] as String?;
+    return Bet(
+      id: json['id'] as String,
+      type: json['type'] as String,
+      title: json['title'] as String,
+      description: json['description'] as String?,
+      status: json['status'] as String,
+      locksAt: DateTime.parse(json['locks_at'] as String),
+      currency: json['currency'] as String,
+      minStake: json['min_stake'] as int,
+      maxStake: json['max_stake'] as int?,
+      poolTotal: json['pool_total'] as int,
+      cancelReason: json['cancel_reason'] as String?,
+      creatorId: json['creator_id'] as String?,
+      refereeId: json['referee_id'] as String?,
+      refereeName: referee == null ? null : '${referee['first_name']} ${referee['last_name']}',
+      proposedOptionId: json['proposed_option_id'] as String?,
+      disputeUntil: disputeUntil == null ? null : DateTime.parse(disputeUntil),
+      options: [for (final o in json['bet_options'] as List) BetOption.fromJson(o as Map<String, dynamic>)]
+        ..sort((a, b) => a.position.compareTo(b.position)),
+    );
+  }
 }
 
 class Wager {
@@ -95,20 +129,41 @@ class Wager {
 /// Sunucudaki sabit oran ödemesiyle aynı: floor(yatırım × oran). Yalnızca bilgi için gösterilir.
 int potentialPayout(int amount, double odds) => (amount * odds).floor();
 
-/// Okulun resmi bahisleri (RLS: yalnızca kişinin kümelerindeki bahisler görünür).
-final officialBetsProvider = FutureProvider<List<Bet>>((ref) async {
+const _betColumns =
+    'id, type, title, description, status, locks_at, currency, min_stake, max_stake, pool_total, cancel_reason, '
+    'creator_id, referee_id, proposed_option_id, dispute_until, referee:profiles!referee_id(first_name, last_name), '
+    'bet_options(id, label, position, odds, pool_amount, is_winner)';
+
+// RLS: yalnızca kişinin kümelerindeki bahisler görünür.
+Future<List<Bet>> _fetchBets(Ref ref, String type) async {
   final userId = ref.watch(currentUserIdProvider);
   if (userId == null) return const [];
   final rows = await ref
       .watch(supabaseProvider)
       .from('bets')
-      .select(
-        'id, title, description, status, locks_at, currency, min_stake, max_stake, cancel_reason, '
-        'bet_options(id, label, position, odds, pool_amount, is_winner)',
-      )
-      .eq('type', 'ssp_official')
+      .select(_betColumns)
+      .eq('type', type)
       .order('created_at', ascending: false)
       .limit(30);
+  return rows.map(Bet.fromJson).toList();
+}
+
+final officialBetsProvider = FutureProvider<List<Bet>>((ref) => _fetchBets(ref, 'ssp_official'));
+final socialBetsProvider = FutureProvider<List<Bet>>((ref) => _fetchBets(ref, 'sp_social'));
+
+/// Günün tahmini: sonucunu okul yetkilisinin girdiği mini oyun (`sp_minigame` + `settlement_mode = admin`).
+/// Yatırım genel `place_wager` ile; havuz sistemi, seçenekler Evet / Hayır.
+final dailyPredictionsProvider = FutureProvider<List<Bet>>((ref) async {
+  final userId = ref.watch(currentUserIdProvider);
+  if (userId == null) return const [];
+  final rows = await ref
+      .watch(supabaseProvider)
+      .from('bets')
+      .select(_betColumns)
+      .eq('type', 'sp_minigame')
+      .eq('settlement_mode', 'admin')
+      .order('locks_at', ascending: false)
+      .limit(10);
   return rows.map(Bet.fromJson).toList();
 });
 
@@ -124,13 +179,74 @@ final myWagersProvider = FutureProvider<Map<String, Wager>>((ref) async {
   return {for (final w in rows.map(Wager.fromJson)) w.betId: w};
 });
 
+/// Kişinin itiraz ettiği bahisler.
+final myDisputedBetIdsProvider = FutureProvider<Set<String>>((ref) async {
+  final userId = ref.watch(currentUserIdProvider);
+  if (userId == null) return const {};
+  final rows = await ref.watch(supabaseProvider).from('bet_disputes').select('bet_id').eq('raised_by', userId);
+  return {for (final r in rows) r['bet_id'] as String};
+});
+
+void _refreshBets(WidgetRef ref) {
+  ref.invalidate(officialBetsProvider);
+  ref.invalidate(socialBetsProvider);
+  ref.invalidate(dailyPredictionsProvider);
+  ref.invalidate(myWagersProvider);
+  ref.invalidate(myDisputedBetIdsProvider);
+  ref.invalidate(balanceProvider);
+}
+
 /// `public.place_wager`: bakiye, sınırlar ve kurallar sunucuda denetlenir.
 Future<void> placeWager(WidgetRef ref, {required String betId, required String optionId, required int amount}) async {
   await ref.read(supabaseProvider).rpc(
     'place_wager',
     params: {'p_bet_id': betId, 'p_option_id': optionId, 'p_amount': amount},
   );
-  ref.invalidate(officialBetsProvider);
-  ref.invalidate(myWagersProvider);
-  ref.invalidate(balanceProvider);
+  _refreshBets(ref);
+}
+
+/// `public.create_social_bet`: hakem sensin; kişi başı sınır ayardaki üst sınırı aşamaz.
+Future<void> createSocialBet(
+  WidgetRef ref, {
+  required String clusterId,
+  required String title,
+  required String description,
+  required List<String> options,
+  required DateTime locksAt,
+  int? maxStake,
+}) async {
+  await ref.read(supabaseProvider).rpc(
+    'create_social_bet',
+    params: {
+      'p_cluster_id': clusterId,
+      'p_title': title,
+      'p_description': description,
+      'p_options': options,
+      'p_locks_at': locksAt.toUtc().toIso8601String(),
+      'p_max_stake': ?maxStake,
+    },
+  );
+  _refreshBets(ref);
+}
+
+/// `public.submit_social_result`: yalnızca hakem; itiraz süresinin bitişini döner.
+Future<DateTime> submitSocialResult(WidgetRef ref, {required String betId, required String optionId}) async {
+  final until = await ref.read(supabaseProvider).rpc(
+    'submit_social_result',
+    params: {'p_bet_id': betId, 'p_option_id': optionId},
+  );
+  _refreshBets(ref);
+  return DateTime.parse(until as String);
+}
+
+/// `public.dispute_social_result`: yalnızca yatırım yapanlar, itiraz süresi içinde.
+Future<void> disputeSocialResult(WidgetRef ref, {required String betId, required String reason}) async {
+  await ref.read(supabaseProvider).rpc('dispute_social_result', params: {'p_bet_id': betId, 'p_reason': reason});
+  _refreshBets(ref);
+}
+
+/// `public.cancel_social_bet`: açan, henüz kimse yatırmamışken geri çekebilir.
+Future<void> cancelSocialBet(WidgetRef ref, {required String betId, required String reason}) async {
+  await ref.read(supabaseProvider).rpc('cancel_social_bet', params: {'p_bet_id': betId, 'p_reason': reason});
+  _refreshBets(ref);
 }

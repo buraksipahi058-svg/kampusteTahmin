@@ -12,10 +12,14 @@ testleri. İkisi de buluttaki veritabanında çalışır.
 | `supabase/tests/database/03_bahis_cekirdegi.test.sql` | bahis açma, yatırım, dağıtım, iptal | 61 |
 | `supabase/tests/database/04_okul_maili.test.sql` | okul maili kodu, sınırlar, geliştirme kutusu, Brevo kuyruğu | 32 |
 | `supabase/tests/database/05_resmi_bahis.test.sql` | resmi bahis yetkileri, sabit oranlı ödeme, iptal, denetim kaydı | 37 |
-| `supabase/tests/concurrency/para.mjs` | günlük ödül, eşzamanlı düşüm, eşzamanlı profil | 4 senaryo |
+| `supabase/tests/database/06_sosyal_havuz.test.sql` | sosyal bahis açma, hakem, itiraz, moderatör, ihtar, zamanlanmış iş | 54 |
+| `supabase/tests/database/07_trivia_duellosu.test.sql` | soru yönetimi, meydan okuma, oynama, puanlama, süreler, cron | 45 |
+| `supabase/tests/database/08_gunun_tahmini.test.sql` | günün tahmini açma, yatırma (düello hâlâ kapalı), sonuç, iptal, zamanlanmış iş, kısıt | 45 |
+| `supabase/tests/database/09_gorevler_market.test.sql` | görev / ürün yönetimi izinleri, görünürlük, her eylemin sayımı, ödül (bir kez), dönemler, satın alma, kuşanma, satıştan kalkan ürünün görünürlüğü | 72 |
+| `supabase/tests/concurrency/para.mjs` | günlük ödül, eşzamanlı düşüm, eşzamanlı profil, aynı görev ödülü, aynı ürün | 6 senaryo |
 | `supabase/tests/concurrency/bahis.mjs` | eşzamanlı yatırım, çift yatırım, sonuç yarışı, çift sonuç | 5 senaryo |
 
-Son durum: hepsi geçiyor (Adım 6 sonu: 229 pgTAP; bahis eşzamanlılığı 5/5, para eşzamanlılığı en son Adım 3'te).
+Son durum: hepsi geçiyor (Adım 9 sonu: 445 pgTAP; para eşzamanlılığı 6/6 Adım 9'da, bahis 5/5 Adım 8'de).
 
 ## Çalıştırma
 

@@ -15,3 +15,7 @@ export const isPast = (iso: string) => Date.parse(iso) <= Date.now();
 
 // <input type="datetime-local"> değeri İstanbul saati kabul edilir (Türkiye yıl boyu UTC+3).
 export const istanbulLocalToIso = (local: string) => new Date(`${local}:00+03:00`).toISOString();
+
+// ISO zaman → <input type="datetime-local"> değeri (İstanbul saati), düzenleme formlarının varsayılanı için.
+export const isoToIstanbulLocal = (iso: string | null) =>
+  iso == null ? "" : new Date(Date.parse(iso) + 3 * 60 * 60 * 1000).toISOString().slice(0, 16);

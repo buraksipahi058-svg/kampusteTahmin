@@ -42,7 +42,7 @@ void main() {
         .map((m) => m.group(1)!)
         .toList();
 
-    expect(codes, containsAll([for (var i = 1; i <= 13; i++) 'KB${i.toString().padLeft(3, '0')}']));
+    expect(codes, containsAll([for (var i = 1; i <= 18; i++) 'KB${i.toString().padLeft(3, '0')}']));
     for (final code in codes) {
       expect(databaseMessages, contains(code), reason: '$code için mesaj yok (lib/core/error_messages.dart)');
     }

@@ -3,10 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../auth/auth_screen.dart';
+import '../bets/create_social_bet_screen.dart';
+import '../games/duel_play_screen.dart';
 import '../home/home_shell.dart';
 import '../profile/create_profile_screen.dart';
 import '../profile/profile_data.dart';
 import '../profile/verify_email_screen.dart';
+import '../quests/quests_screen.dart';
 import 'loading_screen.dart';
 import 'routes.dart';
 import 'supabase.dart';
@@ -51,6 +54,12 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: Routes.loading, builder: (_, _) => const LoadingScreen()),
       GoRoute(path: Routes.createProfile, builder: (_, _) => const CreateProfileScreen()),
       GoRoute(path: Routes.verifyEmail, builder: (_, _) => const VerifyEmailScreen()),
+      GoRoute(path: Routes.createSocialBet, builder: (_, _) => const CreateSocialBetScreen()),
+      GoRoute(path: Routes.quests, builder: (_, _) => const QuestsScreen()),
+      GoRoute(
+        path: Routes.duelPlayPattern,
+        builder: (_, state) => DuelPlayScreen(betId: state.pathParameters['id']!),
+      ),
       StatefulShellRoute.indexedStack(
         builder: (_, _, shell) => HomeShell(shell: shell),
         branches: [

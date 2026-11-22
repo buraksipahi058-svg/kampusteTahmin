@@ -25,11 +25,16 @@ Yapılandırma: `admin/.env.local` (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUP
 | `lib/supabase/server.ts` | Sunucu tarafı istemci (çerezli oturum); `env.ts`, `fetch-with-timeout.ts` (araç servis projesinden) |
 | `lib/auth.ts` | `getStaff()` (oturumdaki kişi: rol, izinler; öğrenciyse null), `can(staff, schoolId, key)`, izin etiketleri |
 | `lib/errors.ts` | Veritabanı hata kodu → Türkçe mesaj (mobildekiyle aynı anlamlar) |
-| `lib/format.ts` | Tarih (İstanbul), tutar, oran biçimi; `datetime-local` → ISO (+03:00) |
+| `lib/format.ts` | Tarih (İstanbul), tutar, oran biçimi; `datetime-local` ↔ ISO (+03:00; `istanbulLocalToIso`, `isoToIstanbulLocal`) |
 | `components/ui.tsx`, `user-search.tsx` | Gönder düğmesi, form mesajı; ada göre kullanıcı arama |
 | `app/giris/` | Giriş formu + `login` / `logout` server action'ları |
 | `app/(panel)/layout.tsx` | `instant = false`; rol kontrolü (öğrenciye "yetkin yok"), menü |
 | `app/(panel)/resmi-bahisler/` | Liste (seçenek, oran, yatırılan, olası ödeme), kilitle / sonuçlandır / iptal; `yeni/` açma formu |
+| `app/(panel)/itirazlar/` | Moderatör (`kullanici_bahsi_denetle` / süperadmin): açık itirazlı sosyal bahisler, hakemin sonucu, havuz, itiraz gerekçeleri; onayla / değiştir / iptal (`resolve_social_dispute`) |
+| `app/(panel)/gunun-tahmini/` | `resmi_bahis_ac` / `resmi_bahis_kapat` / süperadmin: Evet / Hayır sorusu açma (okul, soru, kapanış), havuzlar, kapanıştan sonra sonuç girme, iptal (`create/settle/cancel_daily_prediction`) |
+| `app/(panel)/gorevler/` | `gorev_yonet` / süperadmin: görev ekleme, `[id]/` düzenleme, aç / kapa (`save_quest`); eylem ve dönem etiketleri `labels.ts` |
+| `app/(panel)/market/` | `market_yonet` / süperadmin: ürün ekleme (türe göre simge ya da renk), `[id]/` düzenleme (tür sabit), satışa aç / kaldır (`save_market_item`) |
+| `app/(panel)/trivia/` | `trivia_yonet` / süperadmin: soru ekleme (okul ya da genel, 2–4 şık, doğru şık), açma / kapama (`save_trivia_question`) |
 | `app/(panel)/yetkiler/` | Süperadmin: izin ver / geri al (`grant/revoke_permission`) |
 | `app/(panel)/bakiye/` | Süperadmin: `admin_grant` / `admin_adjust`, son yönetim işlemleri |
 
@@ -38,6 +43,7 @@ Yapılandırma: `admin/.env.local` (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUP
 - `admin/AGENTS.md`: kod yazmadan önce `admin/node_modules/next/dist/docs/` altındaki ilgili rehberi oku.
 - `cacheComponents` açık: oturum (çerez) okuyan sayfa ya `<Suspense>` içinde olmalı ya da segmentte `export const instant = false` olmalı; panel düzeni ikincisini kullanır.
 - Veri değiştiren server action sonrası `refresh()` (`next/cache`); sayfalar önbelleksiz.
+- supabase-js sorgu tipini yalnızca **tek parça** select metninden çıkarır; `"..." + "..."` ile bölünen metin `GenericStringError` tipine düşer.
 - Bileşen içinde doğrudan `Date.now()` lint hatası (react-hooks/purity): `lib/format.ts` `isPast()`.
 - Eski bir route silinince `.next/dev/types` bayat kalır, `tsc` hata verir: `.next` silinip `next typegen`.
 - `next build` bilinen güvenlik açığı olan sürümde durup yükseltme önerir. 16.4.2'den 16.4.6'ya kullanıcı onayıyla `npm install next@16.4.6 eslint-config-next@16.4.6` ile geçildi (uyarının önerdiği `next upgrade --agent=security` komutu kullanılmadı); `npm audit` 0 açık.
@@ -46,4 +52,6 @@ Yapılandırma: `admin/.env.local` (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUP
 
 - Doğrulanan: lint, tip kontrolü, build temiz; oturumsuz istek girişe yönleniyor, giriş sayfası hatasız.
 - Doğrulanmayan: giriş sonrası ekranlar tarayıcıda denenmedi (kullanıcının şifresiyle giriş gerekiyor; hesap ayrıca yetkili/süperadmin olmalı). Arkasındaki veritabanı fonksiyonları pgTAP ve uçtan uca SQL ile denendi.
-- Sonra: itiraz kuyruğu (Adım 7), görev ve market yönetimi (Adım 9), analitik.
+- İtiraz kuyruğu (Adım 7), trivia soruları ve günün tahmini (Adım 8), görevler ve market (Adım 9) build ve tip kontrolünden geçti; giriş sonrası tarayıcıda denenmedi (aynı sebep). `/gunun-tahmini`, `/gorevler`, `/market/[id]` oturumsuz istekte girişe yönleniyor (denendi).
+- Üretilen tiplerde RPC parametreleri null alamıyor görünür; null gönderilmesi gereken yerde (`save_trivia_question` `p_id` / genel soru) `as unknown as string` kullanıldı.
+- Sonra: analitik, liderlik (Adım 10).

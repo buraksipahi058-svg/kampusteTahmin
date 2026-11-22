@@ -4,7 +4,7 @@ Türlerden bağımsız bahis çekirdeği (Adım 3) ve üzerine gelecek türler: 
 sosyal havuz (Adım 7), mini oyun (Adım 8).
 
 Kod: `supabase/migrations/20261020160619_bahis_cekirdegi.sql`, `20261122082914_resmi_bahisler.sql`
-(`create_bet`, `settle_bet`, `place_wager`'ın **geçerli tanımları bu ikincisinde**).
+(`create_bet`, `settle_bet`'in **geçerli tanımları bu ikincisinde**; `place_wager`'ınki `20261122105335_gunun_tahmini.sql`'de).
 Testler: `03_bahis_cekirdegi.test.sql` (61), `05_resmi_bahis.test.sql` (37), eşzamanlılık `supabase/tests/concurrency/bahis.mjs` (5 senaryo).
 
 ## Tablolar
@@ -51,9 +51,46 @@ Kazanan `floor(yatırım × wagers.odds)`, kaybeden 0; kazanan yoksa ödeme de y
 (sistem kasa), bu yüzden "dağıtılan = havuz" kuralı yalnızca `pool` bahislerinde geçerlidir.
 Panel ve mobil "kazanırsa ödenecek" tutarını bilgi için `floor(havuz × oran)` / `floor(yatırım × oran)` diye gösterir.
 
+## Sosyal havuz (Adım 7)
+
+Kod: `20261122085500_sosyal_havuz.sql` (+ `..090045` `create_social_bet` kontrol sırası, `..090304` belirsiz ilişki
+düzeltmesi). Testler: `06_sosyal_havuz.test.sql` (54).
+
+- `bets` ek kolonlar: `proposed_option_id` (hakemin sonucu, yabancı anahtar **yok** — olursa `bet_options(...)` gömmesi PGRST201 ile belirsizleşir), `result_submitted_at`, `dispute_until`. `profiles.referee_strikes` (ihtar).
+- `bet_disputes`: kişi başı bahis başına bir itiraz; `open` → `resolved` (`confirmed` / `changed` / `cancelled`). Görür: itiraz eden, bahsin hakemi, moderatör.
+- Ayarlar (`economy_settings`, taslak): `social_max_stake_sp` 100, `social_dispute_hours` 12, `social_result_deadline_days` 7, `referee_strike_limit` 3.
+- Fonksiyonlar (istemci): `create_social_bet(cluster, title, description, options[], locks_at, referee?, max_stake?)` (doğrulanmış, kümenin üyesi; hakem varsayılan kendisi, kümenin doğrulanmış üyesi olmalı; ihtar sınırı `KB014`; kapanış ≤ 30 gün), `submit_social_result(bet, option)` (yalnızca hakem, bir kez `KB015`; yatırımlar kapanır), `dispute_social_result(bet, reason)` (yalnızca yatırım yapan, pencere içinde `KB016`), `cancel_social_bet(bet, reason)` (açan yatırım yokken; moderatör her zaman), `resolve_social_dispute(bet, decision, note, option?)` (`kullanici_bahsi_denetle`; hakem/katılımcı karar veremez; açık itiraz yoksa `KB017`; değiştirme/iptal hakeme ihtar).
+- İç: `private.process_social_bets()` — **pg_cron** `kampusbet_sosyal_bahisler` her 5 dakikada çağırır: itiraz penceresi dolan ve açık itirazı olmayanları kesinleştirir (ödeme hakem adına), kapanıştan 7 gün sonra sonuç girilmemişleri iptal + iade eder ve hakeme ihtar yazar. Kayıtlar: `cron.job_run_details`.
+- Moderatör, `bets` RLS'indeki ek koşulla okulundaki özel grup bahislerini de görür.
+- Grup oluşturma / gruba katılma henüz yok: sosyal bahis pratikte okul geneli.
+
+## Mini oyun: trivia düellosu (Adım 8)
+
+Kod: `20261122092401_trivia_izni.sql` (izin değeri `trivia_yonet`), `20261122092403_trivia_duellosu.sql`.
+Testler: `07_trivia_duellosu.test.sql` (45). Kurallar: KARARLAR "Mini oyun: trivia düellosu" (varsayılan, onay bekliyor).
+
+- Düello = `sp_minigame` bahsi (`settlement_mode = 'auto'`); seçenek 1 "Meydan okuyan", 2 "Rakip"; her oyuncu kendi seçeneğine eşit tutar yatırır (`private.stake_wager`), kazananın seçeneği kazanır. **`place_wager` düelloya kapalı** (`42501`).
+- Tablolar: `trivia_questions` (`correct_index` öğrenciye hiç görünmez; okuyabilen yalnızca `trivia_yonet` / süperadmin; `school_id` null = genel), `trivia_duels` (okul görür; `question_ids`, süreler), `trivia_duel_plays` (kişi kendi oyununu, düello bitince ikisi birbirininkini görür).
+- Ayarlar: `trivia_question_count` 5, `trivia_seconds_per_question` 15, `duel_max_stake_sp` 100, `duel_accept_hours` 24, `duel_play_hours` 24.
+- İstemci: `create_trivia_duel(stake, invited?)` → bet_id (soru yönetebilen oynayamaz), `accept_trivia_duel(bet)` (`KB018`), `start_trivia_duel(bet)` → (soru_no, soru, şıklar, kalan_sn) — ilk çağrıda süre başlar, tekrar çağrı aynı soruları verir; `submit_trivia_answers(bet, answers smallint[])` → (puan, geç) — süre +10 sn payı aşılırsa 0. İkisi de gönderince sonuçlanır.
+- Kazanan: çok doğru, eşitlikte az süre (sunucu ölçer); oynamayan 0 puan + en kötü süre; tam eşitlikte iptal + iade.
+- Yönetim: `save_trivia_question(id?, school?, soru, şıklar[], doğru, kategori?, aktif?)`.
+- **pg_cron** `kampusbet_trivia_duellolari` 5 dakikada bir `private.process_trivia_duels()`: kabul süresi dolanı iade, oynama süresi dolanı sonuçlandırır.
+- Örnek veri: `seed.sql`'de 16 genel kültür sorusu.
+
+## Mini oyun: günün tahmini (Adım 8)
+
+Kod: `20261122105335_gunun_tahmini.sql`. Testler: `08_gunun_tahmini.test.sql` (45). Kurallar: KARARLAR "Mini oyun: günün tahmini".
+v1'de başka mini oyun yok (reflex / şans oyunları kullanıcı kararıyla çıkarıldı).
+
+- Günün tahmini = `sp_minigame` + **`settlement_mode = 'admin'`** (düello `auto`). Ayrı tablo yok; istemciler bu iki kolonla süzer. `bets_settlement_by_type` kısıtı mini oyunda `auto` ya da `admin`'e izin verir.
+- Seçenekler hep "Evet" / "Hayır", havuz (pari-mutuel). Ayarlar: `daily_max_stake_sp` 100, `daily_result_deadline_days` 3.
+- `place_wager` artık yalnızca **`auto`** mini oyunu reddeder; "sonucu belirleyen yatırım yapamaz" kuralı `settlement_mode = 'admin'` olan her bahiste (resmi + günün tahmini): açan ve `resmi_bahis_kapat` sahibi.
+- Yönetim (admin paneli, `admin_audit_log`'a yazar): `create_daily_prediction(school, question, locks_at, description?)` (`resmi_bahis_ac`, kapanış ≤ 7 gün), `settle_daily_prediction(bet, option)`, `cancel_daily_prediction(bet, reason)` (`resmi_bahis_kapat`). Yetki kontrolü `private.daily_prediction_for`. Resmi bahis fonksiyonları günün tahminine, bunlar da resmi bahse / düelloya `P0002` verir.
+- **pg_cron** `kampusbet_gunun_tahmini` saatte bir `private.process_daily_predictions()`: kapanıştan 3 gün sonra hâlâ sonuçsuz olanı iptal + iade.
+
 ## Sıradaki işler
 
+- Grup oluşturma ve davetle katılma (özel kapsamlı sosyal bahisler için).
 - Resmi bahis kalan: sabit oran mı havuz mu kararı "sonra tekrar bakılacak" (KARARLAR). Oran sonradan değiştirilemiyor (yalnızca açarken).
-- **Adım 7 — sosyal havuz:** doğrulanmış öğrenci açar (varsayılan hakem kendisi), düşük `max_stake`, hakem sonucu girer → `settling` + itiraz penceresi → itiraz yoksa ödeme; itirazda `kullanici_bahsi_denetle` izni olan moderatör sonuç belirler ya da iptal + iade. Hakem itibar puanı. Kapanış ve itiraz süresi için zamanlanmış iş (pg_cron). Moderatörün özel grup bahislerini görmesi için `bets` RLS'ine ek gerekecek.
-- **Adım 8 — mini oyun:** `sp_minigame` + `auto`; sonuç sunucuda belirlenir (trivia cevabı istemciye gitmez).
 - Düello/sosyal havuzla bilerek kaybedip SP aktarma riski: düşük limit + aynı kişilerin sık eşleşmesini izleme.

@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import '../bets/bets_tab.dart';
 import '../core/error_messages.dart';
 import '../core/routes.dart';
+import '../games/games_tab.dart';
+import '../market/market_tab.dart';
 import '../profile/profile_tab.dart';
 import '../wallet/balance_bar.dart';
 import '../wallet/wallet_data.dart';
@@ -42,12 +44,14 @@ const homeTabs = [
     label: 'Oyunlar',
     icon: Icons.sports_esports_outlined,
     selectedIcon: Icons.sports_esports,
+    page: GamesTab(),
   ),
   HomeTab(
     path: Routes.market,
     label: 'Market',
     icon: Icons.storefront_outlined,
     selectedIcon: Icons.storefront,
+    page: MarketTab(),
   ),
   HomeTab(
     path: Routes.leaderboard,

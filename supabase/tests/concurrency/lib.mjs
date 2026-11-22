@@ -149,9 +149,18 @@ create temp table esz_bets on commit drop as
 alter table public.ledger_entries disable trigger ledger_entries_append_only;
 delete from public.ledger_entries where user_id in (${w.idList});
 alter table public.ledger_entries enable trigger ledger_entries_append_only;
+delete from public.bet_disputes where bet_id in (select id from esz_bets) or raised_by in (${w.idList});
 delete from public.wagers where bet_id in (select id from esz_bets) or user_id in (${w.idList});
 delete from public.bet_options where bet_id in (select id from esz_bets);
 delete from public.bets where id in (select id from esz_bets);
+alter table public.quest_claims disable trigger quest_claims_append_only;
+delete from public.quest_claims where user_id in (${w.idList})
+  or quest_id in (select id from public.quests where school_id = '${w.school}');
+alter table public.quest_claims enable trigger quest_claims_append_only;
+delete from public.quests where school_id = '${w.school}';
+delete from public.user_inventory where user_id in (${w.idList})
+  or item_id in (select id from public.market_items where school_id = '${w.school}');
+delete from public.market_items where school_id = '${w.school}';
 delete from public.login_streaks where user_id in (${w.idList});
 delete from public.balances where user_id in (${w.idList});
 delete from public.user_clusters where user_id in (${w.idList});

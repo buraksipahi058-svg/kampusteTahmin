@@ -20,8 +20,23 @@ export default async function PanelLayout({ children }: LayoutProps<"/">) {
     );
   }
 
+  const isModerator = staff.role === "superadmin" || staff.permissions.some((p) => p.key === "kullanici_bahsi_denetle");
   const links = [
     { href: "/resmi-bahisler", label: "Resmi bahisler" },
+    ...(staff.role === "superadmin" ||
+    staff.permissions.some((p) => p.key === "resmi_bahis_ac" || p.key === "resmi_bahis_kapat")
+      ? [{ href: "/gunun-tahmini", label: "Günün tahmini" }]
+      : []),
+    ...(isModerator ? [{ href: "/itirazlar", label: "İtirazlar" }] : []),
+    ...(staff.role === "superadmin" || staff.permissions.some((p) => p.key === "trivia_yonet")
+      ? [{ href: "/trivia", label: "Trivia soruları" }]
+      : []),
+    ...(staff.role === "superadmin" || staff.permissions.some((p) => p.key === "gorev_yonet")
+      ? [{ href: "/gorevler", label: "Görevler" }]
+      : []),
+    ...(staff.role === "superadmin" || staff.permissions.some((p) => p.key === "market_yonet")
+      ? [{ href: "/market", label: "Market" }]
+      : []),
     ...(staff.role === "superadmin"
       ? [
           { href: "/yetkiler", label: "Yetkiler" },
