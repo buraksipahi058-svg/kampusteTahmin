@@ -13,7 +13,7 @@ Testler: `01_kumeler_profiller_yetkiler.test.sql` (52), `04_okul_maili.test.sql`
 |---|---|---|---|
 | `clusters` | Okul (kök) ve alt kümeler (bölüm, kulüp, grup). `school_id` her satırda kök okul (okulda kendisi). Tür ve üst küme sonradan değişmez. | Okullar herkese; alt kümeler okulun öğrencilerine; gruplar yalnızca üyelerine; süperadmin hepsini | Yalnızca migration/iç fonksiyon |
 | `school_email_domains` | Okulun öğrenci mail alan adları (çok olabilir, küçük harf) | Giriş yapan herkes | migration |
-| `profiles` | Ad, soyad, okul, bölüm, rol, XP, seviye (XP / seviye `xp_events`'in önbelleği, [para](para.md)). `id` = `auth.users.id` (silinemez: restrict) | Kendisi, aynı okul, süperadmin | `create_profile`; kullanıcı yalnızca ad/soyad/bölüm |
+| `profiles` | Ad, soyad, okul, bölüm, rol, XP, seviye (XP / seviye `xp_events`'in önbelleği, [para](para.md)). `id` = `auth.users.id` (silinemez: restrict). `deleted_at`: hesap silindi ([guvenlik](guvenlik.md)) | Kendisi, aynı okul, süperadmin | `create_profile`; kullanıcı yalnızca ad/soyad/bölüm (silinmemişse); `delete_my_account` |
 | `profile_private` | Okul maili (benzersiz: 1 mail = 1 hesap), doğrulama zamanı. Mail yalnızca doğrulanınca yazılır | Kendisi + okulunda `kullanici_yonet` izni olan + süperadmin | `confirm_student_email` |
 | `user_clusters` | Üyelik (`member` / `owner`). Yalnızca kendi okulunun kümeleri | Aynı kümenin üyeleri | `create_profile` (okul üyeliği); grup katılımı henüz yok |
 | `permissions` | Yetkili izin bayrakları; okul kümesine verilir, alt kümelerde geçerli | Kendisi + süperadmin | `grant/revoke_permission` |
@@ -49,4 +49,4 @@ RLS yardımcıları (`private`, `authenticated` çağırabilir): `current_school
 
 - Gerçek mail sağlayıcısına geçiş (öneri Brevo; kullanıcının hesap açması ve anahtarı Vault'a koyması gerekir) ve gerçek okulun alan adı.
 - Grup oluşturma / gruba katılma (Adım 7 sosyal havuzla birlikte).
-- Hesap silme = soft delete + anonimleştirme (Adım 11).
+- Hesap silme Adım 11'de yapıldı: [guvenlik](guvenlik.md).

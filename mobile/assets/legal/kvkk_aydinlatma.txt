@@ -1,0 +1,63 @@
+# KVKK Aydınlatma Metni
+
+TASLAK — yayından önce hukuk incelemesinden geçmeli; köşeli parantezli yerler doldurulmalı. Sürüm: 22.11.2026
+
+Bu metin, 6698 sayılı Kişisel Verilerin Korunması Kanunu'nun (KVKK) 10. maddesi uyarınca, KampüsBet uygulamasını kullanırken kişisel verilerinin nasıl işlendiğini anlatır.
+
+KampüsBet'te gerçek para yoktur. SP ve SSP sanal puanlardır: satın alınamaz, paraya çevrilemez ve kullanıcılar arasında aktarılamaz. Bu yüzden banka, kart ya da ödeme bilgisi işlenmez.
+
+## 1. Veri sorumlusu
+
+[Veri sorumlusunun adı / unvanı], [adres], [iletişim e-postası].
+
+## 2. Hangi verileri işliyoruz
+
+- Kimlik bilgileri: ad, soyad, okul, bölüm (isteğe bağlı).
+- İletişim bilgileri: giriş e-postan; doğrulanmış okul (öğrenci) e-postan. Doğrulama kodu yalnızca şifrelenmiş özet olarak, en fazla 10 dakika saklanır.
+- Uygulama içi işlemler: SP / SSP hareketleri, bahis ve tahmin yatırımların ve sonuçları, düello cevapların, görevler, XP ve seviye, market (kozmetik) alımların, hakemlik kararların ve itirazların.
+- Yetkililer için: verilen izinler ve yönetim işlemlerinin kayıtları.
+- Teknik bilgiler: oturum bilgileri, giriş zamanları; altyapı sağlayıcısının güvenlik kayıtlarında IP adresi ve cihaz / tarayıcı bilgisi.
+
+## 3. Hangi amaçla ve hangi hukuki sebeple
+
+- Hesabın açılması, girişin ve uygulamanın sunulması (sanal bahisler, oyunlar, görevler, market, sıralamalar): sözleşmenin kurulması ve ifası (KVKK m. 5/2-c).
+- Okul öğrencisi olduğunun okul e-postasıyla doğrulanması (uygulama yalnızca öğrencilere açık kapalı bir topluluktur): sözleşmenin ifası ve meşru menfaat (m. 5/2-c, f).
+- Sıralamalarda ve profillerde okul arkadaşlarına gösterim: sözleşmenin ifası (uygulamanın temel özelliği) [hukuk incelemesi: açık rıza gerekip gerekmediği].
+- Hile ve kötüye kullanımın önlenmesi, anlaşmazlıkların (itirazların) çözülmesi, güvenlik kayıtları, puan defterinin bütünlüğü: meşru menfaat (m. 5/2-f) ve hukuki yükümlülükler (m. 5/2-ç).
+
+## 4. Verilerini kimler görür
+
+- Okul arkadaşların: adın, soyadın, okulun, bölümün, seviyen ve kuşandığın kozmetikler; sıralamalarda adın, soyadının baş harfi ve sıralama değerlerin (isabet oranı, net kazanç, doğru tahmin serisi); açtığın ya da hakemliğini yaptığın sosyal bahislerde adın. Bireysel yatırımların başkalarına gösterilmez; yalnızca havuz toplamları görünür.
+- Okulundaki yetkililer, yalnızca kendilerine verilen izin ölçüsünde (ör. itiraz inceleme, okul istatistikleri).
+- Sistem yöneticisi.
+- Hizmet aldığımız veri işleyenler: Supabase (veritabanı ve kimlik doğrulama; sunucular Avrupa Birliği'nde, Almanya / Frankfurt) ve [e-posta gönderim sağlayıcısı, ör. Brevo] (yalnızca okul e-postana doğrulama kodu göndermek için).
+- Kanunen yetkili kamu kurum ve kuruluşları, talep halinde.
+
+## 5. Yurt dışına aktarım
+
+Veriler Avrupa Birliği'ndeki (Almanya) sunucularda saklanır; bu, KVKK m. 9 kapsamında yurt dışına aktarımdır. Aktarım [uygun güvence: standart sözleşme vb. — hukuk incelemesiyle doldurulacak] dayanağıyla yapılır.
+
+## 6. Ne kadar saklanır, nasıl silinir
+
+- Verilerin hesabın açık olduğu sürece saklanır.
+- Hesabını istediğin zaman uygulamadan silebilirsin: Profil > Hesabımı sil. Silince adın, soyadın, bölümün, okul e-postan, giriş e-postan, şifren, oturumların, izinlerin ve sıralama satırların silinir; profilin başkalarına "Silinmiş Kullanıcı" olarak görünür ve aynı e-postayla yeniden kayıt olabilirsin.
+- Puan hareketleri, yatırım ve sonuç kayıtları kimliğinle bağı koparılmış (anonim) olarak saklanır; çünkü diğer kullanıcıların bahis sonuçları ve sistemin bütünlüğü bu kayıtlara dayanır.
+- Sonuçlanmamış bahsin, düellon ya da hakemliğin varken hesap silinemez; bunlar birkaç gün içinde sonuçlanır.
+- Altyapı sağlayıcısının güvenlik kayıtları sağlayıcının saklama süresi boyunca tutulabilir [süre].
+
+## 7. Hakların (KVKK m. 11)
+
+- Kişisel verilerinin işlenip işlenmediğini öğrenme ve işlenmişse bilgi isteme,
+- işlenme amacını ve amacına uygun kullanılıp kullanılmadığını öğrenme,
+- yurt içinde ya da yurt dışında aktarıldığı üçüncü kişileri bilme,
+- eksik ya da yanlış işlenmişse düzeltilmesini isteme (adını, soyadını ve bölümünü uygulamadan kendin de değiştirebilirsin),
+- KVKK m. 7'deki şartlarla silinmesini ya da yok edilmesini isteme,
+- düzeltme ve silme işlemlerinin aktarıldığı üçüncü kişilere bildirilmesini isteme,
+- yalnızca otomatik sistemlerle analiz edilmesi sonucu aleyhine bir sonuç çıkmasına itiraz etme,
+- kanuna aykırı işleme nedeniyle zarara uğrarsan zararın giderilmesini isteme.
+
+Başvurularını [iletişim e-postası] adresine iletebilirsin. Başvurun en geç 30 gün içinde ücretsiz olarak sonuçlandırılır.
+
+## 8. Değişiklikler
+
+Bu metin değişirse güncel hali uygulamada yayımlanır; önemli değişiklikler uygulama içinde duyurulur.

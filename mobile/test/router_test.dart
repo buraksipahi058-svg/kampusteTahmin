@@ -19,6 +19,13 @@ void main() {
     expect(redirectFor(location: Routes.auth, userId: null, profile: none), isNull);
   });
 
+  test('KVKK metni her durumda açılır', () {
+    expect(redirectFor(location: Routes.privacy, userId: null, profile: missing('u1')), isNull);
+    expect(redirectFor(location: Routes.privacy, userId: 'u1', profile: const AsyncLoading()), isNull);
+    expect(redirectFor(location: Routes.privacy, userId: 'u1', profile: missing('u1')), isNull);
+    expect(redirectFor(location: Routes.privacy, userId: 'u1', profile: found('u1')), isNull);
+  });
+
   test('profil sorgusu sürerken yükleniyor ekranı', () {
     expect(redirectFor(location: Routes.auth, userId: 'u1', profile: const AsyncLoading()), Routes.loading);
     expect(redirectFor(location: Routes.loading, userId: 'u1', profile: const AsyncLoading()), isNull);

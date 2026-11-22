@@ -10,6 +10,7 @@ import '../market/cosmetic_preview.dart';
 import '../market/market_data.dart';
 import '../progress/level_card.dart';
 import '../progress/progress_data.dart';
+import 'delete_account.dart';
 import '../quests/quests_data.dart';
 import '../wallet/wallet_data.dart';
 import 'profile_data.dart';
@@ -147,11 +148,28 @@ class ProfileTab extends ConsumerWidget {
               onTap: () => context.push(Routes.history),
             ),
           ),
+          const SizedBox(height: 8),
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.privacy_tip_outlined),
+              title: const Text('Gizlilik ve KVKK'),
+              subtitle: const Text('Hangi verilerin neden işlendiği, hakların'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => context.push(Routes.privacy),
+            ),
+          ),
           const SizedBox(height: 24),
           OutlinedButton.icon(
             onPressed: () => ref.read(supabaseProvider).auth.signOut(),
             icon: const Icon(Icons.logout),
             label: const Text('Çıkış yap'),
+          ),
+          const SizedBox(height: 8),
+          TextButton.icon(
+            onPressed: () => confirmDeleteAccount(context, ref),
+            style: TextButton.styleFrom(foregroundColor: theme.colorScheme.error),
+            icon: const Icon(Icons.delete_forever_outlined),
+            label: const Text('Hesabımı sil'),
           ),
         ],
       ),

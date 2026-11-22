@@ -9,6 +9,9 @@ begin;
 set local role postgres;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
+-- Yeni fonksiyonlar varsayılan olarak kimseye açık değil (Adım 11); bu testin pg_temp yardımcıları
+-- kullanıcı rolüyle de çağrılır. Transaction sonunda geri alınır.
+alter default privileges for role postgres grant execute on functions to public;
 
 select plan(54);
 

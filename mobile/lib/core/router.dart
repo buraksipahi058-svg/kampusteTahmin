@@ -6,6 +6,7 @@ import '../auth/auth_screen.dart';
 import '../bets/create_social_bet_screen.dart';
 import '../games/duel_play_screen.dart';
 import '../home/home_shell.dart';
+import '../legal/privacy_screen.dart';
 import '../profile/create_profile_screen.dart';
 import '../profile/history_screen.dart';
 import '../profile/profile_data.dart';
@@ -16,13 +17,14 @@ import 'routes.dart';
 import 'supabase.dart';
 
 /// Akış: oturum yok → giriş; profil sorgusu bitmedi → yükleniyor; profil yok → profil oluşturma;
-/// profil var → sekmeler. Yönlendirme gerekmiyorsa null.
+/// profil var → sekmeler. KVKK metni her durumda açılır (kayıttan önce de). Yönlendirme gerekmiyorsa null.
 @visibleForTesting
 String? redirectFor({
   required String location,
   required String? userId,
   required AsyncValue<ProfileStatus> profile,
 }) {
+  if (location == Routes.privacy) return null;
   if (userId == null) return location == Routes.auth ? null : Routes.auth;
 
   // Sonuç yoksa ya da önceki kullanıcıya aitse henüz bilinmiyor demektir.
@@ -58,6 +60,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: Routes.createSocialBet, builder: (_, _) => const CreateSocialBetScreen()),
       GoRoute(path: Routes.quests, builder: (_, _) => const QuestsScreen()),
       GoRoute(path: Routes.history, builder: (_, _) => const HistoryScreen()),
+      GoRoute(path: Routes.privacy, builder: (_, _) => const PrivacyScreen()),
       GoRoute(
         path: Routes.duelPlayPattern,
         builder: (_, state) => DuelPlayScreen(betId: state.pathParameters['id']!),

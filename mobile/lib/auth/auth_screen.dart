@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../core/app_info.dart';
 import '../core/error_messages.dart';
+import '../core/routes.dart';
 import '../core/supabase.dart';
 
 enum _Mode { signIn, signUp }
@@ -180,6 +182,11 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                           ? const SizedBox.square(dimension: 20, child: CircularProgressIndicator(strokeWidth: 2))
                           : Text(signUp ? 'Kayıt ol' : 'Giriş yap'),
                     ),
+                    if (signUp)
+                      TextButton(
+                        onPressed: () => context.push(Routes.privacy),
+                        child: const Text('Kişisel verilerin nasıl işlenir: KVKK Aydınlatma Metni', textAlign: TextAlign.center),
+                      ),
                     if (_awaitingConfirmation != null && !signUp)
                       TextButton(
                         onPressed: _busy ? null : _resend,

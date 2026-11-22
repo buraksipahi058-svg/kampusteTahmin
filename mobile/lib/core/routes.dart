@@ -11,6 +11,7 @@ abstract final class Routes {
   static const createSocialBet = '/sosyal-bahis-ac';
   static const quests = '/gorevler';
   static const history = '/gecmis';
+  static const privacy = '/kvkk';
   static const duelPlayPattern = '/duello/:id';
   static String duelPlay(String betId) => '/duello/$betId';
 }

@@ -100,6 +100,18 @@ void main() {
     expect(find.text('Şifre (tekrar)'), findsOneWidget);
   });
 
+  testWidgets('kayıt ekranından KVKK aydınlatma metni açılır', (tester) async {
+    await pumpApp(tester);
+    await tester.tap(find.text('Kayıt ol').first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Kişisel verilerin nasıl işlenir: KVKK Aydınlatma Metni'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Gizlilik ve KVKK'), findsOneWidget);
+    expect(find.text('KVKK Aydınlatma Metni'), findsOneWidget);
+    expect(find.text('1. Veri sorumlusu'), findsOneWidget);
+  });
+
   testWidgets('giriş formu geçersiz e-postayı sunucuya göndermez', (tester) async {
     await pumpApp(tester);
 
@@ -666,6 +678,32 @@ void main() {
     expect(find.textContaining('Günün tahmini · Sonuçlandı'), findsOneWidget);
     expect(find.textContaining('Kazandın: +37 SP'), findsOneWidget);
     expect(find.byIcon(Icons.check_circle), findsOneWidget);
+  });
+
+  testWidgets('hesap silme onay ister: kutu işaretlenmeden silme düğmesi kapalı', (tester) async {
+    await pumpApp(tester, userId: 'u1', profile: _profile);
+    await tester.tap(find.text('Profil'));
+    await tester.pumpAndSettle();
+    final profileList = find.descendant(of: find.byType(ProfileTab), matching: find.byType(Scrollable)).first;
+    // En alta kaydır; günlük ödül bildirimi en alttaki düğmeyi örtmesin.
+    await tester.drag(profileList, const Offset(0, -3000));
+    tester.state<ScaffoldMessengerState>(find.byType(ScaffoldMessenger)).clearSnackBars();
+    await tester.pumpAndSettle();
+    expect(find.text('Gizlilik ve KVKK'), findsOneWidget);
+
+    await tester.tap(find.text('Hesabımı sil'));
+    await tester.pumpAndSettle();
+    expect(find.text('Hesabını sil'), findsOneWidget);
+    FilledButton deleteButton() => tester.widget<FilledButton>(find.widgetWithText(FilledButton, 'Hesabı sil'));
+    expect(deleteButton().onPressed, isNull);
+
+    await tester.tap(find.text('Anladım, hesabım silinsin'));
+    await tester.pump();
+    expect(deleteButton().onPressed, isNotNull);
+
+    await tester.tap(find.text('Vazgeç'));
+    await tester.pumpAndSettle();
+    expect(find.text('Hesabını sil'), findsNothing);
   });
 
   test('sonuç metni: kazanç, kazançsız doğru tahmin, kazanan çıkmayınca iade, kayıp', () {

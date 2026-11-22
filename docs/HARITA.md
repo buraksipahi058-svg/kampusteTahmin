@@ -5,10 +5,10 @@ gerektirdiği bölgeleri aç. Kod dosyalarını baştan sona okuma; bölge dosya
 
 ## Şu an
 
-- **Commit:** yalnızca kullanıcı onay verince, yalnızca yerel (push yok). Adım 7-9 `f45f3dc`'de; Adım 10 + XP / seviye tek commit'te (adım tablosu).
-- **Son tamamlanan:** Adım 10 — liderlik (okul bazında bu hafta / geçen hafta / tüm zamanlar; isabet, net SP, net SSP, doğru tahmin serisi; 10 dakikada bir snapshot, biten hafta donar) + Profil'de istatistikler ve geçmiş bahisler + admin `/istatistik` (okul özeti, sıralama). Kurallar varsayılan (KARARLAR "Liderlik ve istatistik"). Ekinde **XP / seviye**: günlük giriş, görev ve doğru tahminden XP (tahminde günlük sınır), seviye eğrisi, seviyeyle açılan market ürünleri, Profil'de seviye kartı, liderlikte seviye (KARARLAR "XP ve seviye", [para](harita/para.md)). 524 pgTAP, 38 Flutter testi, eşzamanlılık para 7/7 + bahis 6/6; admin lint / tip / build temiz. Emülatörde gerçek veriyle: Liderlik "Kazanç"ta kişi mor adla +20 SP, Profil istatistikleri (%100 · 2/2, +20 SP · +80 SSP, düello 1/1), geçmiş ekranı üç bahis; bulutta zamanlanmış iş kendiliğinden çalıştı. XP: emülatörde görev ödülü +20 XP verdi, seviye kartı ve XP sayfası, markette "Seviye 3" kilidi görüldü.
-- **Bulutta deneme verisi:** giriş yapamayan "Test Yetkili" profili (`e2e00000-...0001`), sonuçlanmış resmi ve sosyal deneme bahisleri, bir trivia düellosu, bir günün tahmini; kullanıcının test hesabı `deneme@ogr.ornek.edu.tr` ile doğrulanmış (790 SP, "Mor isim" kuşanılı). Seed'de 5 genel görev, 8 genel ürün.
-- **Sıradaki:** Adım 11 — güvenlik denetimi (RLS saldırı testleri, advisors uyarılarının gözden geçirilmesi), hesap silme (soft delete + anonimleştirme), KVKK aydınlatma metni. 
+- **Commit:** yalnızca kullanıcı onay verince, yalnızca yerel (push yok). Adım 7-9 `f45f3dc`'de; Adım 10 + XP / seviye `0ca9789`'da; Adım 11 çalışma ağacında, commit edilmedi.
+- **Son tamamlanan:** Adım 11 — güvenlik denetimi (şema genelinde kalıcı test, bulunan 3 küçük açık kapatıldı, yeni nesneler istemcilere kapalı başlar), hesap silme (soft delete + anonimleştirme, Auth temizliği, `KB024`), KVKK aydınlatma metni taslağı (uygulamada `/kvkk`, kayıt ekranında bağlantı). 581 pgTAP, 41 Flutter testi; admin lint / tip / build temiz. Emülatörde Profil'in altı (Gizlilik ve KVKK, Hesabımı sil), silme onayı ve KVKK ekranı görüldü; gerçek hesap silinmedi (SQL denemesi + pgTAP). Ayrıntı: [guvenlik](harita/guvenlik.md).
+- **Bulutta deneme verisi:** giriş yapamayan "Test Yetkili" profili (`e2e00000-...0001`), sonuçlanmış resmi ve sosyal deneme bahisleri, bir trivia düellosu, bir günün tahmini; kullanıcının test hesabı `deneme@ogr.ornek.edu.tr` ile doğrulanmış (820 SP, 20 XP, "Mor isim" kuşanılı). Seed'de 5 genel görev, 8 genel ürün.
+- **Sıradaki:** plandaki adımlar bitti (0–11). Bekleyenler [acik-isler](harita/acik-isler.md)'de: kullanıcının kararları (gerçek okul, mail sağlayıcısı, KVKK metninin doldurulması, ekonomi / XP rakamları) ve denenmemişler.
 - **Açık işler** (denenmemiş, eksik, çözülmemiş, kullanıcıdan beklenen): [harita/acik-isler.md](harita/acik-isler.md).
 
 | # | Adım | Durum | Commit |
@@ -23,8 +23,8 @@ gerektirdiği bölgeleri aç. Kod dosyalarını baştan sona okuma; bölge dosya
 | 7 | Sosyal havuz (hakem, itiraz) | Bitti | `f45f3dc` |
 | 8 | Mini oyunlar (trivia düellosu, günün tahmini) | Bitti | `f45f3dc` |
 | 9 | Görevler + market | Bitti | `f45f3dc` |
-| 10 | Liderlik + istatistik, XP / seviye | Bitti | (bu commit) |
-| 11 | Güvenlik denetimi, hesap silme, KVKK | Sırada | |
+| 10 | Liderlik + istatistik, XP / seviye | Bitti | `0ca9789` |
+| 11 | Güvenlik denetimi, hesap silme, KVKK | Bitti (commit yok) | |
 
 ## Görev → ne okunur
 
@@ -37,6 +37,7 @@ gerektirdiği bölgeleri aç. Kod dosyalarını baştan sona okuma; bölge dosya
 | Bakiye, ödül, market, görev (Adım 9), XP / seviye | [para](harita/para.md) | |
 | Resmi / sosyal / mini oyun bahisleri (Adım 6-8) | [bahis](harita/bahis.md) | |
 | Liderlik, kişisel istatistik, admin okul özeti (Adım 10) | [liderlik](harita/liderlik.md) | |
+| Güvenlik kuralları, hesap silme, KVKK metni (Adım 11) | [guvenlik](harita/guvenlik.md) | |
 | Komut çalıştırma, araç, emülatör, CLI hatası | [ortam](harita/ortam.md) | |
 | Test yazma / çalıştırma | [testler](harita/testler.md) | |
 | Denenmemiş / eksik / çözülmemiş ne var, kullanıcıdan ne bekleniyor | [acik-isler](harita/acik-isler.md) | |

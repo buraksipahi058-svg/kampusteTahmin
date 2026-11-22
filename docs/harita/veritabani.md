@@ -1,7 +1,7 @@
 # Bölge: Veritabanı (genel)
 
 Herhangi bir migration, RLS politikası ya da SQL fonksiyonu yazmadan önce bu sayfa okunur.
-Konu bölgeleri: [kimlik.md](kimlik.md), [para.md](para.md), [bahis.md](bahis.md), [liderlik.md](liderlik.md). Testler: [testler.md](testler.md).
+Konu bölgeleri: [kimlik.md](kimlik.md), [para.md](para.md), [bahis.md](bahis.md), [liderlik.md](liderlik.md), [guvenlik.md](guvenlik.md). Testler: [testler.md](testler.md).
 
 ## Migration'lar (sırayla)
 
@@ -22,6 +22,7 @@ Konu bölgeleri: [kimlik.md](kimlik.md), [para.md](para.md), [bahis.md](bahis.md
 | `20261122115132_market_sahip_gorunurlugu.sql` | 9 | `market_items` RLS: sahip olunan ve okul arkadaşının kuşandığı ürün satışta olmasa da görünür |
 | `20261122133546_liderlik_istatistik.sql` | 10 | sıralama ayarları, `leaderboard_snapshots` + RLS, `private.leaderboard_runs`, hesaplama (`week_bounds`, `settled_wagers`, `store_leaderboard`, `refresh_leaderboards`), `get_leaderboard`, `my_stats`, `school_stats`, 10 dakikalık pg_cron işi ([liderlik](liderlik.md)) |
 | `20261122145831_xp_seviye.sql` | 10 | XP ayarları, `quests.reward_xp`, `market_items.min_level`, `xp_events` (yalnızca eklenir) + RLS, seviye eğrisi (`xp_for_level`, `level_for_xp`), `award_xp`, ledger ve bahis tetikleyicileri, `my_progress`; `purchase_market_item` (`KB023`), `my_quests`, `save_quest`, `save_market_item`, `get_leaderboard` yeniden ([para](para.md)) |
+| `20261122152129_hesap_silme_guvenlik.sql` | 11 | denetim düzeltmeleri (tetikleyici fonksiyonu, kimlik dizileri, varsayılan yetkiler), `profiles.deleted_at`, `profiles_update_own` (silinmiş hariç), `settled_wagers` ve `school_stats` (silinmişleri saymaz), `delete_my_account` ([guvenlik](guvenlik.md)) |
 | `20261122105335_gunun_tahmini.sql` | 8 | günün tahmini ayarları, `bets_settlement_by_type` (mini oyunda `admin` de olur), `place_wager` (yalnızca `auto` mini oyuna kapalı; admin sonuçlandırmalıda açan / kapatan yatıramaz), `create/settle/cancel_daily_prediction`, saatlik pg_cron işi |
 
 ## Koda inmek gerekirse
@@ -45,6 +46,7 @@ Aynı fonksiyon birden fazla migration'da tanımlıysa **en yeni dosyadaki** ge�
 | `public.create_social_bet` | `20261122090045_sosyal_havuz_dogrulama_sirasi.sql` | `20261122085500_...` |
 | `public.purchase_market_item`, `my_quests`, `save_quest`, `save_market_item` | `20261122145831_xp_seviye.sql` | `20261122114042_...` |
 | `public.get_leaderboard` | `20261122145831_xp_seviye.sql` | `20261122133546_...` |
+| `private.settled_wagers`, `public.school_stats` | `20261122152129_hesap_silme_guvenlik.sql` | `20261122133546_...` |
 
 **İki tablo arasına ikinci bir yabancı anahtar ekleme:** PostgREST istemci sorgularında gömme
 (`bets?select=...,bet_options(...)`) belirsizleşir (PGRST201) ve mobil/admin sorguları bozulur.
@@ -59,6 +61,7 @@ Buluttaki gerçek durumu görmek daha ucuzsa: `npx supabase db query --linked "s
 - **Şemalar:** `public` API'ye açık (tablolar, enum'lar, istemcinin çağırdığı RPC'ler). `private` API'ye kapalı (RLS yardımcıları, iç fonksiyonlar, tetikleyiciler).
 - **Tablo yetkileri:** her yeni tabloda `revoke all ... from anon, authenticated;` sonra yalnızca `grant select ... to authenticated;`. İstemci hiçbir tabloya ekleme/silme yapamaz. Tek istisna: `profiles` için `grant update (first_name, last_name, department)`.
 - **RLS:** her tabloda açık. Politikalarda `(select auth.uid())`, `(select private.is_superadmin())` gibi alt sorgu biçimi (her satırda tekrar çalışmasın). Kümeye göre görünürlük: `cluster_id in (select private.my_cluster_ids())`.
+- **Varsayılan yetkiler (Adım 11):** postgres'in oluşturduğu yeni tablo, dizi ve fonksiyon istemcilere ve PUBLIC'e kapalı başlar. Tablo için `grant select`, RPC için `grant execute ... to authenticated` açıkça yazılır; RLS politikasında kullanılan yeni `private` yardımcısı da `authenticated`'a açılmalı ve `12_guvenlik` testindeki listeye eklenmeli.
 - **Fonksiyonlar:** hepsi `set search_path = ''` ve tam nitelikli adlar (`public.x`, `private.y`). İstemci RPC'leri `security definer`; başta oturum (`auth.uid()`), sonra yetki, sonra girdi kontrolü. Her fonksiyonda `revoke execute ... from public, anon;` + gerekiyorsa `grant execute ... to authenticated;`. İç fonksiyonlarda yalnızca `revoke ... from public`.
 - **Yalnızca eklenen tablolar:** `private.forbid_change()` tetikleyicisi (update/delete/truncate → `55000`). Şu an: `ledger_entries`, `admin_audit_log`, `quest_claims`, `xp_events`.
 - **Metin kolonları:** `char_length` aralığı + `= btrim(...)` + kontrol karakteri yasağı (`!~ '[[:cntrl:]]'`).
@@ -71,7 +74,7 @@ Buluttaki gerçek durumu görmek daha ucuzsa: `npx supabase db query --linked "s
 2. Yukarıdaki kalıplar (revoke/grant, RLS, search_path).
 3. Her yeni tablo / politika / fonksiyon için en az bir izin + bir ret testi ([testler.md](testler.md)).
 4. `npx supabase db push`, sonra `npm run db:test`; para veya bahsi değiştirdiysen `npm run db:test:concurrency`.
-5. `npx supabase db advisors --linked --type security` — yeni uyarı var mı.
+5. `npx supabase db advisors --linked --type security` — yeni uyarı var mı; `12_guvenlik` testi şema kurallarını zaten tarar.
 6. Kararsa `KARARLAR.md`'ye, yapıysa ilgili bölge dosyasına işle.
 
 ## Hata kodları (SQLSTATE)
@@ -101,6 +104,7 @@ Buluttaki gerçek durumu görmek daha ucuzsa: `npx supabase db query --linked "s
 | `KB021` | Ürün satışta değil (kapalı / satış tarihi dışında) |
 | `KB022` | Ürün zaten kişinin envanterinde |
 | `KB023` | Kişinin seviyesi ürünün en az seviyesine yetmiyor |
+| `KB024` | Sonuçlanmamış bahis / düello / hakemlik varken hesap silinemez |
 | `42501` | Yetki yok / giriş gerekli |
 | `23514` | Geçersiz değer (kısıt) |
 | `23505` | Tekrar (benzersizlik) |

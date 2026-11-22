@@ -15,6 +15,7 @@ parantez ortaya çıktığı adım.
 - [10] **Dolu bir isabet sıralaması ve çok kişili liderlik** uygulamada görülmedi: bulutta tek gerçek kullanıcı var, bu hafta 2 tahmini 5'lik eşiğin altında ("Kazanç" ve "Seri" tek kişiyle görüldü). Çok kişili sıralama, eşitlik ve eşik pgTAP'te sınandı.
 - [10] **Hafta dönümü** (pazartesi 00:00 İstanbul): geçen haftanın son kez hesaplanıp donması bulutta gözlenmedi; pgTAP sınadı. 10 dakikalık `kampusbet_liderlik` işi bulutta kendiliğinden çalıştı (gözlendi).
 - [10] **XP'nin günlük giriş ve doğru tahminden gelmesi, seviye atlama ve seviyeli ürünü satın alma** uygulamada gözlenmedi: emülatörde yalnızca görev ödülünün XP'si (+20) gerçek veriyle görüldü (bugünkü giriş ödülü XP'den önce alınmıştı). Hepsi pgTAP'te, giriş ve bahis XP'si eşzamanlılık testlerinde de sınandı.
+- [11] **Gerçek bir hesabın uygulamadan silinmesi**: emülatördeki tek gerçek hesap (kullanıcının test hesabı) silinmedi; yalnızca onay penceresi görüldü. Silme bulutta geri alınan SQL denemesi ve pgTAP ile sınandı. Silinen hesapla giriş denemesinin ve aynı e-postayla yeniden kaydın Supabase Auth'ta nasıl davrandığı gerçek istekle denenmedi.
 - [5] **Okul maili kodunun gerçek mail olarak gitmesi** (Brevo yolu). Yalnızca isteğin pg_net kuyruğuna girdiği test edildi; gerçek gönderim yok.
 - [4] **iOS derlemesi** hiç denenmedi (Mac ya da bulut CI gerekir).
 
@@ -39,7 +40,11 @@ parantez ortaya çıktığı adım.
 - [10] Admin'den **XP düzeltme** yok; `xp_level_step` değişirse mevcut seviyeler yeniden hesaplanmaz (elle: `update public.profiles set level = private.level_for_xp(xp);`).
 - [9-10] Kuşanılan kozmetikler kişinin profilinde ve liderlikte görünüyor; sosyal bahis kartında (açan / hakem) ve düello rakibinde görünmüyor.
 - [10] Liderlikten başkasının profiline / istatistiğine bakma yok.
-- [10] Sıralamadan çıkma (gizlilik) tercihi yok: okul arkadaşları adı, soyadının baş harfini ve değerleri görür (profil tablosu zaten okula açık). KVKK metninde (Adım 11) anılmalı.
+- [10] Sıralamadan çıkma (gizlilik) tercihi yok: okul arkadaşları adı, soyadının baş harfini ve değerleri görür (profil tablosu zaten okula açık). KVKK metninde anıldı.
+- [11] **Veri dışa aktarma** (KVKK m. 11 bilgi isteme) uygulamada yok; metinde e-postayla başvuru yazıyor.
+- [11] **Kullanım koşulları** metni, yaş sınırı ve (gerekirse) açık rıza akışı yok; yalnızca aydınlatma metni var.
+- [11] Admin'den **kullanıcı yasaklama / silme** yok; süperadmin hesabı uygulamadan silinemez (önce rolü SQL ile alınır).
+- [11] RPC'lerde **hız sınırı** yok (Supabase Auth'un kendi giriş / kayıt sınırları dışında); okul maili kodunda kendi sınırımız var.
 - [10] Canlı güncelleme (Supabase Realtime) yok; sıralama 10 dakikada bir hesaplanır.
 - [10] Başarım / rozet koleksiyonu (MIMARI §11) yok.
 - [10] Geçmiş bahisler son 100 yatırım, sayfalama yok; açılan ve hakemlik yapılan sosyal bahisler orada görünmüyor (yalnızca yatırımlar).
@@ -47,7 +52,6 @@ parantez ortaya çıktığı adım.
 - [9] Market'te tema, banner, emote ve bahis "flair"i türleri yok (v1: unvan, rozet, çerçeve, isim rengi); stoklu / sınırlı sayıda ürün yok.
 - [9] Admin'de ürünün kaç kez satıldığı ve görevin kaç kişi tarafından tamamlandığı görünmüyor (analitik).
 - [9] Görev türleri sabit beş eylem; "farklı kümede bahis aç" gibi ölçütler yok (grup / küme oluşturma da yok).
-- [11] Hesap silme (soft delete + anonimleştirme), KVKK aydınlatma metni.
 
 ## Çözülmemiş sorunlar / bilinen pürüzler
 
@@ -60,11 +64,14 @@ parantez ortaya çıktığı adım.
 - [10] `dart format` (Dart 3.13) mevcut mobil kodu farklı biçimliyor; toplu biçimlendirme ilgisiz dosyalara dokunuyor. Bu adımda bir kez çalıştı, ilgisiz değişiklikler geri alındı; yalnızca yeni dosyalar biçimli.
 - [5] Supabase ücretsiz plan bir hafta işlem olmazsa projeyi duraklatıyor; açmak kullanıcının işi ([ortam](ortam.md)).
 - [1] Supabase advisors `public.rls_auto_enable()` için uyarı veriyor (Supabase'in kendi tetikleyicisi; zararsız, dokunulmuyor).
-- [1-8] Advisors her istemci RPC'si için "authenticated `SECURITY DEFINER` çağırabiliyor" uyarısı veriyor: tasarım gereği (her fonksiyon yetkiyi içeride denetler, pgTAP ret testleri var). Adım 11 denetiminde topluca gözden geçirilecek.
+- [1-11] Advisors her istemci RPC'si için "authenticated `SECURITY DEFINER` çağırabiliyor" uyarısı veriyor (38): Adım 11'de gözden geçirildi, tasarım gereği kabul edildi ([guvenlik](guvenlik.md)); uyarı kalır.
+- [11] Silinen kişinin erişim anahtarı (JWT) süresi dolana kadar (en fazla 1 saat) geçerli kalır: oturumu silinir, yenilenemez; bu sürede ad değiştiremez, yatıramaz, bahis açamaz; yalnızca zararsız işlemler (giriş ödülü, görev ödülü, market) mümkün.
+- [11] Supabase'in kendi kayıtlarında (Auth güvenlik günlüğü `auth.audit_log_entries`, `pg_net` istek kayıtları) silinen kişinin e-postası bir süre kalabilir; hesap silme bunlara dokunmaz.
 - [6-10] Bulutta deneme verisi duruyor (liderlik satırları bunlardan hesaplanıyor): "Test Yetkili" profili (`e2e00000-...0001`), deneme resmi ve sosyal bahisleri, bir trivia düellosu, bir günün tahmini ("E2E: Bugun kampuste kar yagar mi?"); kullanıcının test hesabı örnek alan adıyla doğrulanmış, iki görev ödülü almış (ikincisi +20 XP ile, Adım 10 XP denemesi) ve "Mor isim"i satın alıp kuşanmış.
 
 ## Kullanıcı kararı / aksiyonu bekleyenler
 
+- **KVKK aydınlatma metni** (`mobile/assets/legal/kvkk_aydinlatma.txt`) taslak: veri sorumlusu, adres, iletişim e-postası, yurt dışına aktarım dayanağı (KVKK m. 9), mail sağlayıcısı ve güvenlik kaydı süresi doldurulmalı; yayından önce hukuk incelemesi (sıralamada gösterim için açık rıza gerekip gerekmediği dahil).
 - Gerçek okulun adı ve öğrenci mail alan adı (şimdilik "Örnek Üniversitesi" / `ogr.ornek.edu.tr`).
 - Mail sağlayıcısı hesabı (öneri Brevo) ve API anahtarının Supabase Vault'a konması ([kimlik](kimlik.md)).
 - Admin panelini denemek için hesabının yetkili / süperadmin yapılması (süperadmin resmi bahse yatıramaz).
@@ -72,4 +79,9 @@ parantez ortaya çıktığı adım.
 - Supabase Auth'ta sızdırılmış şifre koruması (HaveIBeenPwned) kapalı; advisors uyarıyor. Açmak panelden kullanıcının işi (Authentication ayarları; ücretsiz planda olmayabilir).
 - Resmi bahiste sabit oran mı havuz mu ("sonra tekrar bakarız").
 - Ekonomi rakamları taslak: başlangıç SP, günlük ödül, sosyal / düello / tahmin sınırları, itiraz süresi, ihtar sınırı, **görev ödülleri (20–150 SP) ve market fiyatları (SP 250–600, SSP 80–150)**, **liderlik isabet eşiği (5 tahmin / hafta, 20 tüm zamanlar)**, **XP (giriş 10, doğru tahmin 15, günde en fazla 60; görev günlük 20 / haftalık 50; seviye adımı 100; Altın çerçeve 3. seviye, Kehanet Ustası 5. seviye)**. Adım 9-10 kuralları (KARARLAR "Görevler", "Market", "Liderlik ve istatistik", "XP ve seviye") varsayılan olarak uygulandı.
-- XP / seviyeyle özellik açılsın mı (ör. sosyal bahis açmak için 2. seviye: yeni hesaplarla SP aktarmayı da zorlaştırır).
+- **Yapılacak (kullanıcı, 2026-11-22): XP rakamları ve seviye kuralları birlikte yeniden ele alınacak.** Şu an varsayılan
+  uygulanıyor (KARARLAR "XP ve seviye"). Konuşulacaklar: giriş / görev / doğru tahmin XP'si ve günlük sınır, seviye
+  eğrisi (adım 100), hangi ürünün hangi seviyede açılacağı, seviyenin özellik de açıp açmayacağı (ör. sosyal bahis
+  açmak için 2. seviye: yeni hesaplarla SP aktarmayı da zorlaştırır), eski kayıtlara geriye dönük XP verilip
+  verilmeyeceği. Rakam değişikliği yalnızca `economy_settings` / ürün / görev güncellemesidir; seviye adımı değişirse
+  mevcut seviyeler yeniden hesaplanmalı ([para](para.md)).

@@ -49,3 +49,4 @@ Kazanan tarafa kimse yatırmadığı için iade alan **yanlış** bilmiş sayıl
 
 - Mobil: Liderlik sekmesi (`lib/leaderboard/`), Profil'de "İstatistiklerim" kartı ve `/gecmis` (geçmiş bahisler). [mobil](mobil.md)
 - Admin: `/istatistik` (okul özeti + sıralama tablosu). [admin](admin.md)
+- Silinen hesaplar sıralamaya girmez (`private.settled_wagers` süzer, Adım 11); silinince satırları hemen silinir.

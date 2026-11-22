@@ -752,6 +752,7 @@ export type Database = {
       profiles: {
         Row: {
           created_at: string
+          deleted_at: string | null
           department: string | null
           first_name: string
           id: string
@@ -765,6 +766,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          deleted_at?: string | null
           department?: string | null
           first_name: string
           id: string
@@ -778,6 +780,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          deleted_at?: string | null
           department?: string | null
           first_name?: string
           id?: string
@@ -1397,6 +1400,7 @@ export type Database = {
         }
         Returns: {
           created_at: string
+          deleted_at: string | null
           department: string | null
           first_name: string
           id: string
@@ -1431,6 +1435,7 @@ export type Database = {
         Args: { p_invited_id?: string; p_stake: number }
         Returns: string
       }
+      delete_my_account: { Args: never; Returns: undefined }
       dispute_social_result: {
         Args: { p_bet_id: string; p_reason: string }
         Returns: string
