@@ -11,6 +11,7 @@ import '../market/market_data.dart';
 import '../progress/level_card.dart';
 import '../progress/progress_data.dart';
 import 'delete_account.dart';
+import 'privacy_card.dart';
 import '../quests/quests_data.dart';
 import '../wallet/wallet_data.dart';
 import 'profile_data.dart';
@@ -158,15 +159,7 @@ class ProfileTab extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 8),
-          Card(
-            child: ListTile(
-              leading: const Icon(Icons.privacy_tip_outlined),
-              title: const Text('Gizlilik ve KVKK'),
-              subtitle: const Text('Hangi verilerin neden işlendiği, hakların'),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () => context.push(Routes.privacy),
-            ),
-          ),
+          const PrivacyCard(),
           const SizedBox(height: 24),
           OutlinedButton.icon(
             onPressed: () => ref.read(supabaseProvider).auth.signOut(),

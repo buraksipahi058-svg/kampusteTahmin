@@ -70,7 +70,12 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       return;
     }
     await _run((auth) async {
-      final response = await auth.signUp(email: email, password: password, emailRedirectTo: AppInfo.authRedirectUrl);
+      final response = await auth.signUp(
+        email: email,
+        password: password,
+        emailRedirectTo: AppInfo.authRedirectUrl,
+        data: {'terms_version': AppInfo.termsVersion},
+      );
       // Mail onayı açıkken oturum gelmez; açık oturum geldiyse yönlendirici devralır.
       if (response.session == null) {
         _awaitingConfirmation = email;
@@ -190,6 +195,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                         onFieldSubmitted: (_) => _submit(),
                         validator: (v) => v == _password.text ? null : 'Şifreler aynı değil.',
                       ),
+                      const SizedBox(height: 8),
+                      const _TermsConsent(),
                     ],
                     const SizedBox(height: 24),
                     if (_error != null) _Message(text: _error!, isError: true),
@@ -200,11 +207,16 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                           ? const SizedBox.square(dimension: 20, child: CircularProgressIndicator(strokeWidth: 2))
                           : Text(signUp ? 'Kayıt ol' : 'Giriş yap'),
                     ),
-                    if (signUp)
+                    if (signUp) ...[
+                      TextButton(
+                        onPressed: () => context.push(Routes.terms),
+                        child: const Text('Kullanım Koşulları'),
+                      ),
                       TextButton(
                         onPressed: () => context.push(Routes.privacy),
                         child: const Text('Kişisel verilerin nasıl işlenir: KVKK Aydınlatma Metni', textAlign: TextAlign.center),
                       ),
+                    ],
                     if (!signUp)
                       TextButton(
                         onPressed: _busy ? null : _forgotPassword,
@@ -245,6 +257,34 @@ class _Message extends StatelessWidget {
       child: Text(
         text,
         style: TextStyle(color: isError ? colors.onErrorContainer : colors.onSecondaryContainer),
+      ),
+    );
+  }
+}
+
+/// Kayıtta zorunlu onay: yaş ve kullanım koşulları. İşaretlenmeden form gönderilmez.
+class _TermsConsent extends StatelessWidget {
+  const _TermsConsent();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return FormField<bool>(
+      initialValue: false,
+      validator: (v) => v == true ? null : 'Kayıt olmak için kullanım koşullarını kabul etmelisin.',
+      builder: (field) => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          CheckboxListTile(
+            value: field.value ?? false,
+            onChanged: field.didChange,
+            controlAffinity: ListTileControlAffinity.leading,
+            contentPadding: EdgeInsets.zero,
+            title: const Text("18 yaşını doldurdum; Kullanım Koşulları'nı okudum ve kabul ediyorum."),
+          ),
+          if (field.hasError)
+            Text(field.errorText!, style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.error)),
+        ],
       ),
     );
   }

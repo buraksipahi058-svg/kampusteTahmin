@@ -24,6 +24,13 @@ void main() {
     expect(read('../admin/src/legal/kvkk_aydinlatma.txt'), read('assets/legal/kvkk_aydinlatma.txt'));
   });
 
+  // Kullanım koşulları da admin'in herkese açık /kosullar sayfasında; kayıtta kabul edilen sürüm metindekiyle aynı.
+  test('kullanım koşullarının admin kopyası aynı, sürümü AppInfo ile aynı', () {
+    expect(read('../admin/src/legal/kullanim_kosullari.txt'), read('assets/legal/kullanim_kosullari.txt'));
+    final [y, m, d] = AppInfo.termsVersion.split('-');
+    expect(read('assets/legal/kullanim_kosullari.txt'), contains('Sürüm: $d.$m.$y'));
+  });
+
   test('e-posta linklerinin şeması platform dosyalarında AppInfo ile aynı', () {
     expect(AppInfo.authRedirectUrl, '${AppInfo.authScheme}://${AppInfo.authCallbackHost}');
     expect(

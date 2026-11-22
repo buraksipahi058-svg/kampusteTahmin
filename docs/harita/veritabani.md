@@ -26,6 +26,7 @@ Konu bölgeleri: [kimlik.md](kimlik.md), [para.md](para.md), [bahis.md](bahis.md
 | `20261122173731_qa_duzeltmeleri.sql` | 12 | kalite kontrolü: `current_school_id` / `is_verified` silinmişi saymaz, `request_student_email_code`, `award_xp`, `delete_my_account` (`FOR NO KEY UPDATE`, düello başlığı, Auth 100 yıl), `claim_quest_reward` (görev yöneten alamaz), `get_leaderboard` (silinmiş gösterilmez) |
 | `20261122182015_yonetim_guvenlik.sql` | 13 | `profiles.banned_at`, `guard.check_request` + `pgrst.db_pre_request` (istek bekçisi), `set_user_ban`, `reset_referee_strikes`, `update_official_bet_odds` ([guvenlik](guvenlik.md)) |
 | `20261122182256_yasak_gerekcesi.sql` | 13 | yasak gerekçesi profilden kaldırıldı (okula açıktı), yalnızca denetim kaydında; `set_user_ban` yeniden |
+| `20261122200659_gizlilik.sql` | 14 | `profile_private.leaderboard_hidden` + `set_leaderboard_hidden`, `store_leaderboard` / `get_leaderboard` (gizliyi saymaz), `export_my_data`, `economy_settings.api_write_limit_per_minute`, `private.request_log` (unlogged) + `guard.check_request` (istek sınırı, `KB026`), 10 dakikalık `kampusbet_istek_sayaci` temizliği ([guvenlik](guvenlik.md)) |
 | `20261122105335_gunun_tahmini.sql` | 8 | günün tahmini ayarları, `bets_settlement_by_type` (mini oyunda `admin` de olur), `place_wager` (yalnızca `auto` mini oyuna kapalı; admin sonuçlandırmalıda açan / kapatan yatıramaz), `create/settle/cancel_daily_prediction`, saatlik pg_cron işi |
 
 ## Koda inmek gerekirse
@@ -50,7 +51,8 @@ Aynı fonksiyon birden fazla migration'da tanımlıysa **en yeni dosyadaki** ge�
 | `public.purchase_market_item`, `my_quests`, `save_quest`, `save_market_item` | `20261122145831_xp_seviye.sql` | `20261122114042_...` |
 | `public.get_leaderboard` | `20261122145831_xp_seviye.sql` | `20261122133546_...` |
 | `private.settled_wagers`, `public.school_stats` | `20261122152129_hesap_silme_guvenlik.sql` | `20261122133546_...` |
-| `private.current_school_id`, `private.is_verified`, `public.request_student_email_code`, `private.award_xp`, `public.delete_my_account`, `public.claim_quest_reward`, `public.get_leaderboard` | `20261122173731_qa_duzeltmeleri.sql` | önceki tanımlar |
+| `private.current_school_id`, `private.is_verified`, `public.request_student_email_code`, `private.award_xp`, `public.delete_my_account`, `public.claim_quest_reward` | `20261122173731_qa_duzeltmeleri.sql` | önceki tanımlar |
+| `public.get_leaderboard`, `private.store_leaderboard`, `guard.check_request` | `20261122200659_gizlilik.sql` | `20261122173731_...`, `20261122133546_...`, `20261122182015_...` |
 
 **İki tablo arasına ikinci bir yabancı anahtar ekleme:** PostgREST istemci sorgularında gömme
 (`bets?select=...,bet_options(...)`) belirsizleşir (PGRST201) ve mobil/admin sorguları bozulur.
@@ -110,6 +112,7 @@ Buluttaki gerçek durumu görmek daha ucuzsa: `npx supabase db query --linked "s
 | `KB023` | Kişinin seviyesi ürünün en az seviyesine yetmiyor |
 | `KB024` | Sonuçlanmamış bahis / düello / hakemlik varken hesap silinemez |
 | `KB025` | Hesap silinmiş ya da yasaklı: istek bekçisi (`guard.check_request`) her API isteğini reddeder |
+| `KB026` | İstek sınırı: kişinin son bir dakikadaki yazma isteği `economy_settings.api_write_limit_per_minute`'a ulaştı (bekçi) |
 | `42501` | Yetki yok / giriş gerekli |
 | `23514` | Geçersiz değer (kısıt) |
 | `23505` | Tekrar (benzersizlik) |

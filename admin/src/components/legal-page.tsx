@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import type { LegalBlock } from "@/lib/legal";
 
-// Herkese açık metin sayfaları (gizlilik, hesap silme): oturum istemez, mağaza bağlantısı olarak verilir.
+// Herkese açık metin sayfaları (gizlilik, kullanım koşulları, hesap silme): oturum istemez, mağaza bağlantısı olarak verilir.
 export function LegalPage({ blocks, children }: { blocks: LegalBlock[]; children?: ReactNode }) {
   return (
     <main className="mx-auto w-full max-w-2xl px-4 py-10 text-sm leading-6">

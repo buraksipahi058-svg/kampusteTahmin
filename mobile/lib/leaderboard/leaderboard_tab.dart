@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../bets/bets_tab.dart' show formatIstanbul;
 import '../core/error_messages.dart';
 import '../market/cosmetic_preview.dart';
+import '../profile/privacy_data.dart';
 import 'leaderboard_data.dart';
 
 /// Liderlik sekmesi: okulun haftalık ve tüm zamanlar sıralaması. Beceri ölçütleri öne çıkar
@@ -16,6 +17,7 @@ class LeaderboardTab extends ConsumerWidget {
     final query = ref.watch(leaderboardQueryProvider);
     final rows = ref.watch(leaderboardProvider);
     final minimums = ref.watch(leaderboardMinimumsProvider).value;
+    final hidden = ref.watch(leaderboardHiddenProvider).value ?? false;
     final notifier = ref.read(leaderboardQueryProvider.notifier);
     final theme = Theme.of(context);
 
@@ -47,6 +49,15 @@ class LeaderboardTab extends ConsumerWidget {
           ),
           const SizedBox(height: 8),
           Text(_explanation(query, minimums), style: theme.textTheme.bodySmall),
+          if (hidden)
+            Card(
+              margin: const EdgeInsets.only(top: 8),
+              child: ListTile(
+                leading: const Icon(Icons.visibility_off_outlined),
+                title: const Text('Sıralamalarda gizlisin'),
+                subtitle: const Text("Okul arkadaşların seni görmez. Profil > Gizlilik'ten açabilirsin."),
+              ),
+            ),
           const SizedBox(height: 8),
           switch (rows) {
             AsyncData(:final value) when value.isEmpty => const Padding(

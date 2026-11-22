@@ -52,8 +52,8 @@ Her test çalışmasında bütün `public` / `private` şeması taranır; yeni k
     referrer, izinler), `X-Powered-By` yok; anahtar `sb_publishable_` değilse çalışmaz. Mobil: aynı anahtar kuralı;
     `allowBackup=false` + veri aktarma kuralları (oturum anahtarları yedeğe girmez).
 
-Kalan riskler [acik-isler](acik-isler.md)'de: hız sınırı yok, silinen hesabın anahtarı ≤ 1 saat geçerli, Supabase
-güvenlik kayıtlarında e-posta.
+Kalan riskler [acik-isler](acik-isler.md)'de (Supabase güvenlik kayıtlarında e-posta vb.). Silinen hesabın anahtarı
+ve hız sınırı Adım 13-14'te kapatıldı (aşağıda).
 
 ## İstek bekçisi ve yasaklama (Adım 13)
 
@@ -61,6 +61,15 @@ güvenlik kayıtlarında e-posta.
 - `set_user_ban(user, banned, reason)`: yalnızca süperadmin; kendini ve süperadmini yasaklayamaz. Profilde `banned_at`, Auth'ta 100 yıl engel, oturumlar ve yenileme anahtarları silinir; gerekçe denetim kaydında (`user_ban` / `user_unban`).
 - `reset_referee_strikes(user, note)`: süperadmin ya da kişinin okulunda `kullanici_bahsi_denetle`; kendine yapamaz.
 - Admin: `/kullanicilar` (arama, yasakla / kaldır, ihtar sıfırla), `/sosyal-bahisler` (sonuç bekleyen ve açık sosyal bahisler, gerekçeyle iptal).
+
+## Gizlilik ve istek sınırı (Adım 14)
+
+Kod: `supabase/migrations/20261122200659_gizlilik.sql`. Test: `15_gizlilik.test.sql` (36).
+
+- **Sıralamadan çıkma:** `set_leaderboard_hidden(hidden)` → `profile_private.leaderboard_hidden` (yalnızca kişi ve okulunda `kullanici_yonet` görür). Gizlenince sıralama satırları hemen silinir; `store_leaderboard` gizliyi hiç saymaz (sırada boşluk olmaz), `get_leaderboard` artakalan satırı da göstermez. Açınca sonraki hesaplamada (≤ 10 dk) döner; donmuş geçmiş haftalara dönmez. Okul özeti ve kişinin kendi istatistikleri etkilenmez.
+- **Veri dışa aktarma:** `export_my_data()` → tek JSON (`format: kampusbet-verilerim-1`): hesap (Auth e-postası, tarihler), profil, gizli profil, bakiye, seri, üyelik, izin, ledger, yatırımlar, açtığı / hakemlik yaptığı bahisler, itirazlar, düello oyunları, görev ödülleri, envanter, XP, sıralama satırları, yetkililerin kişi hakkındaki kayıtları (yapanın kimliği yok) ve kişinin kendi yönetim işlemleri. Başkasının kimliği, e-postası, adı girmez (test denetler). Silinmiş hesap alamaz. Mobil: Profil > Gizlilik > "Verilerimi indir" → `kampusbet-verilerim-YYYYAAGG.json` paylaş menüsüyle (`share_plus`, dosya önce uygulamanın geçici klasörüne yazılır).
+- **İstek sınırı:** `guard.check_request()` giriş yapmış kişinin **yazma** isteklerini sayar: salt okunur transaction'lar (tablo okumaları, `stable` RPC'ler: `my_progress`, `my_quests`, `my_stats`, `get_leaderboard`, `school_stats`) sayılmaz. Son bir dakikada `economy_settings.api_write_limit_per_minute` (varsayılan 60) isteğe ulaşan `KB026` alır. Sayaç `private.request_log` (unlogged, istemciye kapalı), `kampusbet_istek_sayaci` 10 dakikada bir 5 dakikadan eskileri siler. **Sınır:** başarısız istek transaction'la geri alındığı için sayılmaz; IP başına sınır yok (anonim zaten hiçbir şey yapamaz). Tam koruma için önüne ağ geçidi (ör. Cloudflare) gerekir. Supabase Auth'un kendi giriş / kayıt / mail sınırları ayrıca var (panelde Rate Limits).
+- **Kullanım koşulları:** tek kaynak `mobile/assets/legal/kullanim_kosullari.txt` (mobil `/kosullar`, girişten önce de açılır; admin'de oturumsuz `/kosullar`, kopyanın aynılığını ve sürümünü `app_info_test` denetler). Kayıtta "18 yaşını doldurdum; Kullanım Koşulları'nı okudum ve kabul ediyorum" kutusu zorunlu; kabul edilen sürüm Supabase Auth kullanıcı metadatasına `terms_version` (`AppInfo.termsVersion`) olarak yazılır. **Taslak:** hukuk incelemesi, köşeli parantezler (işletmeci, iletişim, yetkili mahkeme), yaş sınırı kararı.
 
 ## Hesap silme
 
@@ -91,3 +100,4 @@ güvenlik kayıtlarında e-posta.
   yurt dışı aktarım dayanağı, mail sağlayıcısı, güvenlik kaydı süresi) kullanıcı tarafından doldurulacak.
 - İçerik: işlenen veriler, amaç ve hukuki sebep (m. 5), kimin gördüğü (okul arkadaşları, yetkililer, Supabase,
   mail sağlayıcısı), yurt dışına aktarım (AB / Frankfurt, m. 9), saklama ve silme, haklar (m. 11), başvuru.
+  Adım 14: sıralamadan çıkma, uygulamadan veri indirme ve istek sayacı eklendi (admin kopyası da).

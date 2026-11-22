@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -9,6 +12,7 @@ import 'package:kampusbet/core/supabase.dart';
 import 'package:kampusbet/games/trivia_data.dart';
 import 'package:kampusbet/leaderboard/leaderboard_data.dart';
 import 'package:kampusbet/market/market_data.dart';
+import 'package:kampusbet/profile/privacy_data.dart';
 import 'package:kampusbet/profile/profile_data.dart';
 import 'package:kampusbet/profile/profile_tab.dart';
 import 'package:kampusbet/profile/student_email_data.dart';
@@ -45,7 +49,9 @@ Future<void> pumpApp(
   List<WagerEntry> history = const [],
   Progress progress = const Progress(xp: 110, level: 2, levelXp: 100, nextLevelXp: 300, pickXpToday: 15),
   List<XpEvent> xpEvents = const [],
+  FakePrivacyApi? privacy,
 }) async {
+  final privacyApi = privacy ?? FakePrivacyApi();
   // Gerçek telefon boyutu (Pixel 7); varsayılan 800×600 test ekranında düğmeler görünür alanın dışında kalıyor.
   tester.view.physicalSize = const Size(1080, 2400);
   tester.view.devicePixelRatio = 2.625;
@@ -71,6 +77,8 @@ Future<void> pumpApp(
         ),
         leaderboardMinimumsProvider.overrideWith((ref) async => (week: 5, allTime: 20)),
         myStatsProvider.overrideWith((ref) async => stats),
+        privacyApiProvider.overrideWithValue(privacyApi),
+        leaderboardHiddenProvider.overrideWith((ref) async => privacyApi.hidden),
         myWagerHistoryProvider.overrideWith((ref) async => history),
         myProgressProvider.overrideWith((ref) async => progress),
         xpRulesProvider.overrideWith((ref) async => (dailyLogin: 10, correctPick: 15, dailyPickCap: 60)),
@@ -86,6 +94,26 @@ Future<void> pumpApp(
     ),
   );
   await tester.pumpAndSettle();
+}
+
+/// Gizlilik işlemlerinin sahtesi: tercih bellekte tutulur, dışa aktarma sabit veri döner, paylaşım kaydedilir.
+class FakePrivacyApi implements PrivacyApi {
+  FakePrivacyApi({this.hidden = false});
+
+  bool hidden;
+  final shared = <(String, String)>[];
+
+  @override
+  Future<void> setLeaderboardHidden(bool hidden) async => this.hidden = hidden;
+
+  @override
+  Future<Object?> exportMyData() async => {
+    'format': 'kampusbet-verilerim-1',
+    'profile': {'first_name': 'Ada'},
+  };
+
+  @override
+  Future<void> shareFile(String name, Uint8List bytes) async => shared.add((name, utf8.decode(bytes)));
 }
 
 void main() {
@@ -756,6 +784,63 @@ void main() {
     await tester.tap(find.text('Vazgeç'));
     await tester.pumpAndSettle();
     expect(find.text('Hesabını sil'), findsNothing);
+  });
+
+  testWidgets('kayıt: koşullar kabul edilmeden gönderilmez; kullanım koşulları açılır', (tester) async {
+    await pumpApp(tester);
+    await tester.tap(find.text('Kayıt ol').first);
+    await tester.pumpAndSettle();
+    await tester.enterText(find.widgetWithText(TextFormField, 'E-posta'), 'ada@example.com');
+    await tester.enterText(find.widgetWithText(TextFormField, 'Şifre'), 'uzun-sifre-1');
+    await tester.enterText(find.widgetWithText(TextFormField, 'Şifre (tekrar)'), 'uzun-sifre-1');
+    await tester.tap(find.widgetWithText(FilledButton, 'Kayıt ol'));
+    await tester.pumpAndSettle();
+    expect(find.text('Kayıt olmak için kullanım koşullarını kabul etmelisin.'), findsOneWidget);
+
+    await tester.tap(find.text("18 yaşını doldurdum; Kullanım Koşulları'nı okudum ve kabul ediyorum."));
+    await tester.pump();
+    expect(tester.widget<CheckboxListTile>(find.byType(CheckboxListTile)).value, isTrue);
+
+    await tester.tap(find.widgetWithText(TextButton, 'Kullanım Koşulları'));
+    await tester.pumpAndSettle();
+    expect(find.text('Kullanım koşulları'), findsOneWidget);
+    expect(find.text('1. Hizmet'), findsOneWidget);
+  });
+
+  testWidgets('profilde gizlilik: liderlikte görünme kapatılır, veriler dosya olarak paylaşılır', (tester) async {
+    final privacy = FakePrivacyApi();
+    await pumpApp(tester, userId: 'u1', profile: _profile, privacy: privacy);
+    await tester.tap(find.text('Profil'));
+    await tester.pumpAndSettle();
+    final profileList = find.descendant(of: find.byType(ProfileTab), matching: find.byType(Scrollable)).first;
+    await tester.drag(profileList, const Offset(0, -3000));
+    tester.state<ScaffoldMessengerState>(find.byType(ScaffoldMessenger)).clearSnackBars();
+    await tester.pumpAndSettle();
+
+    SwitchListTile visibility() => tester.widget<SwitchListTile>(find.widgetWithText(SwitchListTile, 'Liderlikte görün'));
+    expect(visibility().value, isTrue);
+    await tester.tap(find.text('Liderlikte görün'));
+    await tester.pumpAndSettle();
+    expect(privacy.hidden, isTrue);
+    expect(visibility().value, isFalse);
+    expect(find.text('Artık sıralamalarda görünmüyorsun.'), findsOneWidget);
+    tester.state<ScaffoldMessengerState>(find.byType(ScaffoldMessenger)).clearSnackBars();
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Verilerimi indir'));
+    await tester.pumpAndSettle();
+    expect(privacy.shared, hasLength(1));
+    final (name, json) = privacy.shared.single;
+    expect(name, matches(RegExp(r'^kampusbet-verilerim-\d{8}\.json$')));
+    expect(jsonDecode(json), containsPair('format', 'kampusbet-verilerim-1'));
+
+    await tester.tap(find.text('Liderlik'));
+    await tester.pumpAndSettle();
+    expect(find.text('Sıralamalarda gizlisin'), findsOneWidget);
+  });
+
+  test('veri dosyasının adı tarihli', () {
+    expect(dataExportFileName(DateTime(2026, 3, 7)), 'kampusbet-verilerim-20260307.json');
   });
 
   test('sonuç metni: kazanç, kazançsız doğru tahmin, kazanan çıkmayınca iade, kayıp', () {

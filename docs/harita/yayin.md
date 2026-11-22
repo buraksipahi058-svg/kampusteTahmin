@@ -13,7 +13,7 @@ Kurallar: KARARLAR "Yayına hazırlık". Kullanıcının yapacakları [acik-isle
 | "Şifremi unuttum": link telefonda açılınca oturum başlar, yeni şifre Profil > "Şifreyi değiştir" (`/sifre`) | `auth_screen.dart`, `profile/change_password_screen.dart` |
 | Yayın imzası: `android/key.properties` varsa onunla, yoksa debug anahtarıyla (uyarı basar; mağazaya yüklenemez) | `android/app/build.gradle.kts`, örnek `android/key.properties.example` |
 | R8 kuralları (release'te açılışta takılmayı önler) | `android/app/proguard-rules.pro` |
-| Gizlilik ve hesap silme sayfaları, oturumsuz | admin `/gizlilik`, `/hesap-silme` (`proxy.ts` `PUBLIC_PATHS`) |
+| Gizlilik, kullanım koşulları ve hesap silme sayfaları, oturumsuz | admin `/gizlilik`, `/kosullar`, `/hesap-silme` (`proxy.ts` `PUBLIC_PATHS`) |
 | Türkçe e-posta şablonları | `supabase/templates/onay.html`, `sifre_sifirlama.html` |
 
 ## Canlıya geçiş sırası
@@ -38,7 +38,7 @@ Kurallar: KARARLAR "Yayına hazırlık". Kullanıcının yapacakları [acik-isle
    - Leaked password protection açık (planda varsa), en az şifre uzunluğu 8.
 4. **Admin paneli yayını** (ör. Vercel, kök klasör `admin/`): ortam değişkenleri `NEXT_PUBLIC_SUPABASE_URL`,
    `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (canlı projenin). Secret key **verilmez**. Alan adı → mağaza bağlantıları:
-   `https://<admin-alan-adı>/gizlilik`, `https://<admin-alan-adı>/hesap-silme`.
+   `https://<admin-alan-adı>/gizlilik`, `https://<admin-alan-adı>/kosullar`, `https://<admin-alan-adı>/hesap-silme`.
 5. **Android yükleme anahtarı** (bir kez; anahtar ve şifreler repoya girmez, kaybedilmemeli):
    ```bash
    keytool -genkey -v -keystore C:/Users/<kullanıcı>/kampusbet-upload.jks -keyalg RSA -keysize 2048 -validity 10000 -alias upload
@@ -66,4 +66,5 @@ Kurallar: KARARLAR "Yayına hazırlık". Kullanıcının yapacakları [acik-isle
 
 - Release APK (debug anahtarıyla) emülatörde: link şemasıyla açıldı, oturum geldi, veriler yüklendi.
 - AAB derlemesi tamam (53 MB).
-- `/gizlilik`, `/hesap-silme` oturumsuz açılıyor; panel sayfaları girişe yönleniyor.
+- `/gizlilik`, `/kosullar`, `/hesap-silme` oturumsuz açılıyor; panel sayfaları girişe yönleniyor.
+- Adım 14: release APK'da (`share_plus` eklendikten sonra) açılış, veri indirme paylaş menüsü, gizlenme / görünme ve koşullar ekranı denendi.

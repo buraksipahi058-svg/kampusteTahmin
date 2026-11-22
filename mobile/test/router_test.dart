@@ -19,11 +19,13 @@ void main() {
     expect(redirectFor(location: Routes.auth, userId: null, profile: none), isNull);
   });
 
-  test('KVKK metni her durumda açılır', () {
-    expect(redirectFor(location: Routes.privacy, userId: null, profile: missing('u1')), isNull);
-    expect(redirectFor(location: Routes.privacy, userId: 'u1', profile: const AsyncLoading()), isNull);
-    expect(redirectFor(location: Routes.privacy, userId: 'u1', profile: missing('u1')), isNull);
-    expect(redirectFor(location: Routes.privacy, userId: 'u1', profile: found('u1')), isNull);
+  test('KVKK metni ve kullanım koşulları her durumda açılır', () {
+    for (final location in [Routes.privacy, Routes.terms]) {
+      expect(redirectFor(location: location, userId: null, profile: missing('u1')), isNull);
+      expect(redirectFor(location: location, userId: 'u1', profile: const AsyncLoading()), isNull);
+      expect(redirectFor(location: location, userId: 'u1', profile: missing('u1')), isNull);
+      expect(redirectFor(location: location, userId: 'u1', profile: found('u1')), isNull);
+    }
   });
 
   test('profil sorgusu sürerken yükleniyor ekranı', () {

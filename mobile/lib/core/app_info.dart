@@ -14,4 +14,8 @@ abstract final class AppInfo {
   static const authScheme = 'com.kampusbet.kampusbet';
   static const authCallbackHost = 'giris-callback';
   static const authRedirectUrl = '$authScheme://$authCallbackHost';
+
+  /// Kayıtta kabul edilen kullanım koşullarının sürümü (`assets/legal/kullanim_kosullari.txt` "Sürüm:" satırı;
+  /// test denetler). Supabase Auth kullanıcı metadatasına `terms_version` olarak yazılır.
+  static const termsVersion = '2026-11-22';
 }

@@ -4,7 +4,7 @@
 
 Kod: `mobile/`. Uygulama kimliği `com.kampusbet.kampusbet` (yayından önce değiştirilebilir).
 Platformlar: android, ios, web (web yalnızca hızlı önizleme için). iOS derlemesi Mac ister; v1 Android öncelikli (öneri, onay bekliyor).
-Paketler: `supabase_flutter` 2.18, `flutter_riverpod` 3.4, `go_router` 18, `http` (yalnızca ağ hatasını tanımak için).
+Paketler: `supabase_flutter` 2.18, `flutter_riverpod` 3.4, `go_router` 18, `http` (yalnızca ağ hatasını tanımak için), `share_plus` 13 (veri dosyasını paylaşma; release'te denendi).
 
 ## Çalıştırma (`mobile/` klasöründe)
 
@@ -31,9 +31,9 @@ Ekran görüntüsü: `adb shell screencap -p /sdcard/x.png` + `adb pull`.
 | `core/error_messages.dart` | **Tek hata eşlemesi**: `userMessage(hata)`; veritabanı kodları (KB001-006, 42501...) + Auth kodları + ağ hatası. Yeni SQLSTATE önce [veritabani.md](veritabani.md) tablosuna, sonra buraya; test ikisini karşılaştırır |
 | `core/supabase.dart` | `supabaseProvider`, `currentUserIdProvider` (oturum değişince yenilenir) |
 | `core/router.dart`, `routes.dart` | go_router; yönlendirme kuralı `redirectFor` (saf fonksiyon, testli) |
-| `auth/auth_screen.dart` | E-posta + şifre giriş/kayıt, onay mailini yeniden gönderme, "Şifremi unuttum" (linkler `AppInfo.authRedirectUrl`'e döner), KVKK bağlantısı |
+| `auth/auth_screen.dart` | E-posta + şifre giriş/kayıt, onay mailini yeniden gönderme, "Şifremi unuttum" (linkler `AppInfo.authRedirectUrl`'e döner), kayıtta zorunlu yaş + koşullar onay kutusu (`terms_version` Auth metadatasına), Kullanım Koşulları ve KVKK bağlantıları |
 | `profile/profile_data.dart` | `myProfileProvider`, `schoolsProvider`, `createProfile` (`public.create_profile`) |
-| `profile/create_profile_screen.dart`, `profile_tab.dart` | Profil oluşturma; Profil sekmesi (kuşanılmış kozmetikler: çerçeve, isim rengi, unvan, rozet; okul maili; Görevler kartı + hazır ödül sayısı; bakiye, seri; seviye kartı; İstatistiklerim; Geçmiş bahislerim; Gizlilik ve KVKK; çıkış; Hesabımı sil) |
+| `profile/create_profile_screen.dart`, `profile_tab.dart` | Profil oluşturma; Profil sekmesi (kuşanılmış kozmetikler: çerçeve, isim rengi, unvan, rozet; okul maili; Görevler kartı + hazır ödül sayısı; bakiye, seri; seviye kartı; İstatistiklerim; Geçmiş bahislerim; Şifreyi değiştir; Gizlilik kartı; çıkış; Hesabımı sil) |
 | `profile/student_email_data.dart` | `studentEmailProvider` (`profile_private`), `requestStudentEmailCode`, `confirmStudentEmail` |
 | `profile/verify_email_screen.dart` | `/okul-maili`: mail → kod; okulun alan adını ipucu gösterir (profil sorgusu `school_email_domains`'i de çeker) |
 | `wallet/wallet_data.dart` | `balanceProvider`, `loginStreakProvider`, `dailyRewardProvider` (`claim_daily_login`), `formatAmount` |
@@ -58,7 +58,9 @@ Ekran görüntüsü: `adb shell screencap -p /sdcard/x.png` + `adb pull`.
 | `progress/progress_data.dart` | `Progress` + `myProgressProvider` (`my_progress`), `xpRulesProvider` (ekonomi ayarları), `xpEventsProvider` (son 20 XP olayı), `refreshProgress` (giriş ödülü, görev, bahis sonrası) |
 | `progress/level_card.dart` | Profil'de "Seviye N", ilerleme çubuğu, sonraki seviyeye kalan XP; dokununca kök navigator'da XP kuralları ve son kazançlar sayfası |
 | `profile/change_password_screen.dart` | `/sifre`: yeni şifre + tekrar (en az 8), `auth.updateUser`; Profil'den açılır (şifre sıfırlama linkiyle gelindiğinde de buradan) |
-| `legal/privacy_screen.dart` | `/kvkk`: KVKK aydınlatma metni, `assets/legal/kvkk_aydinlatma.txt`'ten (tek kaynak; `# ` / `## ` / `- ` biçimi). Girişten önce de açılır (`redirectFor`), kayıt ekranında ve Profil'de bağlantısı var |
+| `legal/legal_screen.dart` | `LegalScreen(LegalDocument)`: `/kvkk` (`assets/legal/kvkk_aydinlatma.txt`) ve `/kosullar` (`assets/legal/kullanim_kosullari.txt`); tek kaynak, `# ` / `## ` / `- ` biçimi. Girişten önce de açılır (`redirectFor`), kayıt ekranında ve Profil'de bağlantısı var |
+| `profile/privacy_data.dart` | `PrivacyApi` (`set_leaderboard_hidden`, `export_my_data`, paylaş menüsü; testte sahtesi), `leaderboardHiddenProvider` (`profile_private`), `setLeaderboardHidden`, `exportMyData` (girintili JSON, `dataExportFileName`) |
+| `profile/privacy_card.dart` | Profil'de Gizlilik kartı: "Liderlikte görün" anahtarı, "Verilerimi indir", Gizlilik ve KVKK, Kullanım koşulları |
 | `profile/delete_account.dart` | "Hesabımı sil": onay penceresi (kutu işaretlenmeden düğme kapalı), `delete_my_account`, yerel çıkış |
 | `bets/create_social_bet_screen.dart` | `/sosyal-bahis-ac`: soru, 2–4 seçenek, kapanış (tarih + saat seçici), kişi başı en fazla (≤ 100); okul kümesinde açar (`Profile.schoolId`) |
 
@@ -69,7 +71,7 @@ Profil yok → `/profil-olustur` (okullar `clusters where type = 'school'`). Pro
 Kabuk açılınca `claim_daily_login()` bir kez çağrılır; ödül alındıysa bildirim + bakiye/seri sunucudan yeniden okunur.
 Sağlayıcılar `currentUserIdProvider`'a bağlı: çıkış/giriş olunca kendiliğinden yeniden çalışır.
 
-## Testler (`mobile/test/`, 46)
+## Testler (`mobile/test/`, 50)
 
 `app_test.dart` `pumpApp` test ekranını telefon boyutuna (1080×2400, dpr 2.625) ayarlar; varsayılan 800×600'de
 düğmeler görünür alanın dışında kalır, ayrıca alttaki günlük ödül bildirimi düğmeleri örtebilir.

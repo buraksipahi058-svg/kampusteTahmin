@@ -16,7 +16,7 @@ KampüsBet'te gerçek para yoktur. SP ve SSP sanal puanlardır: satın alınamaz
 - İletişim bilgileri: giriş e-postan; doğrulanmış okul (öğrenci) e-postan. Doğrulama kodu yalnızca şifrelenmiş özet olarak, en fazla 10 dakika saklanır.
 - Uygulama içi işlemler: SP / SSP hareketleri, bahis ve tahmin yatırımların ve sonuçları, düello cevapların, görevler, XP ve seviye, market (kozmetik) alımların, hakemlik kararların ve itirazların.
 - Yetkililer için: verilen izinler ve yönetim işlemlerinin kayıtları.
-- Teknik bilgiler: oturum bilgileri, giriş zamanları; altyapı sağlayıcısının güvenlik kayıtlarında IP adresi ve cihaz / tarayıcı bilgisi.
+- Teknik bilgiler: oturum bilgileri, giriş zamanları; kötüye kullanımı önlemek için son birkaç dakikadaki işlem sayın (en fazla 10 dakika tutulur); altyapı sağlayıcısının güvenlik kayıtlarında IP adresi ve cihaz / tarayıcı bilgisi.
 
 ## 3. Hangi amaçla ve hangi hukuki sebeple
 
@@ -27,7 +27,7 @@ KampüsBet'te gerçek para yoktur. SP ve SSP sanal puanlardır: satın alınamaz
 
 ## 4. Verilerini kimler görür
 
-- Okul arkadaşların: adın, soyadın, okulun, bölümün, seviyen ve kuşandığın kozmetikler; sıralamalarda adın, soyadının baş harfi ve sıralama değerlerin (isabet oranı, net kazanç, doğru tahmin serisi); açtığın ya da hakemliğini yaptığın sosyal bahislerde adın. Bireysel yatırımların başkalarına gösterilmez; yalnızca havuz toplamları görünür.
+- Okul arkadaşların: adın, soyadın, okulun, bölümün, seviyen ve kuşandığın kozmetikler; sıralamalarda adın, soyadının baş harfi ve sıralama değerlerin (isabet oranı, net kazanç, doğru tahmin serisi); açtığın ya da hakemliğini yaptığın sosyal bahislerde adın. Bireysel yatırımların başkalarına gösterilmez; yalnızca havuz toplamları görünür. Sıralamalarda görünmek istemezsen Profil > Gizlilik > "Liderlikte görün" seçeneğini kapatabilirsin; o andan itibaren sıralamalarda gösterilmezsin.
 - Okulundaki yetkililer, yalnızca kendilerine verilen izin ölçüsünde (ör. itiraz inceleme, okul istatistikleri).
 - Sistem yöneticisi.
 - Hizmet aldığımız veri işleyenler: Supabase (veritabanı ve kimlik doğrulama; sunucular Avrupa Birliği'nde, Almanya / Frankfurt) ve [e-posta gönderim sağlayıcısı, ör. Brevo] (yalnızca okul e-postana doğrulama kodu göndermek için).
@@ -56,7 +56,7 @@ Veriler Avrupa Birliği'ndeki (Almanya) sunucularda saklanır; bu, KVKK m. 9 kap
 - yalnızca otomatik sistemlerle analiz edilmesi sonucu aleyhine bir sonuç çıkmasına itiraz etme,
 - kanuna aykırı işleme nedeniyle zarara uğrarsan zararın giderilmesini isteme.
 
-Başvurularını [iletişim e-postası] adresine iletebilirsin. Başvurun en geç 30 gün içinde ücretsiz olarak sonuçlandırılır.
+Hesabındaki verilerin bir kopyasını istediğin zaman uygulamadan alabilirsin: Profil > Gizlilik > Verilerimi indir (JSON dosyası). Diğer başvurularını [iletişim e-postası] adresine iletebilirsin. Başvurun en geç 30 gün içinde ücretsiz olarak sonuçlandırılır.
 
 ## 8. Değişiklikler
 

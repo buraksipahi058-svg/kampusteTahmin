@@ -28,7 +28,7 @@ Yapılandırma: `admin/.env.local` (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUP
 | `lib/format.ts` | Tarih (İstanbul), tutar, oran biçimi; `datetime-local` ↔ ISO (+03:00; `istanbulLocalToIso`, `isoToIstanbulLocal`) |
 | `components/ui.tsx`, `user-search.tsx` | Gönder düğmesi, form mesajı; ada göre kullanıcı arama |
 | `app/giris/` | Giriş formu + `login` / `logout` server action'ları |
-| `app/gizlilik/`, `app/hesap-silme/` | **Oturumsuz** metin sayfaları (mağaza bağlantıları; `proxy.ts` `PUBLIC_PATHS`). KVKK metni `src/legal/kvkk_aydinlatma.txt` (mobildeki asset'in kopyası; mobil test aynılığını denetler), `lib/legal.ts` (`use cache` ile okur, derlemede statik), `components/legal-page.tsx` |
+| `app/gizlilik/`, `app/kosullar/`, `app/hesap-silme/` | **Oturumsuz** metin sayfaları (mağaza bağlantıları; `proxy.ts` `PUBLIC_PATHS`). KVKK metni ve kullanım koşulları `src/legal/*.txt` (mobildeki asset'lerin kopyası; mobil test aynılığını denetler), `lib/legal.ts` (`use cache` ile okur, derlemede statik), `components/legal-page.tsx` |
 | `app/(panel)/layout.tsx` | `instant = false`; rol kontrolü (öğrenciye "yetkin yok"), menü |
 | `app/(panel)/resmi-bahisler/` | Liste (seçenek, oran, yatırılan, olası ödeme), açık sabit oranlıda oran değiştirme (`update_official_bet_odds`), kilitle / sonuçlandır / iptal; `yeni/` açma formu |
 | `app/(panel)/itirazlar/` | Moderatör (`kullanici_bahsi_denetle` / süperadmin): açık itirazlı sosyal bahisler, hakemin sonucu, havuz, itiraz gerekçeleri; onayla / değiştir / iptal (`resolve_social_dispute`) |

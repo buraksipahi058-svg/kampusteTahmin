@@ -386,6 +386,7 @@ export type Database = {
       }
       economy_settings: {
         Row: {
+          api_write_limit_per_minute: number
           daily_base_sp: number
           daily_max_sp: number
           daily_max_stake_sp: number
@@ -413,6 +414,7 @@ export type Database = {
           xp_level_step: number
         }
         Insert: {
+          api_write_limit_per_minute?: number
           daily_base_sp: number
           daily_max_sp: number
           daily_max_stake_sp?: number
@@ -440,6 +442,7 @@ export type Database = {
           xp_level_step?: number
         }
         Update: {
+          api_write_limit_per_minute?: number
           daily_base_sp?: number
           daily_max_sp?: number
           daily_max_stake_sp?: number
@@ -725,16 +728,19 @@ export type Database = {
       }
       profile_private: {
         Row: {
+          leaderboard_hidden: boolean
           student_email: string | null
           student_email_verified_at: string | null
           user_id: string
         }
         Insert: {
+          leaderboard_hidden?: boolean
           student_email?: string | null
           student_email_verified_at?: string | null
           user_id: string
         }
         Update: {
+          leaderboard_hidden?: boolean
           student_email?: string | null
           student_email_verified_at?: string | null
           user_id?: string
@@ -1444,6 +1450,7 @@ export type Database = {
         Args: { p_bet_id: string; p_reason: string }
         Returns: string
       }
+      export_my_data: { Args: never; Returns: Json }
       get_leaderboard: {
         Args: {
           p_limit?: number
@@ -1639,6 +1646,10 @@ export type Database = {
       }
       set_item_equipped: {
         Args: { p_equipped: boolean; p_item_id: string }
+        Returns: undefined
+      }
+      set_leaderboard_hidden: {
+        Args: { p_hidden: boolean }
         Returns: undefined
       }
       set_user_ban: {

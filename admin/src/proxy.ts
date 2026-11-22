@@ -3,7 +3,7 @@ import { updateSession } from "@/lib/supabase/proxy";
 
 const LOGIN_PATH = "/giris";
 // Herkese açık metin sayfaları (mağaza bağlantıları): oturum istemez, girişe yönlenmez.
-const PUBLIC_PATHS = new Set(["/gizlilik", "/hesap-silme"]);
+const PUBLIC_PATHS = new Set(["/gizlilik", "/hesap-silme", "/kosullar"]);
 
 // Yönlendirme yanıtına yenilenmiş oturum çerezlerini de taşır.
 function redirectWithSession(url: URL, sessionResponse: NextResponse) {

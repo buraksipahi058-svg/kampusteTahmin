@@ -1,0 +1,65 @@
+# Kullanım Koşulları
+
+TASLAK — yayından önce hukuk incelemesinden geçmeli; köşeli parantezli yerler doldurulmalı. Sürüm: 22.11.2026
+
+Bu koşullar KampüsBet uygulamasını kullanırken geçerlidir. Kayıt olurken bu koşulları kabul etmiş olursun. Kişisel verilerinin nasıl işlendiği ayrıca KVKK Aydınlatma Metni'nde anlatılır.
+
+## 1. Hizmet
+
+- KampüsBet, üniversite öğrencilerinin okul etkinlikleri ve kampüs hayatı üzerine sanal puanlarla tahmin yaptığı ve mini oyunlar oynadığı bir topluluk uygulamasıdır.
+- Hizmeti [işletmecinin adı / unvanı] sunar. İletişim: [iletişim e-postası].
+
+## 2. Kimler kullanabilir
+
+- 18 yaşını doldurmuş olmalısın [hukuk incelemesi: yaş sınırı].
+- Uygulama okulun öğrencilerine açık, kapalı bir topluluktur; bahis açmak ve yatırmak için okul e-postanı doğrulaman gerekir.
+- Herkes yalnızca bir hesap açabilir. Başkası adına hesap açmak, hesabını devretmek ya da satmak yasaktır.
+- Hesabının ve şifrenin güvenliğinden sen sorumlusun.
+
+## 3. Gerçek para yok
+
+- SP ve SSP sanal puanlardır; hiçbir parasal değeri yoktur.
+- Puanlar satın alınamaz; paraya, hediye çekine ya da başka bir değere çevrilemez; kullanıcılar arasında aktarılamaz.
+- Market yalnızca görünüşü değiştiren kozmetikler sunar; oyunda avantaj satılmaz.
+- Puan, kozmetik ya da hesap karşılığında uygulama dışında para veya eşya alıp vermek yasaktır.
+- KampüsBet bir şans oyunu ya da bahis hizmeti değildir; gerçek parayla bahis oynamayı teşvik etmez [hukuk incelemesi: "bahis" kelimesinin kullanımı].
+
+## 4. Yapmaman gerekenler
+
+- Birden çok hesap açmak ya da başka hesaplarla anlaşıp puan aktarmak (ör. bilerek kaybetmek).
+- Hakemi olduğun sosyal bahiste sonucu bilerek yanlış girmek ya da itiraz sistemini kötüye kullanmak.
+- Uygulamayı otomatik araçlarla (bot, betik) kullanmak; sınırları aşmaya ya da güvenlik önlemlerini atlatmaya çalışmak. Bir hata bulursan kullanmak yerine [iletişim e-postası] adresine bildir.
+- Bahis başlıklarında, açıklamalarda ve itirazlarda hakaret, nefret söylemi, taciz, müstehcen ya da yasa dışı içerik; başkalarının kişisel verilerini paylaşmak; gerçek kişileri küçük düşüren sorular açmak.
+- Uygulamayı gerçek parayla bahis, kumar ya da başka bir yasa dışı faaliyet için kullanmak veya bunların reklamını yapmak.
+
+## 5. Sosyal bahisler, hakemlik ve itiraz
+
+- Sosyal bahsin sonucunu hakemi girer. Katılanlar itiraz süresi içinde itiraz edebilir; itirazı okulundaki yetkililer karara bağlar.
+- Hakem süresi içinde sonuç girmezse bahis iptal edilir, yatırımlar iade edilir ve hakeme ihtar yazılır. İhtarlar birikince hakemlik ve sosyal bahis açma hakkı kısıtlanır.
+- Yetkililer kurallara aykırı ya da uygunsuz bahisleri iptal edebilir; iptal edilen bahiste yatırımlar iade edilir.
+
+## 6. Resmi bahisler
+
+- Resmi bahisleri okulundaki yetkililer açar ve sonuçlandırır.
+- Oranlar bahis açıkken değişebilir; yaptığın yatırım, yatırdığın andaki oranla ödenir.
+- Bir bahis hatalı açıldıysa ya da etkinlik gerçekleşmediyse yetkililer bahsi iptal edebilir; yatırımlar iade edilir.
+
+## 7. Yaptırımlar
+
+- Kurallara uymazsan uyarı alabilirsin; hesabın kısıtlanabilir ya da kalıcı olarak yasaklanabilir. Hileyle kazanılan puanlar ve kozmetikler geri alınabilir.
+- Yasaklanan hesapla uygulama kullanılamaz. Karara itiraz etmek için [iletişim e-postası] adresine yazabilirsin.
+
+## 8. Hesabın sona ermesi ve hizmette değişiklik
+
+- Hesabını istediğin zaman silebilirsin: Profil > Hesabımı sil. Silinen hesabın puanları ve kozmetikleri geri getirilemez.
+- Uygulamanın özelliklerini, puan ve ödül kurallarını (ör. günlük ödül, görevler, fiyatlar) değiştirebilir ya da hizmeti sonlandırabiliriz. Sanal puanların parasal değeri olmadığı için bu durumda karşılık ödenmez.
+
+## 9. Sorumluluk
+
+- Uygulama "olduğu gibi" sunulur; kesintisiz ya da hatasız çalışacağı garanti edilmez.
+- Kullanıcıların yazdığı içerikten (bahis başlıkları, açıklamalar, itirazlar) onu yazan kişi sorumludur.
+
+## 10. Değişiklikler ve uygulanacak hukuk
+
+- Bu koşullar değişirse güncel hali uygulamada yayımlanır; önemli değişiklikler uygulama içinde duyurulur.
+- Bu koşullara Türkiye Cumhuriyeti hukuku uygulanır; uyuşmazlıklarda [yetkili mahkeme ve icra daireleri] yetkilidir.

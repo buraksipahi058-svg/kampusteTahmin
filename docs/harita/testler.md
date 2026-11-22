@@ -21,10 +21,11 @@ testleri. İkisi de buluttaki veritabanında çalışır.
 | `supabase/tests/database/12_guvenlik.test.sql` | şema değişmezleri (RLS, yazma yetkisi, anonim, search_path, private yardımcıları, diziler, politikalar, view, Realtime, varsayılan yetkiler) + saldırı denemeleri | 32 |
 | `supabase/tests/database/13_hesap_silme.test.sql` | silme engelleri (`KB024`, süperadmin), anonimleştirme, Auth temizliği, kalan kayıtlar, sıralama / okul özeti, mailin yeniden kullanımı, silindikten sonra kod / düello reddi, düello başlığı | 29 |
 | `supabase/tests/database/14_yonetim.test.sql` | istek bekçisi (ayar, silinmiş / yasaklı / normal / anonim), yasaklama (izin, gerekçe, Auth, oturumlar, denetim, kaldırma), ihtar sıfırlama (okul sınırı), oran değiştirme (izin, sayı, aralık, havuzlu, kapalı bahis, eski yatırım) | 31 |
+| `supabase/tests/database/15_gizlilik.test.sql` | sıralamadan çıkma (izin, ret, okul arkadaşı göremez, satırlar silinir, yeniden hesaplamada yok, sırada boşluk yok, artakalan satır gösterilmez, geri dönüş), veri dışa aktarma (anonim / silinmiş ret, içerik, başkasının verisi yok), istek sınırı (sınır, kişi başına, anonim, sayaç tablosu kapalı, eski istekler, temizlik, salt okunur istek) | 36 |
 | `supabase/tests/concurrency/para.mjs` | günlük ödül, eşzamanlı düşüm, eşzamanlı profil, aynı görev ödülü, aynı kişinin XP'li farklı görev ödülleri (kilitlenme), aynı ürün (+ bütünlük: bakiye, XP) | 8 kontrol |
 | `supabase/tests/concurrency/bahis.mjs` | eşzamanlı yatırım, çift yatırım, sonuç yarışı, çift sonuç (+ bütünlük: bakiye, XP) | 6 kontrol |
 
-Son durum: hepsi geçiyor (Adım 13 sonu: 617 pgTAP. Kalite kontrolü sonu: 586 pgTAP, para 8/8, bahis 6/6. Adım 11 sonu: 581 pgTAP; Adım 11 para / bahis koduna dokunmadığı için eşzamanlılık yeniden çalıştırılmadı. Adım 10 + XP sonu: eşzamanlılık para 7/7, bahis 6/6 — XP tetikleyicileri para ve
+Son durum: hepsi geçiyor (Adım 14 sonu: 653 pgTAP, 50 Flutter. Adım 13 sonu: 617 pgTAP. Kalite kontrolü sonu: 586 pgTAP, para 8/8, bahis 6/6. Adım 11 sonu: 581 pgTAP; Adım 11 para / bahis koduna dokunmadığı için eşzamanlılık yeniden çalıştırılmadı. Adım 10 + XP sonu: eşzamanlılık para 7/7, bahis 6/6 — XP tetikleyicileri para ve
 bahis transaction'larının içinde çalıştığı için yeniden çalıştırıldı). `cleanupWorld` XP olaylarını ve liderlik
 satırlarını da siler (10 dakikalık iş test okulunu hesaplamış olabilir).
 

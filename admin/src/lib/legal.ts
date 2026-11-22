@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 
-// KVKK aydınlatma metni: mobildeki `mobile/assets/legal/kvkk_aydinlatma.txt` ile aynı kopya
+// KVKK aydınlatma metni ve kullanım koşulları: mobildeki `mobile/assets/legal/*.txt` ile aynı kopyalar
 // (`src/legal/`); aynılığı mobil test denetler (mobile/test/app_info_test.dart).
 // Biçim: "# " başlık, "## " ara başlık, "- " madde; diğer satırlar paragraf.
 
@@ -12,6 +12,11 @@ export type LegalBlock =
 export async function readPrivacyNotice(): Promise<string> {
   "use cache";
   return readFile(path.join(process.cwd(), "src/legal/kvkk_aydinlatma.txt"), "utf8");
+}
+
+export async function readTermsOfUse(): Promise<string> {
+  "use cache";
+  return readFile(path.join(process.cwd(), "src/legal/kullanim_kosullari.txt"), "utf8");
 }
 
 export function parseLegalText(text: string): LegalBlock[] {
