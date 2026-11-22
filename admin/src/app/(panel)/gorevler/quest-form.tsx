@@ -81,6 +81,10 @@ export function QuestForm({
             {isSuper && <option value="SSP">SSP (yalnızca süperadmin)</option>}
           </select>
         </label>
+        <label className="flex flex-col gap-1 text-sm">
+          XP (paradan ayrı, 0–1000)
+          <input name="reward_xp" type="number" min={0} max={1000} required defaultValue={initial?.reward_xp ?? 20} className={`${inputClass} w-28`} />
+        </label>
       </div>
       <div className="flex flex-wrap gap-3">
         <label className="flex flex-col gap-1 text-sm">

@@ -51,6 +51,7 @@ Mobil ve admin komutları kendi bölgelerinde: [mobil.md](mobil.md), [admin.md](
 - **`db query --linked`** açık transaction'ları destekler, son sonuç kümesini döner, `postgres` rolüyle çalışır. Hata çıktısında SQLSTATE `ERROR:  22012: ...` biçiminde gelir.
 - **sdkmanager** paket adlarını eğik çizgiyle ister (`platforms/android-36`, `ndk/28.2.13676358`); noktalı virgüllü eski adları hata vermeden atlar.
 - **Önizleme aracı** (`preview_start`) bu oturumun eski klasörüne bakabilir; admin sunucusu gerekirse `npm --prefix admin run dev` ile başlatılıp `http://localhost:3000` açılır. `.claude/launch.json`'da `admin` tanımı var.
+- **`adb` Bash aracının PATH'inde yok:** `"$LOCALAPPDATA/Android/Sdk/platform-tools/adb.exe"` ile çağır (Git Bash'te `MSYS_NO_PATHCONV=1`). APK: `flutter build apk --debug --dart-define-from-file=.env` + `adb install -r build/app/outputs/flutter-apk/app-debug.apk`.
 - **Emülatörde klavye açıkken `adb shell input swipe`** klavyenin üstüne denk gelirse kaydırmalı yazım olarak harf yazar; önce `input keyevent KEYCODE_BACK` ile klavyeyi kapat.
 - **`adb shell input text`** Türkçe harf (ı, ş, ğ...) yazamaz (Java hatası verir); pano paylaşımı da güvenilir değil. Test verisinde ASCII kullan.
 - **İlk Flutter Android derlemesi** CMake 3.22.1'i SDK'ya kendisi kurar (bir kez, ~2 dk).

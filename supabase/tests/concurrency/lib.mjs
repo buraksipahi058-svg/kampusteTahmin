@@ -146,6 +146,11 @@ export async function cleanupWorld(w) {
   await mustRun(`begin;
 create temp table esz_bets on commit drop as
   select id from public.bets where cluster_id = '${w.school}' or creator_id in (${w.idList});
+alter table public.xp_events disable trigger xp_events_append_only;
+delete from public.xp_events where user_id in (${w.idList});
+alter table public.xp_events enable trigger xp_events_append_only;
+delete from public.leaderboard_snapshots where school_id = '${w.school}' or user_id in (${w.idList});
+delete from private.leaderboard_runs where school_id = '${w.school}';
 alter table public.ledger_entries disable trigger ledger_entries_append_only;
 delete from public.ledger_entries where user_id in (${w.idList});
 alter table public.ledger_entries enable trigger ledger_entries_append_only;
@@ -181,6 +186,10 @@ export async function checkLedgerIntegrity(w) {
      ) t where balance_after <> running) as broken`);
   check("bakiye ledger toplamına eşit ve balance_after zinciri tutarlı", mismatch === 0 && broken === 0,
     `uyuşmayan bakiye: ${mismatch}, kopuk satır: ${broken}`);
+  const [{ xp_mismatch }] = await mustRun(`select count(*)::int as xp_mismatch from public.profiles p
+    where p.id in (${w.idList})
+      and p.xp <> coalesce((select sum(e.amount) from public.xp_events e where e.user_id = p.id), 0)`);
+  check("profildeki XP, XP olaylarının toplamına eşit", xp_mismatch === 0, `uyuşmayan profil: ${xp_mismatch}`);
 }
 
 // Testi çalıştırır, ne olursa olsun test verisini siler ve çıkış kodunu ayarlar.

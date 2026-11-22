@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/supabase.dart';
+import '../progress/progress_data.dart';
 import '../wallet/wallet_data.dart';
 
 // Görev ilerlemesi ve ödül sunucuda hesaplanır (`my_quests`, `claim_quest_reward`); istemci yalnızca gösterir.
@@ -20,6 +21,7 @@ class Quest {
     required this.claimed,
     required this.periodEndsAt,
     this.description,
+    this.rewardXp = 0,
   });
 
   final String id;
@@ -34,6 +36,9 @@ class Quest {
   final int target;
   final String rewardCurrency;
   final int rewardAmount;
+
+  /// Ödülle birlikte verilen XP (0 olabilir).
+  final int rewardXp;
 
   /// Bu dönemdeki ilerleme (hedefle sınırlı).
   final int progress;
@@ -53,6 +58,7 @@ class Quest {
     target: json['target'] as int,
     rewardCurrency: json['reward_currency'] as String,
     rewardAmount: json['reward_amount'] as int,
+    rewardXp: json['reward_xp'] as int? ?? 0,
     progress: json['progress'] as int,
     claimed: json['claimed'] as bool,
     periodEndsAt: DateTime.parse(json['period_ends_at'] as String),
@@ -71,6 +77,7 @@ Future<({String currency, int amount})> claimQuest(WidgetRef ref, String questId
   final rows = await ref.read(supabaseProvider).rpc('claim_quest_reward', params: {'p_quest_id': questId}) as List;
   ref.invalidate(questsProvider);
   ref.invalidate(balanceProvider);
+  refreshProgress(ref);
   final row = rows.first as Map<String, dynamic>;
   return (currency: row['reward_currency'] as String, amount: row['reward_amount'] as int);
 }

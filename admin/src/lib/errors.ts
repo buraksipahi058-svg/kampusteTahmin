@@ -23,6 +23,7 @@ const messages: Record<string, string> = {
   KB020: "Bu görevin ödülü bu dönem zaten alındı.",
   KB021: "Ürün şu an satışta değil.",
   KB022: "Bu ürün zaten alınmış.",
+  KB023: "Kişinin seviyesi bu ürün için yetmiyor.",
   "42501": "Bu işlem için yetkin yok.",
   "23514": "Girilen bilgilerden biri geçersiz.",
   "23505": "Bu kayıt zaten var.",

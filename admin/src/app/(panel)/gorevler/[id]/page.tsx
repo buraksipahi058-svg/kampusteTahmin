@@ -17,7 +17,7 @@ export default async function EditQuestPage(props: PageProps<"/gorevler/[id]">) 
   const [{ data: quest }, { data: schools }] = await Promise.all([
     supabase
       .from("quests")
-      .select("id, school_id, title, description, period, action, target, reward_currency, reward_amount, starts_at, ends_at, active")
+      .select("id, school_id, title, description, period, action, target, reward_currency, reward_amount, reward_xp, starts_at, ends_at, active")
       .eq("id", id)
       .maybeSingle(),
     supabase.from("clusters").select("id, name").eq("type", "school").order("name"),

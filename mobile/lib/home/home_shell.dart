@@ -6,8 +6,10 @@ import '../bets/bets_tab.dart';
 import '../core/error_messages.dart';
 import '../core/routes.dart';
 import '../games/games_tab.dart';
+import '../leaderboard/leaderboard_tab.dart';
 import '../market/market_tab.dart';
 import '../profile/profile_tab.dart';
+import '../progress/progress_data.dart';
 import '../wallet/balance_bar.dart';
 import '../wallet/wallet_data.dart';
 import 'placeholder_tab.dart';
@@ -58,6 +60,7 @@ const homeTabs = [
     label: 'Liderlik',
     icon: Icons.leaderboard_outlined,
     selectedIcon: Icons.leaderboard,
+    page: LeaderboardTab(),
   ),
   HomeTab(
     path: Routes.profile,
@@ -80,6 +83,7 @@ class HomeShell extends ConsumerWidget {
       final messenger = ScaffoldMessenger.of(context);
       switch (next) {
         case AsyncData(value: DailyReward(claimed: true, :final amount, :final streak)):
+          refreshProgress(ref);
           messenger.showSnackBar(
             SnackBar(content: Text('Günlük giriş ödülü: +${formatAmount(amount)} SP · Seri: $streak gün')),
           );

@@ -5,10 +5,10 @@ gerektirdiği bölgeleri aç. Kod dosyalarını baştan sona okuma; bölge dosya
 
 ## Şu an
 
-- **Commit:** yalnızca kullanıcı onay verince, yalnızca yerel (push yok). Adım 5-6 `eea1448`'de; Adım 7, 8 ve 9 çalışma ağacında, commit edilmedi.
-- **Son tamamlanan:** Adım 9 — görevler (günlük / haftalık / sezonluk; ilerleme sunucuda kayıtlardan sayılır, ödül dönem başına bir) + kozmetik market (unvan, rozet, çerçeve, isim rengi; SP ve SSP vitrini; kuşanma). Kurallar varsayılan (KARARLAR "Görevler", "Market"). 445 pgTAP, 35 Flutter testi, para eşzamanlılığı 6/6; admin görev ve market sayfaları build temiz. Emülatörde: Görevler ekranında gerçek ilerleme → "Günün tahminini yap" ödülü +20 SP → Market'ten "Mor isim" 350 SP → kuşanıldı, profilde ad mor. Ayrıca sonuç metnindeki eski hata düzeltildi (kazanan tarafa kimse yatırmayınca iade alan kaybedene "Kazandın" yazıyordu).
+- **Commit:** yalnızca kullanıcı onay verince, yalnızca yerel (push yok). Adım 7-9 `f45f3dc`'de; Adım 10 + XP / seviye tek commit'te (adım tablosu).
+- **Son tamamlanan:** Adım 10 — liderlik (okul bazında bu hafta / geçen hafta / tüm zamanlar; isabet, net SP, net SSP, doğru tahmin serisi; 10 dakikada bir snapshot, biten hafta donar) + Profil'de istatistikler ve geçmiş bahisler + admin `/istatistik` (okul özeti, sıralama). Kurallar varsayılan (KARARLAR "Liderlik ve istatistik"). Ekinde **XP / seviye**: günlük giriş, görev ve doğru tahminden XP (tahminde günlük sınır), seviye eğrisi, seviyeyle açılan market ürünleri, Profil'de seviye kartı, liderlikte seviye (KARARLAR "XP ve seviye", [para](harita/para.md)). 524 pgTAP, 38 Flutter testi, eşzamanlılık para 7/7 + bahis 6/6; admin lint / tip / build temiz. Emülatörde gerçek veriyle: Liderlik "Kazanç"ta kişi mor adla +20 SP, Profil istatistikleri (%100 · 2/2, +20 SP · +80 SSP, düello 1/1), geçmiş ekranı üç bahis; bulutta zamanlanmış iş kendiliğinden çalıştı. XP: emülatörde görev ödülü +20 XP verdi, seviye kartı ve XP sayfası, markette "Seviye 3" kilidi görüldü.
 - **Bulutta deneme verisi:** giriş yapamayan "Test Yetkili" profili (`e2e00000-...0001`), sonuçlanmış resmi ve sosyal deneme bahisleri, bir trivia düellosu, bir günün tahmini; kullanıcının test hesabı `deneme@ogr.ornek.edu.tr` ile doğrulanmış (790 SP, "Mor isim" kuşanılı). Seed'de 5 genel görev, 8 genel ürün.
-- **Sıradaki:** Adım 10 — liderlik + istatistik (haftalık snapshot; öne çıkan isabet oranı / en çok kazanan / en iyi seri, "en çok bahis yapan" değil — MIMARI §11). Kuşanılan kozmetikler burada başkalarına görünecek; XP / seviye de bu adımda ele alınabilir ([para](harita/para.md)).
+- **Sıradaki:** Adım 11 — güvenlik denetimi (RLS saldırı testleri, advisors uyarılarının gözden geçirilmesi), hesap silme (soft delete + anonimleştirme), KVKK aydınlatma metni. 
 - **Açık işler** (denenmemiş, eksik, çözülmemiş, kullanıcıdan beklenen): [harita/acik-isler.md](harita/acik-isler.md).
 
 | # | Adım | Durum | Commit |
@@ -20,11 +20,11 @@ gerektirdiği bölgeleri aç. Kod dosyalarını baştan sona okuma; bölge dosya
 | 4 | Mobil temel | Bitti | `820d315` |
 | 5 | Okul maili doğrulama | Bitti | `eea1448` |
 | 6 | Resmi SSP bahisler + admin paneli | Bitti | `eea1448` |
-| 7 | Sosyal havuz (hakem, itiraz) | Bitti (commit yok) | |
-| 8 | Mini oyunlar (trivia düellosu, günün tahmini) | Bitti (commit yok) | |
-| 9 | Görevler + market | Bitti (commit yok) | |
-| 10 | Liderlik + istatistik | Sırada | |
-| 11 | Güvenlik denetimi, hesap silme, KVKK | | |
+| 7 | Sosyal havuz (hakem, itiraz) | Bitti | `f45f3dc` |
+| 8 | Mini oyunlar (trivia düellosu, günün tahmini) | Bitti | `f45f3dc` |
+| 9 | Görevler + market | Bitti | `f45f3dc` |
+| 10 | Liderlik + istatistik, XP / seviye | Bitti | (bu commit) |
+| 11 | Güvenlik denetimi, hesap silme, KVKK | Sırada | |
 
 ## Görev → ne okunur
 
@@ -34,8 +34,9 @@ gerektirdiği bölgeleri aç. Kod dosyalarını baştan sona okuma; bölge dosya
 | Admin ekranı (Adım 6) | [admin](harita/admin.md) + ilgili konu bölgesi | migration'lar |
 | Yeni SQL tablo / fonksiyon / RLS | [veritabani](harita/veritabani.md) + konu bölgesi + [testler](harita/testler.md) | eski test dosyalarının tamamı |
 | Okul, profil, yetki, okul maili (Adım 5) | [kimlik](harita/kimlik.md) | |
-| Bakiye, ödül, market, görev (Adım 9) | [para](harita/para.md) | |
+| Bakiye, ödül, market, görev (Adım 9), XP / seviye | [para](harita/para.md) | |
 | Resmi / sosyal / mini oyun bahisleri (Adım 6-8) | [bahis](harita/bahis.md) | |
+| Liderlik, kişisel istatistik, admin okul özeti (Adım 10) | [liderlik](harita/liderlik.md) | |
 | Komut çalıştırma, araç, emülatör, CLI hatası | [ortam](harita/ortam.md) | |
 | Test yazma / çalıştırma | [testler](harita/testler.md) | |
 | Denenmemiş / eksik / çözülmemiş ne var, kullanıcıdan ne bekleniyor | [acik-isler](harita/acik-isler.md) | |

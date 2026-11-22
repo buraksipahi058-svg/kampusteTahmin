@@ -7,9 +7,12 @@ import 'package:kampusbet/bets/bets_tab.dart';
 import 'package:kampusbet/core/app_info.dart';
 import 'package:kampusbet/core/supabase.dart';
 import 'package:kampusbet/games/trivia_data.dart';
+import 'package:kampusbet/leaderboard/leaderboard_data.dart';
 import 'package:kampusbet/market/market_data.dart';
 import 'package:kampusbet/profile/profile_data.dart';
+import 'package:kampusbet/profile/profile_tab.dart';
 import 'package:kampusbet/profile/student_email_data.dart';
+import 'package:kampusbet/progress/progress_data.dart';
 import 'package:kampusbet/quests/quests_data.dart';
 import 'package:kampusbet/wallet/wallet_data.dart';
 
@@ -37,6 +40,11 @@ Future<void> pumpApp(
   List<MarketItem> items = const [],
   List<OwnedItem> inventory = const [],
   List<Quest> quests = const [],
+  List<LeaderboardRow> Function(LeaderboardQuery)? leaderboard,
+  MyStats stats = const MyStats(),
+  List<WagerEntry> history = const [],
+  Progress progress = const Progress(xp: 110, level: 2, levelXp: 100, nextLevelXp: 300, pickXpToday: 15),
+  List<XpEvent> xpEvents = const [],
 }) async {
   // Gerçek telefon boyutu (Pixel 7); varsayılan 800×600 test ekranında düğmeler görünür alanın dışında kalıyor.
   tester.view.physicalSize = const Size(1080, 2400);
@@ -58,9 +66,16 @@ Future<void> pumpApp(
         marketItemsProvider.overrideWith((ref) async => items),
         myInventoryProvider.overrideWith((ref) async => inventory),
         questsProvider.overrideWith((ref) async => quests),
-        schoolsProvider.overrideWith(
-          (ref) async => const [School(id: 's1', name: 'Örnek Üniversitesi')],
+        leaderboardProvider.overrideWith(
+          (ref) async => leaderboard?.call(ref.watch(leaderboardQueryProvider)) ?? const <LeaderboardRow>[],
         ),
+        leaderboardMinimumsProvider.overrideWith((ref) async => (week: 5, allTime: 20)),
+        myStatsProvider.overrideWith((ref) async => stats),
+        myWagerHistoryProvider.overrideWith((ref) async => history),
+        myProgressProvider.overrideWith((ref) async => progress),
+        xpRulesProvider.overrideWith((ref) async => (dailyLogin: 10, correctPick: 15, dailyPickCap: 60)),
+        xpEventsProvider.overrideWith((ref) async => xpEvents),
+        schoolsProvider.overrideWith((ref) async => const [School(id: 's1', name: 'Örnek Üniversitesi')]),
         balanceProvider.overrideWith((ref) async => const Balance(sp: 1050, ssp: 0)),
         loginStreakProvider.overrideWith((ref) async => const LoginStreak(current: 1, longest: 3)),
         dailyRewardProvider.overrideWith(
@@ -424,13 +439,14 @@ void main() {
   const gold = MarketItem(id: 'm2', name: 'Altın çerçeve', category: 'frame', color: '#D4AF37', price: 400, currency: 'SP');
   const legend = MarketItem(id: 'm3', name: 'Kampüs Efsanesi', category: 'title', icon: '👑', price: 150, currency: 'SSP');
   const streak = MarketItem(id: 'm4', name: 'Seri Avcısı', category: 'badge', icon: '🔥', price: 250, currency: 'SP');
+  const crown = MarketItem(id: 'm5', name: 'Taç', category: 'badge', icon: '👑', price: 100, currency: 'SP', minLevel: 3);
 
   testWidgets('market vitrinleri: fiyatla satın alma onay ister, sahip olunan ürün kuşanılır', (tester) async {
     await pumpApp(
       tester,
       userId: 'u1',
       profile: _profile,
-      items: const [gold, oracle, legend],
+      items: const [crown, gold, oracle, legend],
       inventory: const [OwnedItem(item: gold, equipped: false)],
     );
     await tester.tap(find.text('Market'));
@@ -440,6 +456,11 @@ void main() {
     expect(find.widgetWithText(FilledButton, '600 SP'), findsOneWidget);
     expect(find.widgetWithText(FilledButton, 'Kuşan'), findsOneWidget);
     expect(find.text('Kampüs Efsanesi'), findsNothing);
+    // Seviye 2'deki kişi 3. seviye ürününü alamaz: düğme kilitli.
+    expect(find.textContaining('3. seviyede açılır'), findsOneWidget);
+    final locked = tester.widget<OutlinedButton>(find.widgetWithText(OutlinedButton, 'Seviye 3'));
+    expect(locked.onPressed, isNull);
+    expect(find.widgetWithText(FilledButton, '100 SP'), findsNothing);
 
     await tester.tap(find.widgetWithText(FilledButton, '600 SP'));
     await tester.pumpAndSettle();
@@ -470,7 +491,14 @@ void main() {
     expect(find.text('AY'), findsOneWidget);
   });
 
-  Quest quest(String id, {required int progress, required int target, bool claimed = false, String period = 'daily'}) =>
+  Quest quest(
+    String id, {
+    required int progress,
+    required int target,
+    bool claimed = false,
+    String period = 'daily',
+    int rewardXp = 0,
+  }) =>
       Quest(
         id: id,
         title: 'Görev $id',
@@ -482,6 +510,7 @@ void main() {
         progress: progress,
         claimed: claimed,
         periodEndsAt: DateTime.utc(2026, 11, 22, 21),
+        rewardXp: rewardXp,
       );
 
   testWidgets('görevler: profilde hazır ödül sayısı, ekranda ilerleme ve ödül durumu', (tester) async {
@@ -490,7 +519,7 @@ void main() {
       userId: 'u1',
       profile: _profile,
       quests: [
-        quest('a', progress: 2, target: 2),
+        quest('a', progress: 2, target: 2, rewardXp: 20),
         quest('b', progress: 0, target: 1),
         quest('c', progress: 1, target: 1, claimed: true, period: 'weekly'),
       ],
@@ -506,7 +535,137 @@ void main() {
     expect(find.widgetWithText(FilledButton, 'Ödülü al'), findsOneWidget);
     expect(find.text('Alındı'), findsOneWidget);
     expect(find.text('0/1'), findsOneWidget);
+    expect(find.text('+30 SP · +20 XP'), findsOneWidget);
+    expect(find.text('+30 SP'), findsNWidgets(2));
     expect(find.text('Yenilenir: 23.11.2026 00:00'), findsNWidgets(3));
+  });
+
+  testWidgets('liderlik: madalya, kozmetik, listede olmayan kendi satırı, ölçüt ve dönem değişimi', (tester) async {
+    List<LeaderboardRow> rows(LeaderboardQuery q) => switch (q.metric) {
+      LeaderboardMetric.hitRate => [
+        LeaderboardRow(
+          rank: 1,
+          userId: 'u2',
+          firstName: 'Mert',
+          lastName: 'Kaya',
+          value: 0.8,
+          sample: 5,
+          title: 'Kehanet Ustası',
+          titleIcon: '🔮',
+          badge: '⭐',
+          level: 7,
+          nameColor: const Color(0xFF7B1FA2),
+          computedAt: DateTime.utc(2026, 11, 22, 10, 30),
+        ),
+        const LeaderboardRow(rank: 2, userId: 'u3', firstName: 'Ece', lastName: 'Demir', value: 0.6, sample: 5),
+        const LeaderboardRow(
+          rank: 9,
+          userId: 'u1',
+          firstName: 'Ada',
+          lastName: 'Yılmaz',
+          value: 0.5,
+          sample: 6,
+          isMe: true,
+        ),
+      ],
+      LeaderboardMetric.spProfit => const [
+        LeaderboardRow(rank: 1, userId: 'u1', firstName: 'Ada', lastName: 'Yılmaz', value: 240, sample: 7, isMe: true),
+      ],
+      _ => const [],
+    };
+    await pumpApp(tester, userId: 'u1', profile: _profile, leaderboard: rows);
+    await tester.tap(find.text('Liderlik'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('🥇'), findsOneWidget);
+    expect(find.text('Mert K. ⭐'), findsOneWidget);
+    expect(find.text('Sv. 7 · 🔮 Kehanet Ustası · 4/5 doğru'), findsOneWidget);
+    expect(find.text('%80'), findsOneWidget);
+    expect(find.text('⋯'), findsOneWidget);
+    expect(find.text('9.'), findsOneWidget);
+    expect(find.text('Ada Y. (sen)'), findsOneWidget);
+    expect(find.textContaining('en az 5 tahmin gerekir'), findsOneWidget);
+    expect(find.text('Son hesaplama: 22.11.2026 13:30 · 10 dakikada bir yenilenir'), findsOneWidget);
+
+    await tester.tap(find.text('Kazanç'));
+    await tester.pumpAndSettle();
+    expect(find.text('+240 SP'), findsOneWidget);
+    expect(find.text('Mert K. ⭐'), findsNothing);
+
+    await tester.tap(find.text('Seri'));
+    await tester.pumpAndSettle();
+    expect(find.text('Bu dönemde henüz sıralamaya giren yok.'), findsOneWidget);
+
+    await tester.tap(find.text('İsabet'));
+    await tester.tap(find.text('Tüm zamanlar'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('en az 20 tahmin gerekir'), findsOneWidget);
+  });
+
+  testWidgets('profilde seviye ilerlemesi; dokununca XP kuralları ve son kazançlar', (tester) async {
+    await pumpApp(
+      tester,
+      userId: 'u1',
+      profile: _profile,
+      progress: const Progress(xp: 150, level: 2, levelXp: 100, nextLevelXp: 300, pickXpToday: 30),
+      xpEvents: [XpEvent(reason: 'correct_pick', amount: 15, createdAt: DateTime.utc(2026, 11, 22, 9))],
+    );
+    await tester.tap(find.text('Profil'));
+    await tester.pumpAndSettle();
+    expect(find.text('Seviye 2'), findsOneWidget);
+    expect(find.text('150 XP'), findsOneWidget);
+    expect(find.text('Sonraki seviyeye 150 XP'), findsOneWidget);
+    final bar = tester.widget<LinearProgressIndicator>(find.byType(LinearProgressIndicator));
+    expect(bar.value, 0.25);
+
+    await tester.tap(find.text('Seviye 2'));
+    await tester.pumpAndSettle();
+    expect(find.text('XP nasıl kazanılır'), findsOneWidget);
+    expect(find.text('+10 XP'), findsOneWidget);
+    expect(find.text('Günde en fazla 60 XP · bugün 30/60'), findsOneWidget);
+    expect(find.text('Doğru tahmin'), findsOneWidget);
+    expect(find.text('22.11.2026 12:00'), findsOneWidget);
+  });
+
+  testWidgets('profilde istatistikler; geçmiş bahisler ekranında sonuçlar', (tester) async {
+    await pumpApp(
+      tester,
+      userId: 'u1',
+      profile: _profile,
+      stats: const MyStats(
+        predictions: 5,
+        correct: 4,
+        spProfit: 120,
+        currentStreak: 2,
+        bestStreak: 3,
+        duelsPlayed: 2,
+        duelsWon: 1,
+        weekRankHitRate: 1,
+      ),
+      history: [
+        (
+          bet: prediction(status: 'settled', yesWins: true),
+          wager: const Wager(betId: 'p1', optionId: 'y', amount: 30, payout: 37),
+        ),
+      ],
+    );
+    await tester.tap(find.text('Profil'));
+    await tester.pumpAndSettle();
+    final profileList = find.descendant(of: find.byType(ProfileTab), matching: find.byType(Scrollable)).first;
+    // Alttaki düğmeye kadar kaydır: üstündeki "Geçmiş bahislerim" alt menünün arkasında kalmasın.
+    await tester.scrollUntilVisible(find.text('Çıkış yap'), 200, scrollable: profileList);
+    expect(find.text('Bu hafta isabette 1.'), findsOneWidget);
+    expect(find.text('%80 · 4/5'), findsOneWidget);
+    expect(find.text('En iyi: 3'), findsOneWidget);
+    expect(find.text('+120 SP'), findsOneWidget);
+    expect(find.text('2 oyun · 1 galibiyet'), findsOneWidget);
+
+    await tester.tap(find.text('Geçmiş bahislerim'));
+    await tester.pumpAndSettle();
+    expect(find.text('Bugün yemekhanede mercimek çorbası çıkar mı?'), findsOneWidget);
+    expect(find.textContaining('Günün tahmini · Sonuçlandı'), findsOneWidget);
+    expect(find.textContaining('Kazandın: +37 SP'), findsOneWidget);
+    expect(find.byIcon(Icons.check_circle), findsOneWidget);
   });
 
   test('sonuç metni: kazanç, kazançsız doğru tahmin, kazanan çıkmayınca iade, kayıp', () {

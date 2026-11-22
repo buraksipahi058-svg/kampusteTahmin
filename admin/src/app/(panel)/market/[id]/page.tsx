@@ -17,7 +17,7 @@ export default async function EditItemPage(props: PageProps<"/market/[id]">) {
   const [{ data: item }, { data: schools }] = await Promise.all([
     supabase
       .from("market_items")
-      .select("id, school_id, name, description, category, icon, color, price, currency, available_from, available_until, active")
+      .select("id, school_id, name, description, category, icon, color, price, currency, available_from, available_until, active, min_level")
       .eq("id", id)
       .maybeSingle(),
     supabase.from("clusters").select("id, name").eq("type", "school").order("name"),

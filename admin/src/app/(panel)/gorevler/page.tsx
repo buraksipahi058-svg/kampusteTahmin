@@ -23,7 +23,7 @@ export default async function QuestsPage() {
   const [{ data: quests, error }, { data: schools }] = await Promise.all([
     supabase
       .from("quests")
-      .select("id, title, description, period, action, target, reward_currency, reward_amount, starts_at, ends_at, active, school_id, school:clusters!school_id(name)")
+      .select("id, title, description, period, action, target, reward_currency, reward_amount, reward_xp, starts_at, ends_at, active, school_id, school:clusters!school_id(name)")
       .order("active", { ascending: false })
       .order("created_at", { ascending: false })
       .limit(200),
@@ -51,6 +51,7 @@ export default async function QuestsPage() {
               <div className="text-sm">
                 <p className="font-medium">
                   {q.title} · {formatAmount(q.reward_amount)} {q.reward_currency}
+                  {q.reward_xp > 0 && ` · ${q.reward_xp} XP`}
                 </p>
                 <p className="text-zinc-500">
                   {periodLabels[q.period]} · {actionLabels[q.action]} × {q.target}

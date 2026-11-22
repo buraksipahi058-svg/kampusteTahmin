@@ -78,6 +78,10 @@ export function ItemForm({ schools, isSuper, initial }: { schools: School[]; isS
             <option value="SSP">SSP (özel vitrin)</option>
           </select>
         </label>
+        <label className="flex flex-col gap-1 text-sm">
+          En az seviye
+          <input name="min_level" type="number" min={1} max={100} required defaultValue={initial?.min_level ?? 1} className={`${inputClass} w-24`} />
+        </label>
       </div>
       <div className="flex flex-wrap gap-3">
         <label className="flex flex-col gap-1 text-sm">

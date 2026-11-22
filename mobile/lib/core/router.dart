@@ -7,6 +7,7 @@ import '../bets/create_social_bet_screen.dart';
 import '../games/duel_play_screen.dart';
 import '../home/home_shell.dart';
 import '../profile/create_profile_screen.dart';
+import '../profile/history_screen.dart';
 import '../profile/profile_data.dart';
 import '../profile/verify_email_screen.dart';
 import '../quests/quests_screen.dart';
@@ -56,6 +57,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: Routes.verifyEmail, builder: (_, _) => const VerifyEmailScreen()),
       GoRoute(path: Routes.createSocialBet, builder: (_, _) => const CreateSocialBetScreen()),
       GoRoute(path: Routes.quests, builder: (_, _) => const QuestsScreen()),
+      GoRoute(path: Routes.history, builder: (_, _) => const HistoryScreen()),
       GoRoute(
         path: Routes.duelPlayPattern,
         builder: (_, state) => DuelPlayScreen(betId: state.pathParameters['id']!),

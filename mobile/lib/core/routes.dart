@@ -10,6 +10,7 @@ abstract final class Routes {
   static const verifyEmail = '/okul-maili';
   static const createSocialBet = '/sosyal-bahis-ac';
   static const quests = '/gorevler';
+  static const history = '/gecmis';
   static const duelPlayPattern = '/duello/:id';
   static String duelPlay(String betId) => '/duello/$betId';
 }

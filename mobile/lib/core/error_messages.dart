@@ -28,6 +28,7 @@ const databaseMessages = <String, String>{
   'KB020': 'Bu görevin ödülünü bu dönem zaten aldın.',
   'KB021': 'Bu ürün şu an satışta değil.',
   'KB022': 'Bu ürün zaten sende.',
+  'KB023': 'Bu ürün için seviyen henüz yetmiyor.',
   '42501': 'Bu işlem için yetkin yok ya da oturumun kapanmış.',
   '23514': 'Girdiğin bilgilerden biri geçersiz. Kontrol edip tekrar dene.',
   '23505': 'Bu kayıt zaten var.',

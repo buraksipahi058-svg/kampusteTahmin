@@ -14,6 +14,7 @@ export type Quest = {
   target: number;
   reward_currency: Currency;
   reward_amount: number;
+  reward_xp: number;
   starts_at: string | null;
   ends_at: string | null;
   active: boolean;

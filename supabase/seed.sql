@@ -29,23 +29,23 @@ insert into public.trivia_questions (id, school_id, question, options, correct_i
   ('20000000-0000-4000-8000-000000000016', null, 'Periyodik tabloda "Fe" simgesi hangi elementindir?', array['Flor', 'Demir', 'Fosfor', 'Kurşun'], 1, 'Bilim')
 on conflict (id) do nothing;
 
--- Örnek görevler (Adım 9): tüm okullara açık, SP ödüllü. Rakamlar taslak (KARARLAR "Görevler").
-insert into public.quests (id, school_id, title, description, period, action, target, reward_currency, reward_amount) values
-  ('30000000-0000-4000-8000-000000000001', null, 'Günün tahminini yap', 'Bugünün Evet / Hayır sorusuna katıl', 'daily', 'prediction', 1, 'SP', 20),
-  ('30000000-0000-4000-8000-000000000002', null, 'İki bahse katıl', 'Resmi, sosyal ya da günün tahmini', 'daily', 'wager', 2, 'SP', 30),
-  ('30000000-0000-4000-8000-000000000003', null, 'Üç düello oyna', 'Trivia düellosunda soruları cevapla', 'weekly', 'duel', 3, 'SP', 80),
-  ('30000000-0000-4000-8000-000000000004', null, 'Sosyal bahis aç', 'Okul arkadaşların için bir soru sor', 'weekly', 'social_bet', 1, 'SP', 50),
-  ('30000000-0000-4000-8000-000000000005', null, 'Üç bahis kazan', 'Kazandığın bahisler ve düellolar sayılır', 'weekly', 'win', 3, 'SP', 150)
+-- Örnek görevler (Adım 9): tüm okullara açık, SP + XP ödüllü. Rakamlar taslak (KARARLAR "Görevler", "XP ve seviye").
+insert into public.quests (id, school_id, title, description, period, action, target, reward_currency, reward_amount, reward_xp) values
+  ('30000000-0000-4000-8000-000000000001', null, 'Günün tahminini yap', 'Bugünün Evet / Hayır sorusuna katıl', 'daily', 'prediction', 1, 'SP', 20, 20),
+  ('30000000-0000-4000-8000-000000000002', null, 'İki bahse katıl', 'Resmi, sosyal ya da günün tahmini', 'daily', 'wager', 2, 'SP', 30, 20),
+  ('30000000-0000-4000-8000-000000000003', null, 'Üç düello oyna', 'Trivia düellosunda soruları cevapla', 'weekly', 'duel', 3, 'SP', 80, 50),
+  ('30000000-0000-4000-8000-000000000004', null, 'Sosyal bahis aç', 'Okul arkadaşların için bir soru sor', 'weekly', 'social_bet', 1, 'SP', 50, 50),
+  ('30000000-0000-4000-8000-000000000005', null, 'Üç bahis kazan', 'Kazandığın bahisler ve düellolar sayılır', 'weekly', 'win', 3, 'SP', 150, 50)
 on conflict (id) do nothing;
 
--- Örnek kozmetikler (Adım 9): tüm okullara açık; SP vitrini ve SSP özel vitrini. Fiyatlar taslak.
-insert into public.market_items (id, school_id, name, description, category, icon, color, price, currency) values
-  ('40000000-0000-4000-8000-000000000001', null, 'Kehanet Ustası', 'Adının altında görünen unvan', 'title', '🔮', null, 600, 'SP'),
-  ('40000000-0000-4000-8000-000000000002', null, 'Seri Avcısı', 'Profilinde rozet', 'badge', '🔥', null, 250, 'SP'),
-  ('40000000-0000-4000-8000-000000000003', null, 'Altın çerçeve', 'Profil resmine altın çerçeve', 'frame', null, '#D4AF37', 400, 'SP'),
-  ('40000000-0000-4000-8000-000000000004', null, 'Zümrüt çerçeve', 'Profil resmine yeşil çerçeve', 'frame', null, '#2E7D32', 300, 'SP'),
-  ('40000000-0000-4000-8000-000000000005', null, 'Mor isim', 'Adın mor görünür', 'name_color', null, '#7E57C2', 350, 'SP'),
-  ('40000000-0000-4000-8000-000000000006', null, 'Gece mavisi isim', 'Adın lacivert görünür', 'name_color', null, '#1565C0', 350, 'SP'),
-  ('40000000-0000-4000-8000-000000000007', null, 'Kampüs Efsanesi', 'Yalnızca SSP ile alınan unvan', 'title', '👑', null, 150, 'SSP'),
-  ('40000000-0000-4000-8000-000000000008', null, 'Turnuva Yıldızı', 'Yalnızca SSP ile alınan rozet', 'badge', '🏆', null, 80, 'SSP')
+-- Örnek kozmetikler (Adım 9): tüm okullara açık; SP vitrini ve SSP özel vitrini; ikisi seviyeyle açılır. Fiyatlar taslak.
+insert into public.market_items (id, school_id, name, description, category, icon, color, price, currency, min_level) values
+  ('40000000-0000-4000-8000-000000000001', null, 'Kehanet Ustası', 'Adının altında görünen unvan', 'title', '🔮', null, 600, 'SP', 5),
+  ('40000000-0000-4000-8000-000000000002', null, 'Seri Avcısı', 'Profilinde rozet', 'badge', '🔥', null, 250, 'SP', 1),
+  ('40000000-0000-4000-8000-000000000003', null, 'Altın çerçeve', 'Profil resmine altın çerçeve', 'frame', null, '#D4AF37', 400, 'SP', 3),
+  ('40000000-0000-4000-8000-000000000004', null, 'Zümrüt çerçeve', 'Profil resmine yeşil çerçeve', 'frame', null, '#2E7D32', 300, 'SP', 1),
+  ('40000000-0000-4000-8000-000000000005', null, 'Mor isim', 'Adın mor görünür', 'name_color', null, '#7E57C2', 350, 'SP', 1),
+  ('40000000-0000-4000-8000-000000000006', null, 'Gece mavisi isim', 'Adın lacivert görünür', 'name_color', null, '#1565C0', 350, 'SP', 1),
+  ('40000000-0000-4000-8000-000000000007', null, 'Kampüs Efsanesi', 'Yalnızca SSP ile alınan unvan', 'title', '👑', null, 150, 'SSP', 1),
+  ('40000000-0000-4000-8000-000000000008', null, 'Turnuva Yıldızı', 'Yalnızca SSP ile alınan rozet', 'badge', '🏆', null, 80, 'SSP', 1)
 on conflict (id) do nothing;

@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/supabase.dart';
+import '../leaderboard/leaderboard_data.dart';
+import '../progress/progress_data.dart';
 import '../wallet/wallet_data.dart';
 
 class BetOption {
@@ -36,6 +38,7 @@ class Bet {
     required this.currency,
     required this.options,
     this.type = 'ssp_official',
+    this.settlementMode = 'admin',
     this.description,
     this.minStake = 1,
     this.maxStake,
@@ -52,6 +55,9 @@ class Bet {
 
   /// ssp_official, sp_social, sp_minigame
   final String type;
+
+  /// admin (resmi, günün tahmini), auto (düello), referee (sosyal)
+  final String settlementMode;
   final String title;
   final String? description;
 
@@ -86,6 +92,7 @@ class Bet {
     return Bet(
       id: json['id'] as String,
       type: json['type'] as String,
+      settlementMode: json['settlement_mode'] as String? ?? 'admin',
       title: json['title'] as String,
       description: json['description'] as String?,
       status: json['status'] as String,
@@ -130,7 +137,7 @@ class Wager {
 int potentialPayout(int amount, double odds) => (amount * odds).floor();
 
 const _betColumns =
-    'id, type, title, description, status, locks_at, currency, min_stake, max_stake, pool_total, cancel_reason, '
+    'id, type, settlement_mode, title, description, status, locks_at, currency, min_stake, max_stake, pool_total, cancel_reason, '
     'creator_id, referee_id, proposed_option_id, dispute_until, referee:profiles!referee_id(first_name, last_name), '
     'bet_options(id, label, position, odds, pool_amount, is_winner)';
 
@@ -187,13 +194,35 @@ final myDisputedBetIdsProvider = FutureProvider<Set<String>>((ref) async {
   return {for (final r in rows) r['bet_id'] as String};
 });
 
+typedef WagerEntry = ({Bet bet, Wager wager});
+
+/// Kişinin yatırımları bahsiyle birlikte, en yeni önce (Profil > Geçmiş bahislerim).
+final myWagerHistoryProvider = FutureProvider<List<WagerEntry>>((ref) async {
+  final userId = ref.watch(currentUserIdProvider);
+  if (userId == null) return const [];
+  final rows = await ref
+      .watch(supabaseProvider)
+      .from('wagers')
+      .select('bet_id, option_id, amount, odds, payout, bet:bets!bet_id($_betColumns)')
+      .eq('user_id', userId)
+      .order('created_at', ascending: false)
+      .limit(100);
+  return [
+    for (final r in rows)
+      if (r['bet'] != null) (bet: Bet.fromJson(r['bet'] as Map<String, dynamic>), wager: Wager.fromJson(r)),
+  ];
+});
+
 void _refreshBets(WidgetRef ref) {
   ref.invalidate(officialBetsProvider);
   ref.invalidate(socialBetsProvider);
   ref.invalidate(dailyPredictionsProvider);
   ref.invalidate(myWagersProvider);
   ref.invalidate(myDisputedBetIdsProvider);
+  ref.invalidate(myWagerHistoryProvider);
+  ref.invalidate(myStatsProvider);
   ref.invalidate(balanceProvider);
+  refreshProgress(ref);
 }
 
 /// `public.place_wager`: bakiye, sınırlar ve kurallar sunucuda denetlenir.

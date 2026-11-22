@@ -23,7 +23,7 @@ export default async function MarketPage() {
   const [{ data: items, error }, { data: schools }] = await Promise.all([
     supabase
       .from("market_items")
-      .select("id, name, description, category, icon, color, price, currency, available_from, available_until, active, school_id, school:clusters!school_id(name)")
+      .select("id, name, description, category, icon, color, price, currency, available_from, available_until, active, min_level, school_id, school:clusters!school_id(name)")
       .order("active", { ascending: false })
       .order("currency")
       .order("price")
@@ -62,6 +62,7 @@ export default async function MarketPage() {
                   </p>
                   <p className="text-zinc-500">
                     {categoryLabels[item.category]}
+                    {item.min_level > 1 && ` · ${item.min_level}. seviyede açılır`}
                     {item.description && ` · ${item.description}`}
                   </p>
                   <p className="text-xs text-zinc-500">

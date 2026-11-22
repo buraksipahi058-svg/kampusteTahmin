@@ -22,6 +22,9 @@ export default async function PanelLayout({ children }: LayoutProps<"/">) {
 
   const isModerator = staff.role === "superadmin" || staff.permissions.some((p) => p.key === "kullanici_bahsi_denetle");
   const links = [
+    ...(staff.role === "superadmin" || staff.permissions.some((p) => p.key === "analitik_gor")
+      ? [{ href: "/istatistik", label: "İstatistik" }]
+      : []),
     { href: "/resmi-bahisler", label: "Resmi bahisler" },
     ...(staff.role === "superadmin" ||
     staff.permissions.some((p) => p.key === "resmi_bahis_ac" || p.key === "resmi_bahis_kapat")

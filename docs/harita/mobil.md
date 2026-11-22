@@ -33,13 +33,13 @@ Ekran görüntüsü: `adb shell screencap -p /sdcard/x.png` + `adb pull`.
 | `core/router.dart`, `routes.dart` | go_router; yönlendirme kuralı `redirectFor` (saf fonksiyon, testli) |
 | `auth/auth_screen.dart` | E-posta + şifre giriş/kayıt, onay mailini yeniden gönderme |
 | `profile/profile_data.dart` | `myProfileProvider`, `schoolsProvider`, `createProfile` (`public.create_profile`) |
-| `profile/create_profile_screen.dart`, `profile_tab.dart` | Profil oluşturma; Profil sekmesi (kuşanılmış kozmetikler: çerçeve, isim rengi, unvan, rozet; okul maili; Görevler kartı + hazır ödül sayısı; bakiye, seri, seviye, çıkış) |
+| `profile/create_profile_screen.dart`, `profile_tab.dart` | Profil oluşturma; Profil sekmesi (kuşanılmış kozmetikler: çerçeve, isim rengi, unvan, rozet; okul maili; Görevler kartı + hazır ödül sayısı; bakiye, seri; seviye kartı; İstatistiklerim; Geçmiş bahislerim; çıkış) |
 | `profile/student_email_data.dart` | `studentEmailProvider` (`profile_private`), `requestStudentEmailCode`, `confirmStudentEmail` |
 | `profile/verify_email_screen.dart` | `/okul-maili`: mail → kod; okulun alan adını ipucu gösterir (profil sorgusu `school_email_domains`'i de çeker) |
 | `wallet/wallet_data.dart` | `balanceProvider`, `loginStreakProvider`, `dailyRewardProvider` (`claim_daily_login`), `formatAmount` |
 | `wallet/balance_bar.dart` | Üst çubukta SP / SSP; dokununca yenilenir |
 | `home/home_shell.dart` | Alt sekmeler (`homeTabs`), günlük ödül bildirimi; boş sekmeler `placeholder_tab.dart` |
-| `bets/bets_data.dart` | `Bet`, `BetOption`, `Wager`; `officialBetsProvider`, `socialBetsProvider`, `dailyPredictionsProvider`, `myWagersProvider`, `placeWager` (`place_wager`), `potentialPayout` (bilgi için) |
+| `bets/bets_data.dart` | `Bet` (`settlementMode`: günün tahmini / düello ayrımı), `BetOption`, `Wager`; `officialBetsProvider`, `socialBetsProvider`, `dailyPredictionsProvider`, `myWagersProvider`, `placeWager` (`place_wager`), `potentialPayout` (bilgi için) |
 | `bets/bets_tab.dart` | Bahisler sekmesi: "Resmi / Sosyal" seçici; resmi bahis kartı (oran, kapanış İstanbul saati, kişinin yatırımı / sonucu), yatırım alt sayfası (oranlı ya da havuz); doğrulanmamışsa uyarı |
 | `bets/social_bet_card.dart` | Sosyal bahis kartı: havuz miktarları, hakem; duruma göre "Sonucu gir" (hakem), "İtiraz et" (katılımcı, pencere içinde), "Geri çek" (açan, yatırım yokken) |
 | `games/trivia_data.dart` | `TriviaDuel`, `DuelPlay`, `triviaDuelsProvider`, `duelGameProvider(betId)` (`start_trivia_duel`), `createDuel`, `acceptDuel`, `submitAnswers` |
@@ -47,10 +47,16 @@ Ekran görüntüsü: `adb shell screencap -p /sdcard/x.png` + `adb pull`.
 | `games/daily_prediction_card.dart` | Günün tahmini kartı: Evet / Hayır havuzları, dokununca `WagerSheet` (havuz kipi, `place_wager`), sonuç metni `wagerText` (bets_tab ile ortak) |
 | `games/duel_play_screen.dart` | `/duello/:id`: sorular sırayla, geri sayım (sunucunun kalan süresi), süre bitince ya da son soruda gönderir |
 | `market/market_data.dart` | `MarketItem`, `OwnedItem`, `Cosmetics`; `marketItemsProvider` (satıştakiler, ucuzdan pahalıya), `myInventoryProvider`, `myCosmeticsProvider` (kuşanılmışlar), `purchaseItem`, `setItemEquipped` |
-| `market/market_tab.dart` | Market sekmesi: "SP vitrini / SSP özel"; ürün kartı (önizleme, fiyat düğmesi → onay penceresi; sahipse "Kuşan" / "Çıkar"; satış başlamadıysa "Yakında") |
-| `market/cosmetic_preview.dart` | `CosmeticPreview` (simge / çerçeve / isim rengi), `ProfileAvatar` (baş harfler + çerçeve rengi) |
+| `market/market_tab.dart` | Market sekmesi: "SP vitrini / SSP özel"; ürün kartı (önizleme, fiyat düğmesi → onay penceresi; sahipse "Kuşan" / "Çıkar"; satış başlamadıysa "Yakında"; seviye yetmiyorsa kilitli "Seviye N") |
+| `market/cosmetic_preview.dart` | `CosmeticPreview` (simge / çerçeve / isim rengi), `ProfileAvatar` (baş harfler + çerçeve ürünü ya da yalnızca rengi `frameColor`; `hexColor` `market_data.dart`'ta) |
 | `quests/quests_data.dart` | `Quest`, `questsProvider` (`my_quests`), `claimQuest` (`claim_quest_reward`) |
-| `quests/quests_screen.dart` | `/gorevler`: Günlük / Haftalık / Sezonluk; ilerleme çubuğu, "Ödülü al", "Alındı", yenilenme zamanı |
+| `quests/quests_screen.dart` | `/gorevler`: Günlük / Haftalık / Sezonluk; ödül ("+30 SP · +20 XP"), ilerleme çubuğu, "Ödülü al", "Alındı", yenilenme zamanı |
+| `leaderboard/leaderboard_data.dart` | `LeaderboardMetric` / `LeaderboardPeriod`, `leaderboardQueryProvider` (seçili ölçüt + dönem, Notifier), `leaderboardProvider` (`get_leaderboard`), `leaderboardMinimumsProvider` (isabet eşiği, ekonomi ayarı), `MyStats` + `myStatsProvider` (`my_stats`) |
+| `leaderboard/leaderboard_tab.dart` | Liderlik sekmesi: "Bu hafta / Geçen hafta / Tüm zamanlar", ölçüt çipleri (İsabet, Kazanç, Seri, SSP), satırda madalya, çerçeveli avatar, isim rengi + rozet, seviye ("Sv. N"), unvan; kişinin satırı vurgulu, ilk 50 dışındaysa "⋯" ile sonda; son hesaplama zamanı |
+| `leaderboard/my_stats_card.dart` | Profil'de "İstatistiklerim": bu haftaki sıralar, isabet, doğru tahmin serisi, net kazanç, düello, sonucu bekleyen yatırım |
+| `profile/history_screen.dart` | `/gecmis`: son 100 yatırım (`myWagerHistoryProvider`, `bets_data.dart`; `wagers` + `bets!bet_id` gömmesi), tür, durum, `wagerText` sonucu |
+| `progress/progress_data.dart` | `Progress` + `myProgressProvider` (`my_progress`), `xpRulesProvider` (ekonomi ayarları), `xpEventsProvider` (son 20 XP olayı), `refreshProgress` (giriş ödülü, görev, bahis sonrası) |
+| `progress/level_card.dart` | Profil'de "Seviye N", ilerleme çubuğu, sonraki seviyeye kalan XP; dokununca kök navigator'da XP kuralları ve son kazançlar sayfası |
 | `bets/create_social_bet_screen.dart` | `/sosyal-bahis-ac`: soru, 2–4 seçenek, kapanış (tarih + saat seçici), kişi başı en fazla (≤ 100); okul kümesinde açar (`Profile.schoolId`) |
 
 ## Akış
@@ -60,10 +66,13 @@ Profil yok → `/profil-olustur` (okullar `clusters where type = 'school'`). Pro
 Kabuk açılınca `claim_daily_login()` bir kez çağrılır; ödül alındıysa bildirim + bakiye/seri sunucudan yeniden okunur.
 Sağlayıcılar `currentUserIdProvider`'a bağlı: çıkış/giriş olunca kendiliğinden yeniden çalışır.
 
-## Testler (`mobile/test/`, 35)
+## Testler (`mobile/test/`, 38)
 
 `app_test.dart` `pumpApp` test ekranını telefon boyutuna (1080×2400, dpr 2.625) ayarlar; varsayılan 800×600'de
 düğmeler görünür alanın dışında kalır, ayrıca alttaki günlük ödül bildirimi düğmeleri örtebilir.
+Profil uzun: alttaki öğeye dokunmadan önce `scrollUntilVisible` ile en alttaki "Çıkış yap"a kadar kaydır
+(yoksa öğe alt menünün arkasında kalır, dokunuş boşa gider). Liderlik sağlayıcısı testte seçili sorguyu izleyen
+bir fonksiyonla değiştirilir (`pumpApp(leaderboard: ...)`).
 
 
 `error_messages_test` (eşleme + veritabani.md uyumu), `app_info_test` (platform adları), `router_test`
@@ -71,6 +80,8 @@ düğmeler görünür alanın dışında kalır, ayrıca alttaki günlük ödül
 
 ## Dikkat
 
+- **Toplu `dart format` çalıştırma:** bu SDK'nın biçimlendiricisi mevcut kodu (elle ~120 sütun) farklı biçimliyor, ilgisiz dosyalarda gürültü çıkar. Yalnızca yeni dosyaları biçimle.
+- Alt sayfa (`showModalBottomSheet`) sekme içinden açılınca alt menünün arkasında kalır; `useRootNavigator: true` ver.
 - Para mantığı istemcide **hesaplanmaz**; bakiye, seri, ödül ve sonuçlar her zaman sunucudan okunur.
 - Sonuç metni `wagerText` (bets_tab) üç durumu ayırır: kazanç, ödeme = yatırım ("kazanç çıkmadı"), seçilen taraf kaybettiği halde ödeme var (kazanan tarafa kimse yatırmadı → iade).
 - Dart istemcisinde (postgrest-dart) `.order()` varsayılanı **azalan** (JS'tekinin tersi); artan sıra için `ascending: true` yaz.

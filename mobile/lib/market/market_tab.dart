@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/error_messages.dart';
+import '../progress/progress_data.dart';
 import '../wallet/wallet_data.dart';
 import 'cosmetic_preview.dart';
 import 'market_data.dart';
@@ -96,7 +97,13 @@ class MarketItemCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final owned = this.owned;
     final onSale = item.onSale(DateTime.now());
-    final subtitle = [marketCategoryLabels[item.category] ?? item.category, ?item.description].join(' · ');
+    final level = ref.watch(myProgressProvider).value?.level;
+    final locked = level != null && level < item.minLevel;
+    final subtitle = [
+      marketCategoryLabels[item.category] ?? item.category,
+      ?item.description,
+      if (item.minLevel > 1) '${item.minLevel}. seviyede açılır',
+    ].join(' · ');
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
@@ -112,6 +119,11 @@ class MarketItemCard extends ConsumerWidget {
           ),
           OwnedItem() => FilledButton.tonal(onPressed: () => _equip(context, ref, true), child: const Text('Kuşan')),
           null when !onSale => const Text('Yakında'),
+          null when locked => OutlinedButton.icon(
+            onPressed: null,
+            icon: const Icon(Icons.lock_outline, size: 18),
+            label: Text('Seviye ${item.minLevel}'),
+          ),
           null => FilledButton(
             onPressed: () => _buy(context, ref),
             child: Text('${formatAmount(item.price)} ${item.currency}'),

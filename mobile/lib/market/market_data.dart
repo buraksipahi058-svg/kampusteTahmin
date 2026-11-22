@@ -14,6 +14,13 @@ const marketCategoryLabels = {
   'name_color': 'İsim rengi',
 };
 
+/// Sunucudaki `#RRGGBB` renk metni (çerçeve, isim rengi).
+Color? hexColor(String? hex) {
+  if (hex == null || hex.length != 7) return null;
+  final value = int.tryParse(hex.substring(1), radix: 16);
+  return value == null ? null : Color(0xFF000000 | value);
+}
+
 class MarketItem {
   const MarketItem({
     required this.id,
@@ -27,6 +34,7 @@ class MarketItem {
     this.availableFrom,
     this.availableUntil,
     this.active = true,
+    this.minLevel = 1,
   });
 
   final String id;
@@ -47,12 +55,10 @@ class MarketItem {
   final DateTime? availableUntil;
   final bool active;
 
-  Color? get colorValue {
-    final hex = color;
-    if (hex == null || hex.length != 7) return null;
-    final value = int.tryParse(hex.substring(1), radix: 16);
-    return value == null ? null : Color(0xFF000000 | value);
-  }
+  /// Satın almak için gereken en az seviye.
+  final int minLevel;
+
+  Color? get colorValue => hexColor(color);
 
   /// Şu an satın alınabilir mi (sunucu da aynı kuralı denetler).
   bool onSale(DateTime now) =>
@@ -74,6 +80,7 @@ class MarketItem {
       availableFrom: time('available_from'),
       availableUntil: time('available_until'),
       active: json['active'] as bool? ?? true,
+      minLevel: json['min_level'] as int? ?? 1,
     );
   }
 }
@@ -96,7 +103,7 @@ class Cosmetics {
 }
 
 const _itemColumns =
-    'id, name, description, category, icon, color, price, currency, available_from, available_until, active';
+    'id, name, description, category, icon, color, price, currency, available_from, available_until, active, min_level';
 
 /// Satıştaki ürünler (RLS: okulun ve genel ürünler). Satıştan kalkmış ama sahip olunanlar envanterden gelir.
 final marketItemsProvider = FutureProvider<List<MarketItem>>((ref) async {

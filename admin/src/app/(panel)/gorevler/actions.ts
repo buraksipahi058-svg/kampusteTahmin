@@ -18,10 +18,12 @@ export async function saveQuest(_prev: ActionState, formData: FormData): Promise
   const id = text(formData, "id");
   const target = Number(text(formData, "target"));
   const reward = Number(text(formData, "reward_amount"));
+  const xp = Number(text(formData, "reward_xp") || "0");
   const startsAt = text(formData, "starts_at");
   const endsAt = text(formData, "ends_at");
   if (!Number.isInteger(target) || target < 1) return { error: "Hedef en az 1 olmalı." };
   if (!Number.isInteger(reward) || reward < 1) return { error: "Ödül en az 1 olmalı." };
+  if (!Number.isInteger(xp) || xp < 0 || xp > 1000) return { error: "XP 0 ile 1000 arasında olmalı." };
 
   const supabase = await createClient();
   const { error } = await supabase.rpc("save_quest", {
@@ -37,6 +39,7 @@ export async function saveQuest(_prev: ActionState, formData: FormData): Promise
     p_starts_at: nullable(startsAt && istanbulLocalToIso(startsAt)),
     p_ends_at: nullable(endsAt && istanbulLocalToIso(endsAt)),
     p_active: id ? formData.get("active") === "on" : true,
+    p_reward_xp: xp,
   });
   if (error) return { error: dbErrorMessage(error) };
   if (id) redirect("/gorevler");
@@ -49,7 +52,7 @@ export async function toggleQuest(_prev: ActionState, formData: FormData): Promi
   const id = text(formData, "id");
   const { data: q, error: readError } = await supabase
     .from("quests")
-    .select("school_id, title, description, period, action, target, reward_currency, reward_amount, starts_at, ends_at, active")
+    .select("school_id, title, description, period, action, target, reward_currency, reward_amount, reward_xp, starts_at, ends_at, active")
     .eq("id", id)
     .maybeSingle();
   if (readError || !q) return { error: "Görev bulunamadı." };
@@ -67,6 +70,7 @@ export async function toggleQuest(_prev: ActionState, formData: FormData): Promi
     p_starts_at: q.starts_at as string,
     p_ends_at: q.ends_at as string,
     p_active: !q.active,
+    p_reward_xp: q.reward_xp,
   });
   if (error) return { error: dbErrorMessage(error) };
   refresh();

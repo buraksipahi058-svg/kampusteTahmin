@@ -72,7 +72,10 @@ class QuestCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final reward = '+${formatAmount(quest.rewardAmount)} ${quest.rewardCurrency}';
+    final reward = [
+      '+${formatAmount(quest.rewardAmount)} ${quest.rewardCurrency}',
+      if (quest.rewardXp > 0) '+${quest.rewardXp} XP',
+    ].join(' · ');
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
@@ -133,7 +136,8 @@ class QuestCard extends ConsumerWidget {
     final messenger = ScaffoldMessenger.of(context);
     try {
       final r = await claimQuest(ref, quest.id);
-      messenger.showSnackBar(SnackBar(content: Text('Ödül alındı: +${formatAmount(r.amount)} ${r.currency}')));
+      final xp = quest.rewardXp > 0 ? ' · +${quest.rewardXp} XP' : '';
+      messenger.showSnackBar(SnackBar(content: Text('Ödül alındı: +${formatAmount(r.amount)} ${r.currency}$xp')));
     } catch (e) {
       messenger.showSnackBar(SnackBar(content: Text(userMessage(e))));
     }

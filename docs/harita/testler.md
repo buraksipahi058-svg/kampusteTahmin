@@ -16,10 +16,17 @@ testleri. İkisi de buluttaki veritabanında çalışır.
 | `supabase/tests/database/07_trivia_duellosu.test.sql` | soru yönetimi, meydan okuma, oynama, puanlama, süreler, cron | 45 |
 | `supabase/tests/database/08_gunun_tahmini.test.sql` | günün tahmini açma, yatırma (düello hâlâ kapalı), sonuç, iptal, zamanlanmış iş, kısıt | 45 |
 | `supabase/tests/database/09_gorevler_market.test.sql` | görev / ürün yönetimi izinleri, görünürlük, her eylemin sayımı, ödül (bir kez), dönemler, satın alma, kuşanma, satıştan kalkan ürünün görünürlüğü | 72 |
-| `supabase/tests/concurrency/para.mjs` | günlük ödül, eşzamanlı düşüm, eşzamanlı profil, aynı görev ödülü, aynı ürün | 6 senaryo |
-| `supabase/tests/concurrency/bahis.mjs` | eşzamanlı yatırım, çift yatırım, sonuç yarışı, çift sonuç | 5 senaryo |
+| `supabase/tests/database/10_liderlik.test.sql` | sıralama değerleri (isabet eşiği, düello hariç, eşit sıra, haftalar arası seri, geçen hafta), ilk N + kendi satırı, kozmetik, okul ayrımı, `analitik_gor`, RLS, `my_stats`, `school_stats`, biten haftanın donması, cron | 42 |
+| `supabase/tests/database/11_xp_seviye.test.sql` | seviye eğrisi, günlük giriş / görev / doğru tahmin XP'si, iptal, günlük sınır, tekrar engeli, kaynak kısıtı, `my_progress`, `xp_events` RLS, seviyeli ürün (`KB023`), liderlikte seviye, ayar kısıtı | 37 |
+| `supabase/tests/concurrency/para.mjs` | günlük ödül, eşzamanlı düşüm, eşzamanlı profil, aynı görev ödülü, aynı ürün (+ bütünlük: bakiye, XP) | 7 kontrol |
+| `supabase/tests/concurrency/bahis.mjs` | eşzamanlı yatırım, çift yatırım, sonuç yarışı, çift sonuç (+ bütünlük: bakiye, XP) | 6 kontrol |
 
-Son durum: hepsi geçiyor (Adım 9 sonu: 445 pgTAP; para eşzamanlılığı 6/6 Adım 9'da, bahis 5/5 Adım 8'de).
+Son durum: hepsi geçiyor (Adım 10 + XP sonu: 524 pgTAP; eşzamanlılık para 7/7, bahis 6/6 — XP tetikleyicileri para ve
+bahis transaction'larının içinde çalıştığı için yeniden çalıştırıldı). `cleanupWorld` XP olaylarını ve liderlik
+satırlarını da siler (10 dakikalık iş test okulunu hesaplamış olabilir).
+
+pgTAP'te sıralama gibi zamana bağlı hesaplar için bahis `private.settle_bet` ile sonuçlandırılıp `settled_at`
+elle verilir (`private.week_bounds(0)` başına dakika eklenerek); yatırımlar `private.stake_wager` ile (10 dosyası).
 
 ## Çalıştırma
 

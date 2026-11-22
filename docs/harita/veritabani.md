@@ -1,7 +1,7 @@
 # Bölge: Veritabanı (genel)
 
 Herhangi bir migration, RLS politikası ya da SQL fonksiyonu yazmadan önce bu sayfa okunur.
-Konu bölgeleri: [kimlik.md](kimlik.md), [para.md](para.md), [bahis.md](bahis.md). Testler: [testler.md](testler.md).
+Konu bölgeleri: [kimlik.md](kimlik.md), [para.md](para.md), [bahis.md](bahis.md), [liderlik.md](liderlik.md). Testler: [testler.md](testler.md).
 
 ## Migration'lar (sırayla)
 
@@ -20,6 +20,8 @@ Konu bölgeleri: [kimlik.md](kimlik.md), [para.md](para.md), [bahis.md](bahis.md
 | `20261122092403_trivia_duellosu.sql` | 8 | trivia ayarları, soru / düello / oyun tabloları, `stake_wager`, `place_wager` (mini oyuna kapalı), düello RPC'leri, `save_trivia_question`, pg_cron düello işi |
 | `20261122114042_gorevler_market.sql` | 9 | görev / ödül / ürün / envanter tabloları ve RLS, ilerleme sayımı (`quest_window`, `quest_progress`), `my_quests`, `claim_quest_reward`, `purchase_market_item`, `set_item_equipped`, `save_quest`, `save_market_item` |
 | `20261122115132_market_sahip_gorunurlugu.sql` | 9 | `market_items` RLS: sahip olunan ve okul arkadaşının kuşandığı ürün satışta olmasa da görünür |
+| `20261122133546_liderlik_istatistik.sql` | 10 | sıralama ayarları, `leaderboard_snapshots` + RLS, `private.leaderboard_runs`, hesaplama (`week_bounds`, `settled_wagers`, `store_leaderboard`, `refresh_leaderboards`), `get_leaderboard`, `my_stats`, `school_stats`, 10 dakikalık pg_cron işi ([liderlik](liderlik.md)) |
+| `20261122145831_xp_seviye.sql` | 10 | XP ayarları, `quests.reward_xp`, `market_items.min_level`, `xp_events` (yalnızca eklenir) + RLS, seviye eğrisi (`xp_for_level`, `level_for_xp`), `award_xp`, ledger ve bahis tetikleyicileri, `my_progress`; `purchase_market_item` (`KB023`), `my_quests`, `save_quest`, `save_market_item`, `get_leaderboard` yeniden ([para](para.md)) |
 | `20261122105335_gunun_tahmini.sql` | 8 | günün tahmini ayarları, `bets_settlement_by_type` (mini oyunda `admin` de olur), `place_wager` (yalnızca `auto` mini oyuna kapalı; admin sonuçlandırmalıda açan / kapatan yatıramaz), `create/settle/cancel_daily_prediction`, saatlik pg_cron işi |
 
 ## Koda inmek gerekirse
@@ -41,6 +43,8 @@ Aynı fonksiyon birden fazla migration'da tanımlıysa **en yeni dosyadaki** ge�
 | `private.create_bet`, `private.settle_bet` | `20261122082914_resmi_bahisler.sql` | `20261020160619_...` |
 | `public.place_wager` | `20261122105335_gunun_tahmini.sql` | `20261122092403_...`, `20261122082914_...`, `20261020160619_...` |
 | `public.create_social_bet` | `20261122090045_sosyal_havuz_dogrulama_sirasi.sql` | `20261122085500_...` |
+| `public.purchase_market_item`, `my_quests`, `save_quest`, `save_market_item` | `20261122145831_xp_seviye.sql` | `20261122114042_...` |
+| `public.get_leaderboard` | `20261122145831_xp_seviye.sql` | `20261122133546_...` |
 
 **İki tablo arasına ikinci bir yabancı anahtar ekleme:** PostgREST istemci sorgularında gömme
 (`bets?select=...,bet_options(...)`) belirsizleşir (PGRST201) ve mobil/admin sorguları bozulur.
@@ -56,10 +60,10 @@ Buluttaki gerçek durumu görmek daha ucuzsa: `npx supabase db query --linked "s
 - **Tablo yetkileri:** her yeni tabloda `revoke all ... from anon, authenticated;` sonra yalnızca `grant select ... to authenticated;`. İstemci hiçbir tabloya ekleme/silme yapamaz. Tek istisna: `profiles` için `grant update (first_name, last_name, department)`.
 - **RLS:** her tabloda açık. Politikalarda `(select auth.uid())`, `(select private.is_superadmin())` gibi alt sorgu biçimi (her satırda tekrar çalışmasın). Kümeye göre görünürlük: `cluster_id in (select private.my_cluster_ids())`.
 - **Fonksiyonlar:** hepsi `set search_path = ''` ve tam nitelikli adlar (`public.x`, `private.y`). İstemci RPC'leri `security definer`; başta oturum (`auth.uid()`), sonra yetki, sonra girdi kontrolü. Her fonksiyonda `revoke execute ... from public, anon;` + gerekiyorsa `grant execute ... to authenticated;`. İç fonksiyonlarda yalnızca `revoke ... from public`.
-- **Yalnızca eklenen tablolar:** `private.forbid_change()` tetikleyicisi (update/delete/truncate → `55000`). Şu an: `ledger_entries`, `admin_audit_log`.
+- **Yalnızca eklenen tablolar:** `private.forbid_change()` tetikleyicisi (update/delete/truncate → `55000`). Şu an: `ledger_entries`, `admin_audit_log`, `quest_claims`, `xp_events`.
 - **Metin kolonları:** `char_length` aralığı + `= btrim(...)` + kontrol karakteri yasağı (`!~ '[[:cntrl:]]'`).
 - **Görünmeyen kayıt:** yetkisi olmayana "bulunamadı" (`P0002`) dönülür, "yetkin yok" değil (varlığı sızdırmamak için).
-- **Kilit sırası:** bahis satırı → bakiyeler (`user_id` sırasıyla).
+- **Kilit sırası:** bahis satırı → bakiyeler (`user_id` sırasıyla) → profil satırları (XP, `user_id` sırasıyla). XP tetikleyicileri bakiye kilitlerinden sonra çalışır.
 
 ## Yeni migration kontrol listesi
 
@@ -96,6 +100,7 @@ Buluttaki gerçek durumu görmek daha ucuzsa: `npx supabase db query --linked "s
 | `KB020` | Görevin ödülü bu dönem zaten alındı |
 | `KB021` | Ürün satışta değil (kapalı / satış tarihi dışında) |
 | `KB022` | Ürün zaten kişinin envanterinde |
+| `KB023` | Kişinin seviyesi ürünün en az seviyesine yetmiyor |
 | `42501` | Yetki yok / giriş gerekli |
 | `23514` | Geçersiz değer (kısıt) |
 | `23505` | Tekrar (benzersizlik) |
@@ -114,4 +119,5 @@ bet_refund, market_purchase, admin_grant, admin_adjust) · `ledger_ref_type` (be
 `bet_type` (ssp_official, sp_minigame, sp_social) · `bet_scope` (private, school, cross_school, global) ·
 `bet_status` (open, locked, settling, settled, cancelled) · `settlement_mode` (auto, admin, referee) ·
 `quest_period` (daily, weekly, seasonal) · `quest_action` (wager, prediction, duel, social_bet, win) ·
-`market_category` (title, badge, frame, name_color).
+`market_category` (title, badge, frame, name_color) · `leaderboard_period` (week, all_time) ·
+`leaderboard_metric` (hit_rate, sp_profit, ssp_profit, best_streak) · `xp_reason` (daily_login, quest, correct_pick).

@@ -32,9 +32,10 @@ Yapılandırma: `admin/.env.local` (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUP
 | `app/(panel)/resmi-bahisler/` | Liste (seçenek, oran, yatırılan, olası ödeme), kilitle / sonuçlandır / iptal; `yeni/` açma formu |
 | `app/(panel)/itirazlar/` | Moderatör (`kullanici_bahsi_denetle` / süperadmin): açık itirazlı sosyal bahisler, hakemin sonucu, havuz, itiraz gerekçeleri; onayla / değiştir / iptal (`resolve_social_dispute`) |
 | `app/(panel)/gunun-tahmini/` | `resmi_bahis_ac` / `resmi_bahis_kapat` / süperadmin: Evet / Hayır sorusu açma (okul, soru, kapanış), havuzlar, kapanıştan sonra sonuç girme, iptal (`create/settle/cancel_daily_prediction`) |
-| `app/(panel)/gorevler/` | `gorev_yonet` / süperadmin: görev ekleme, `[id]/` düzenleme, aç / kapa (`save_quest`); eylem ve dönem etiketleri `labels.ts` |
-| `app/(panel)/market/` | `market_yonet` / süperadmin: ürün ekleme (türe göre simge ya da renk), `[id]/` düzenleme (tür sabit), satışa aç / kaldır (`save_market_item`) |
+| `app/(panel)/gorevler/` | `gorev_yonet` / süperadmin: görev ekleme (SP / SSP ödül + XP), `[id]/` düzenleme, aç / kapa (`save_quest`); eylem ve dönem etiketleri `labels.ts` |
+| `app/(panel)/market/` | `market_yonet` / süperadmin: ürün ekleme (türe göre simge ya da renk, en az seviye), `[id]/` düzenleme (tür sabit), satışa aç / kaldır (`save_market_item`) |
 | `app/(panel)/trivia/` | `trivia_yonet` / süperadmin: soru ekleme (okul ya da genel, 2–4 şık, doğru şık), açma / kapama (`save_trivia_question`) |
+| `app/(panel)/istatistik/` | `analitik_gor` / süperadmin: okul seçimi, bu haftanın okul özeti (`school_stats`), liderlik tablosu (seviye sütunlu; dönem ve ölçüt bağlantıları `?okul=&olcut=&donem=`, `get_leaderboard` ilk 50). Menüde ilk sırada |
 | `app/(panel)/yetkiler/` | Süperadmin: izin ver / geri al (`grant/revoke_permission`) |
 | `app/(panel)/bakiye/` | Süperadmin: `admin_grant` / `admin_adjust`, son yönetim işlemleri |
 
@@ -52,6 +53,6 @@ Yapılandırma: `admin/.env.local` (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUP
 
 - Doğrulanan: lint, tip kontrolü, build temiz; oturumsuz istek girişe yönleniyor, giriş sayfası hatasız.
 - Doğrulanmayan: giriş sonrası ekranlar tarayıcıda denenmedi (kullanıcının şifresiyle giriş gerekiyor; hesap ayrıca yetkili/süperadmin olmalı). Arkasındaki veritabanı fonksiyonları pgTAP ve uçtan uca SQL ile denendi.
-- İtiraz kuyruğu (Adım 7), trivia soruları ve günün tahmini (Adım 8), görevler ve market (Adım 9) build ve tip kontrolünden geçti; giriş sonrası tarayıcıda denenmedi (aynı sebep). `/gunun-tahmini`, `/gorevler`, `/market/[id]` oturumsuz istekte girişe yönleniyor (denendi).
+- İtiraz kuyruğu (Adım 7), trivia soruları ve günün tahmini (Adım 8), görevler ve market (Adım 9), istatistik ve XP / seviye alanları (Adım 10) build ve tip kontrolünden geçti; giriş sonrası tarayıcıda denenmedi (aynı sebep). `/gunun-tahmini`, `/gorevler`, `/market/[id]`, `/istatistik` oturumsuz istekte girişe yönleniyor (denendi).
 - Üretilen tiplerde RPC parametreleri null alamıyor görünür; null gönderilmesi gereken yerde (`save_trivia_question` `p_id` / genel soru) `as unknown as string` kullanıldı.
-- Sonra: analitik, liderlik (Adım 10).
+- Sonra: ürün satış / görev tamamlama sayıları, zaman içindeki eğilimler (grafik), kullanıcı yönetimi (ban).

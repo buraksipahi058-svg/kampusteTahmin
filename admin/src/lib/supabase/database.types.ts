@@ -396,6 +396,8 @@ export type Database = {
           duel_max_stake_sp: number
           duel_play_hours: number
           id: boolean
+          leaderboard_min_predictions_all: number
+          leaderboard_min_predictions_week: number
           referee_strike_limit: number
           signup_bonus_sp: number
           social_dispute_hours: number
@@ -405,6 +407,10 @@ export type Database = {
           trivia_question_count: number
           trivia_seconds_per_question: number
           updated_at: string
+          xp_correct_pick: number
+          xp_daily_login: number
+          xp_daily_pick_cap: number
+          xp_level_step: number
         }
         Insert: {
           daily_base_sp: number
@@ -417,6 +423,8 @@ export type Database = {
           duel_max_stake_sp?: number
           duel_play_hours?: number
           id?: boolean
+          leaderboard_min_predictions_all?: number
+          leaderboard_min_predictions_week?: number
           referee_strike_limit?: number
           signup_bonus_sp: number
           social_dispute_hours?: number
@@ -426,6 +434,10 @@ export type Database = {
           trivia_question_count?: number
           trivia_seconds_per_question?: number
           updated_at?: string
+          xp_correct_pick?: number
+          xp_daily_login?: number
+          xp_daily_pick_cap?: number
+          xp_level_step?: number
         }
         Update: {
           daily_base_sp?: number
@@ -438,6 +450,8 @@ export type Database = {
           duel_max_stake_sp?: number
           duel_play_hours?: number
           id?: boolean
+          leaderboard_min_predictions_all?: number
+          leaderboard_min_predictions_week?: number
           referee_strike_limit?: number
           signup_bonus_sp?: number
           social_dispute_hours?: number
@@ -447,8 +461,63 @@ export type Database = {
           trivia_question_count?: number
           trivia_seconds_per_question?: number
           updated_at?: string
+          xp_correct_pick?: number
+          xp_daily_login?: number
+          xp_daily_pick_cap?: number
+          xp_level_step?: number
         }
         Relationships: []
+      }
+      leaderboard_snapshots: {
+        Row: {
+          computed_at: string
+          metric: Database["public"]["Enums"]["leaderboard_metric"]
+          period: Database["public"]["Enums"]["leaderboard_period"]
+          period_start: string | null
+          rank: number
+          sample: number
+          school_id: string
+          user_id: string
+          value: number
+        }
+        Insert: {
+          computed_at: string
+          metric: Database["public"]["Enums"]["leaderboard_metric"]
+          period: Database["public"]["Enums"]["leaderboard_period"]
+          period_start?: string | null
+          rank: number
+          sample: number
+          school_id: string
+          user_id: string
+          value: number
+        }
+        Update: {
+          computed_at?: string
+          metric?: Database["public"]["Enums"]["leaderboard_metric"]
+          period?: Database["public"]["Enums"]["leaderboard_period"]
+          period_start?: string | null
+          rank?: number
+          sample?: number
+          school_id?: string
+          user_id?: string
+          value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leaderboard_snapshots_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "clusters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leaderboard_snapshots_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       ledger_entries: {
         Row: {
@@ -549,6 +618,7 @@ export type Database = {
           description: string | null
           icon: string | null
           id: string
+          min_level: number
           name: string
           price: number
           school_id: string | null
@@ -566,6 +636,7 @@ export type Database = {
           description?: string | null
           icon?: string | null
           id?: string
+          min_level?: number
           name: string
           price: number
           school_id?: string | null
@@ -583,6 +654,7 @@ export type Database = {
           description?: string | null
           icon?: string | null
           id?: string
+          min_level?: number
           name?: string
           price?: number
           school_id?: string | null
@@ -781,6 +853,7 @@ export type Database = {
           period: Database["public"]["Enums"]["quest_period"]
           reward_amount: number
           reward_currency: Database["public"]["Enums"]["currency"]
+          reward_xp: number
           school_id: string | null
           starts_at: string | null
           target: number
@@ -798,6 +871,7 @@ export type Database = {
           period: Database["public"]["Enums"]["quest_period"]
           reward_amount: number
           reward_currency?: Database["public"]["Enums"]["currency"]
+          reward_xp?: number
           school_id?: string | null
           starts_at?: string | null
           target: number
@@ -815,6 +889,7 @@ export type Database = {
           period?: Database["public"]["Enums"]["quest_period"]
           reward_amount?: number
           reward_currency?: Database["public"]["Enums"]["currency"]
+          reward_xp?: number
           school_id?: string | null
           starts_at?: string | null
           target?: number
@@ -1177,6 +1252,61 @@ export type Database = {
           },
         ]
       }
+      xp_events: {
+        Row: {
+          amount: number
+          created_at: string
+          id: number
+          ledger_entry_id: number | null
+          reason: Database["public"]["Enums"]["xp_reason"]
+          user_id: string
+          wager_id: string | null
+          xp_after: number
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: never
+          ledger_entry_id?: number | null
+          reason: Database["public"]["Enums"]["xp_reason"]
+          user_id: string
+          wager_id?: string | null
+          xp_after: number
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: never
+          ledger_entry_id?: number | null
+          reason?: Database["public"]["Enums"]["xp_reason"]
+          user_id?: string
+          wager_id?: string | null
+          xp_after?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "xp_events_ledger_entry_id_fkey"
+            columns: ["ledger_entry_id"]
+            isOneToOne: false
+            referencedRelation: "ledger_entries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "xp_events_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "xp_events_wager_id_fkey"
+            columns: ["wager_id"]
+            isOneToOne: false
+            referencedRelation: "wagers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -1305,6 +1435,33 @@ export type Database = {
         Args: { p_bet_id: string; p_reason: string }
         Returns: string
       }
+      get_leaderboard: {
+        Args: {
+          p_limit?: number
+          p_metric: Database["public"]["Enums"]["leaderboard_metric"]
+          p_period: Database["public"]["Enums"]["leaderboard_period"]
+          p_school_id?: string
+          p_weeks_ago?: number
+        }
+        Returns: {
+          badge: string
+          badge_name: string
+          computed_at: string
+          first_name: string
+          frame_color: string
+          is_me: boolean
+          last_name: string
+          level: number
+          name_color: string
+          period_start: string
+          rank: number
+          sample: number
+          title: string
+          title_icon: string
+          user_id: string
+          value: number
+        }[]
+      }
       grant_permission: {
         Args: {
           p_key: Database["public"]["Enums"]["permission_key"]
@@ -1314,6 +1471,16 @@ export type Database = {
         Returns: undefined
       }
       lock_official_bet: { Args: { p_bet_id: string }; Returns: undefined }
+      my_progress: {
+        Args: never
+        Returns: {
+          level: number
+          level_xp: number
+          next_level_xp: number
+          pick_xp_today: number
+          xp: number
+        }[]
+      }
       my_quests: {
         Args: never
         Returns: {
@@ -1326,8 +1493,26 @@ export type Database = {
           quest_id: string
           reward_amount: number
           reward_currency: Database["public"]["Enums"]["currency"]
+          reward_xp: number
           target: number
           title: string
+        }[]
+      }
+      my_stats: {
+        Args: never
+        Returns: {
+          best_streak: number
+          correct: number
+          current_streak: number
+          duels_played: number
+          duels_won: number
+          open_wagers: number
+          predictions: number
+          sp_profit: number
+          ssp_profit: number
+          week_rank_best_streak: number
+          week_rank_hit_rate: number
+          week_rank_sp_profit: number
         }[]
       }
       place_wager: {
@@ -1386,6 +1571,7 @@ export type Database = {
           p_description: string
           p_icon?: string
           p_id: string
+          p_min_level?: number
           p_name: string
           p_price: number
           p_school_id: string
@@ -1402,6 +1588,7 @@ export type Database = {
           p_period: Database["public"]["Enums"]["quest_period"]
           p_reward_amount: number
           p_reward_currency: Database["public"]["Enums"]["currency"]
+          p_reward_xp?: number
           p_school_id: string
           p_starts_at?: string
           p_target: number
@@ -1420,6 +1607,22 @@ export type Database = {
           p_school_id: string
         }
         Returns: string
+      }
+      school_stats: {
+        Args: { p_school_id: string }
+        Returns: {
+          active_this_week: number
+          market_purchases_this_week: number
+          members: number
+          open_bets: number
+          open_disputes: number
+          quest_claims_this_week: number
+          sp_staked_this_week: number
+          ssp_staked_this_week: number
+          verified_members: number
+          wagers_this_week: number
+          week_start: string
+        }[]
       }
       set_item_equipped: {
         Args: { p_equipped: boolean; p_item_id: string }
@@ -1462,6 +1665,12 @@ export type Database = {
       currency: "SP" | "SSP"
       dispute_decision: "confirmed" | "changed" | "cancelled"
       dispute_status: "open" | "resolved"
+      leaderboard_metric:
+        | "hit_rate"
+        | "sp_profit"
+        | "ssp_profit"
+        | "best_streak"
+      leaderboard_period: "week" | "all_time"
       ledger_reason:
         | "signup_bonus"
         | "daily_login"
@@ -1489,6 +1698,7 @@ export type Database = {
       quest_period: "daily" | "weekly" | "seasonal"
       settlement_mode: "auto" | "admin" | "referee"
       user_role: "student" | "yetkili" | "superadmin"
+      xp_reason: "daily_login" | "quest" | "correct_pick"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1626,6 +1836,13 @@ export const Constants = {
       currency: ["SP", "SSP"],
       dispute_decision: ["confirmed", "changed", "cancelled"],
       dispute_status: ["open", "resolved"],
+      leaderboard_metric: [
+        "hit_rate",
+        "sp_profit",
+        "ssp_profit",
+        "best_streak",
+      ],
+      leaderboard_period: ["week", "all_time"],
       ledger_reason: [
         "signup_bonus",
         "daily_login",
@@ -1655,6 +1872,7 @@ export const Constants = {
       quest_period: ["daily", "weekly", "seasonal"],
       settlement_mode: ["auto", "admin", "referee"],
       user_role: ["student", "yetkili", "superadmin"],
+      xp_reason: ["daily_login", "quest", "correct_pick"],
     },
   },
 } as const

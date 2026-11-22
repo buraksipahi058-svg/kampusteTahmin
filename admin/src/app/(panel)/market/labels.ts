@@ -16,6 +16,7 @@ export type MarketItem = {
   available_from: string | null;
   available_until: string | null;
   active: boolean;
+  min_level: number;
 };
 
 export const categoryLabels: Record<MarketCategory, string> = {

@@ -18,9 +18,11 @@ export async function saveItem(_prev: ActionState, formData: FormData): Promise<
   const id = text(formData, "id");
   const category = text(formData, "category") as MarketCategory;
   const price = Number(text(formData, "price"));
+  const minLevel = Number(text(formData, "min_level") || "1");
   const from = text(formData, "available_from");
   const until = text(formData, "available_until");
   if (!Number.isInteger(price) || price < 1) return { error: "Fiyat en az 1 olmalı." };
+  if (!Number.isInteger(minLevel) || minLevel < 1 || minLevel > 100) return { error: "Seviye 1 ile 100 arasında olmalı." };
 
   const supabase = await createClient();
   const { error } = await supabase.rpc("save_market_item", {
@@ -36,6 +38,7 @@ export async function saveItem(_prev: ActionState, formData: FormData): Promise<
     p_available_from: nullable(from && istanbulLocalToIso(from)),
     p_available_until: nullable(until && istanbulLocalToIso(until)),
     p_active: id ? formData.get("active") === "on" : true,
+    p_min_level: minLevel,
   });
   if (error) return { error: dbErrorMessage(error) };
   if (id) redirect("/market");
@@ -48,7 +51,7 @@ export async function toggleItem(_prev: ActionState, formData: FormData): Promis
   const id = text(formData, "id");
   const { data: item, error: readError } = await supabase
     .from("market_items")
-    .select("school_id, name, description, category, icon, color, price, currency, available_from, available_until, active")
+    .select("school_id, name, description, category, icon, color, price, currency, available_from, available_until, active, min_level")
     .eq("id", id)
     .maybeSingle();
   if (readError || !item) return { error: "Ürün bulunamadı." };
@@ -66,6 +69,7 @@ export async function toggleItem(_prev: ActionState, formData: FormData): Promis
     p_available_from: item.available_from as string,
     p_available_until: item.available_until as string,
     p_active: !item.active,
+    p_min_level: item.min_level,
   });
   if (error) return { error: dbErrorMessage(error) };
   refresh();

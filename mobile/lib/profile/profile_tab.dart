@@ -4,8 +4,12 @@ import 'package:go_router/go_router.dart';
 
 import '../core/routes.dart';
 import '../core/supabase.dart';
+import '../leaderboard/leaderboard_data.dart';
+import '../leaderboard/my_stats_card.dart';
 import '../market/cosmetic_preview.dart';
 import '../market/market_data.dart';
+import '../progress/level_card.dart';
+import '../progress/progress_data.dart';
 import '../quests/quests_data.dart';
 import '../wallet/wallet_data.dart';
 import 'profile_data.dart';
@@ -34,6 +38,8 @@ class ProfileTab extends ConsumerWidget {
         ref.invalidate(studentEmailProvider);
         ref.invalidate(myInventoryProvider);
         ref.invalidate(questsProvider);
+        ref.invalidate(myStatsProvider);
+        refreshProgress(ref);
         await ref.read(balanceProvider.future);
       },
       child: ListView(
@@ -124,12 +130,21 @@ class ProfileTab extends ConsumerWidget {
                   subtitle: Text(streak == null ? '' : 'En uzun: ${streak.longest} gün'),
                   trailing: Text(streak == null ? '…' : '${streak.current} gün', style: theme.textTheme.titleMedium),
                 ),
-                ListTile(
-                  leading: const Icon(Icons.military_tech_outlined),
-                  title: const Text('Seviye'),
-                  trailing: Text('${profile.level} · ${formatAmount(profile.xp)} XP', style: theme.textTheme.titleMedium),
-                ),
               ],
+            ),
+          ),
+          const SizedBox(height: 8),
+          const LevelCard(),
+          const SizedBox(height: 8),
+          const MyStatsCard(),
+          const SizedBox(height: 8),
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.history),
+              title: const Text('Geçmiş bahislerim'),
+              subtitle: const Text('Katıldığın bahisler ve sonuçları'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => context.push(Routes.history),
             ),
           ),
           const SizedBox(height: 24),

@@ -56,6 +56,25 @@ Kod: `20261122114042_gorevler_market.sql` (+ `..115132_market_sahip_gorunurlugu.
 - Yönetim: `save_quest(...)` (`gorev_yonet`; genel ve SSP ödül süperadmin), `save_market_item(...)` (`market_yonet`; genel süperadmin; tür değişmez). İkisi de `admin_audit_log`'a yazar.
 - Örnek veri: `seed.sql`'de 5 genel görev (`30000000-...`) ve 8 genel ürün (`40000000-...`).
 
+## XP ve seviye
+
+Kod: `20261122145831_xp_seviye.sql`. Testler: `11_xp_seviye.test.sql` (37); eşzamanlılık testleri her senaryoda
+profildeki XP = olayların toplamı kontrolünü de yapar. Kurallar: KARARLAR "XP ve seviye".
+
+XP paradan ayrıdır, ledger'a girmez. **Tek gerçek `xp_events`** (yalnızca eklenir): `reason` (`daily_login`, `quest`,
+`correct_pick`), `amount`, kaynak (`ledger_entry_id` ya da `wager_id`, her kaynak bir kez), `xp_after`. Kişi kendininkini,
+süperadmin hepsini görür. `profiles.xp` / `level` önbellektir.
+
+- `private.award_xp(user, reason, amount, ledger_entry_id?, wager_id?)` → verilen XP: profili kilitler, doğru tahminde
+  günlük sınırı (`xp_daily_pick_cap`) uygular, olayı yazar, önbelleği günceller. Tekrar kaynakta 0 döner.
+- Tetikleyiciler (para fonksiyonlarına dokunmadan): `ledger_entries` eklemesi — `daily_login` → `xp_daily_login`,
+  `quest_reward` → `quests.reward_xp`; `bets` durumu `settled` olunca kazanan seçeneğe yatıranlar → `xp_correct_pick`.
+- Seviye: `private.xp_for_level(L)` = `xp_level_step` × L × (L − 1) / 2, `private.level_for_xp(xp)`. Adım değişirse
+  mevcut seviyeler kendiliğinden değişmez: `update public.profiles set level = private.level_for_xp(xp);`.
+- İstemci: `my_progress()` → xp, seviye, seviyenin ve sonrakinin başladığı XP, bugünkü tahmin XP'si. Market ürününde
+  `min_level`; yetmeyen satın alma `KB023`. `my_quests` görevin `reward_xp`'sini döner; `save_quest` (`p_reward_xp`) ve
+  `save_market_item` (`p_min_level`) yeni parametreleri sonda, varsayılanlı.
+
 ## Sıradaki işler
 
-- XP / seviye henüz hiçbir yerde artmıyor (profiles'ta kolon var); görevler XP vermiyor.
+- Seviyeyle özellik açma (ör. sosyal bahis açmak) yok; yalnızca market ürünü açılır. Geriye dönük XP verilmedi.
