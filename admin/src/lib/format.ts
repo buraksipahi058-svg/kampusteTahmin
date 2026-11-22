@@ -1,0 +1,17 @@
+const dateTime = new Intl.DateTimeFormat("tr-TR", {
+  timeZone: "Europe/Istanbul",
+  dateStyle: "medium",
+  timeStyle: "short",
+});
+const number = new Intl.NumberFormat("tr-TR");
+
+export const formatDateTime = (iso: string) => dateTime.format(new Date(iso));
+export const formatAmount = (value: number) => number.format(value);
+export const formatOdds = (value: number | null) =>
+  value == null ? "–" : value.toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+// Sayfa her istekte sunucuda çizildiği için "şu an" isteğin anıdır.
+export const isPast = (iso: string) => Date.parse(iso) <= Date.now();
+
+// <input type="datetime-local"> değeri İstanbul saati kabul edilir (Türkiye yıl boyu UTC+3).
+export const istanbulLocalToIso = (local: string) => new Date(`${local}:00+03:00`).toISOString();

@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
+import '../core/routes.dart';
 import '../core/supabase.dart';
 import '../wallet/wallet_data.dart';
 import 'profile_data.dart';
+import 'student_email_data.dart';
 
 class ProfileTab extends ConsumerWidget {
   const ProfileTab({super.key});
@@ -13,6 +16,7 @@ class ProfileTab extends ConsumerWidget {
     final profile = ref.watch(myProfileProvider).value?.profile;
     final balance = ref.watch(balanceProvider).value;
     final streak = ref.watch(loginStreakProvider).value;
+    final studentEmail = ref.watch(studentEmailProvider).value;
     final theme = Theme.of(context);
 
     if (profile == null) return const Center(child: CircularProgressIndicator());
@@ -22,6 +26,7 @@ class ProfileTab extends ConsumerWidget {
         ref.invalidate(myProfileProvider);
         ref.invalidate(balanceProvider);
         ref.invalidate(loginStreakProvider);
+        ref.invalidate(studentEmailProvider);
         await ref.read(balanceProvider.future);
       },
       child: ListView(
@@ -34,6 +39,24 @@ class ProfileTab extends ConsumerWidget {
             style: theme.textTheme.bodyMedium,
           ),
           const SizedBox(height: 16),
+          Card(
+            child: switch (studentEmail) {
+              null => const ListTile(leading: Icon(Icons.school_outlined), title: Text('Okul maili')),
+              StudentEmail(verified: true, :final email) => ListTile(
+                leading: Icon(Icons.verified, color: theme.colorScheme.primary),
+                title: const Text('Okul maili doğrulandı'),
+                subtitle: Text(email ?? ''),
+              ),
+              _ => ListTile(
+                leading: const Icon(Icons.mark_email_unread_outlined),
+                title: const Text('Okul mailini doğrula'),
+                subtitle: const Text('Bahis açmak ve bahse katılmak için gerekli'),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => context.push(Routes.verifyEmail),
+              ),
+            },
+          ),
+          const SizedBox(height: 8),
           Card(
             child: Column(
               children: [

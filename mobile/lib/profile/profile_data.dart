@@ -18,6 +18,7 @@ class Profile {
     required this.firstName,
     required this.lastName,
     required this.schoolName,
+    this.schoolEmailDomains = const [],
     this.department,
     this.level = 1,
     this.xp = 0,
@@ -27,21 +28,30 @@ class Profile {
   final String firstName;
   final String lastName;
   final String schoolName;
+
+  /// Okulun öğrenci mail alan adları (ör. `ogr.ornek.edu.tr`); okul maili doğrulamada ipucu.
+  final List<String> schoolEmailDomains;
   final String? department;
   final int level;
   final int xp;
 
   String get fullName => '$firstName $lastName';
 
-  factory Profile.fromJson(Map<String, dynamic> json) => Profile(
-    id: json['id'] as String,
-    firstName: json['first_name'] as String,
-    lastName: json['last_name'] as String,
-    schoolName: (json['school'] as Map<String, dynamic>?)?['name'] as String? ?? '',
-    department: json['department'] as String?,
-    level: json['level'] as int,
-    xp: json['xp'] as int,
-  );
+  factory Profile.fromJson(Map<String, dynamic> json) {
+    final school = json['school'] as Map<String, dynamic>?;
+    return Profile(
+      id: json['id'] as String,
+      firstName: json['first_name'] as String,
+      lastName: json['last_name'] as String,
+      schoolName: school?['name'] as String? ?? '',
+      schoolEmailDomains: [
+        for (final d in (school?['school_email_domains'] as List? ?? const [])) (d as Map)['domain'] as String,
+      ],
+      department: json['department'] as String?,
+      level: json['level'] as int,
+      xp: json['xp'] as int,
+    );
+  }
 }
 
 /// Profil sorgusunun sonucu, hangi kullanıcı için yapıldığıyla birlikte. Kullanıcı değişince
@@ -57,7 +67,8 @@ class ProfileStatus {
 
 // profiles ile clusters arasında birden çok ilişki var (school_id, user_clusters, permissions);
 // "!school_id" olmadan PostgREST hangisini kullanacağını bilemez (PGRST201).
-const _profileColumns = 'id, first_name, last_name, department, level, xp, school:clusters!school_id(name)';
+const _profileColumns =
+    'id, first_name, last_name, department, level, xp, school:clusters!school_id(name, school_email_domains(domain))';
 
 final myProfileProvider = FutureProvider<ProfileStatus>((ref) async {
   final userId = ref.watch(currentUserIdProvider);

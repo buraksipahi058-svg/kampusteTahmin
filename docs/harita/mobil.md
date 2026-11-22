@@ -33,10 +33,14 @@ Ekran görüntüsü: `adb shell screencap -p /sdcard/x.png` + `adb pull`.
 | `core/router.dart`, `routes.dart` | go_router; yönlendirme kuralı `redirectFor` (saf fonksiyon, testli) |
 | `auth/auth_screen.dart` | E-posta + şifre giriş/kayıt, onay mailini yeniden gönderme |
 | `profile/profile_data.dart` | `myProfileProvider`, `schoolsProvider`, `createProfile` (`public.create_profile`) |
-| `profile/create_profile_screen.dart`, `profile_tab.dart` | Profil oluşturma; Profil sekmesi (bakiye, seri, seviye, çıkış) |
+| `profile/create_profile_screen.dart`, `profile_tab.dart` | Profil oluşturma; Profil sekmesi (okul maili durumu, bakiye, seri, seviye, çıkış) |
+| `profile/student_email_data.dart` | `studentEmailProvider` (`profile_private`), `requestStudentEmailCode`, `confirmStudentEmail` |
+| `profile/verify_email_screen.dart` | `/okul-maili`: mail → kod; okulun alan adını ipucu gösterir (profil sorgusu `school_email_domains`'i de çeker) |
 | `wallet/wallet_data.dart` | `balanceProvider`, `loginStreakProvider`, `dailyRewardProvider` (`claim_daily_login`), `formatAmount` |
 | `wallet/balance_bar.dart` | Üst çubukta SP / SSP; dokununca yenilenir |
 | `home/home_shell.dart` | Alt sekmeler (`homeTabs`), günlük ödül bildirimi; boş sekmeler `placeholder_tab.dart` |
+| `bets/bets_data.dart` | `Bet`, `BetOption`, `Wager`; `officialBetsProvider`, `myWagersProvider`, `placeWager` (`place_wager`), `potentialPayout` (bilgi için) |
+| `bets/bets_tab.dart` | Bahisler sekmesi: resmi bahisler (oran, kapanış İstanbul saati, kişinin yatırımı / sonucu), yatırım alt sayfası; doğrulanmamışsa uyarı |
 
 ## Akış
 
@@ -45,7 +49,7 @@ Profil yok → `/profil-olustur` (okullar `clusters where type = 'school'`). Pro
 Kabuk açılınca `claim_daily_login()` bir kez çağrılır; ödül alındıysa bildirim + bakiye/seri sunucudan yeniden okunur.
 Sağlayıcılar `currentUserIdProvider`'a bağlı: çıkış/giriş olunca kendiliğinden yeniden çalışır.
 
-## Testler (`mobile/test/`, 15)
+## Testler (`mobile/test/`, 22)
 
 `error_messages_test` (eşleme + veritabani.md uyumu), `app_info_test` (platform adları), `router_test`
 (yönlendirme kuralları), `app_test` (sağlayıcılar sabit değerle değiştirilerek ekranlar; Supabase'e bağlanmaz).

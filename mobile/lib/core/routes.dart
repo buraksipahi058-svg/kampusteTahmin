@@ -7,4 +7,5 @@ abstract final class Routes {
   static const market = '/market';
   static const leaderboard = '/liderlik';
   static const profile = '/profil';
+  static const verifyEmail = '/okul-maili';
 }

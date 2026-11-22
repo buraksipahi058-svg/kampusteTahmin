@@ -10,10 +10,12 @@ testleri. İkisi de buluttaki veritabanında çalışır.
 | `supabase/tests/database/01_kumeler_profiller_yetkiler.test.sql` | kümeler, profiller, RLS, yetkiler | 52 |
 | `supabase/tests/database/02_para_cekirdegi.test.sql` | ledger, bakiye, seri, admin para | 47 |
 | `supabase/tests/database/03_bahis_cekirdegi.test.sql` | bahis açma, yatırım, dağıtım, iptal | 61 |
+| `supabase/tests/database/04_okul_maili.test.sql` | okul maili kodu, sınırlar, geliştirme kutusu, Brevo kuyruğu | 32 |
+| `supabase/tests/database/05_resmi_bahis.test.sql` | resmi bahis yetkileri, sabit oranlı ödeme, iptal, denetim kaydı | 37 |
 | `supabase/tests/concurrency/para.mjs` | günlük ödül, eşzamanlı düşüm, eşzamanlı profil | 4 senaryo |
 | `supabase/tests/concurrency/bahis.mjs` | eşzamanlı yatırım, çift yatırım, sonuç yarışı, çift sonuç | 5 senaryo |
 
-Son durum: hepsi geçiyor (Adım 3 sonu).
+Son durum: hepsi geçiyor (Adım 6 sonu: 229 pgTAP; bahis eşzamanlılığı 5/5, para eşzamanlılığı en son Adım 3'te).
 
 ## Çalıştırma
 

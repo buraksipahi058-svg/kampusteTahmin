@@ -1,0 +1,58 @@
+import Link from "next/link";
+import { logout } from "../giris/actions";
+import { getStaff } from "@/lib/auth";
+
+// Panel her istekte oturumu okur; anlık gezinme (static shell) hedeflenmez.
+export const instant = false;
+
+export default async function PanelLayout({ children }: LayoutProps<"/">) {
+  const staff = await getStaff();
+
+  if (!staff) {
+    return (
+      <main className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center gap-4 px-4 py-16">
+        <h1 className="text-xl font-semibold">Bu panel yalnızca yetkililer içindir</h1>
+        <p className="text-sm text-zinc-500">Hesabının yönetim yetkisi yok. Yetki süperadmin tarafından verilir.</p>
+        <form action={logout}>
+          <button className="text-sm underline">Çıkış yap</button>
+        </form>
+      </main>
+    );
+  }
+
+  const links = [
+    { href: "/resmi-bahisler", label: "Resmi bahisler" },
+    ...(staff.role === "superadmin"
+      ? [
+          { href: "/yetkiler", label: "Yetkiler" },
+          { href: "/bakiye", label: "SSP ver / bakiye düzelt" },
+        ]
+      : []),
+  ];
+
+  return (
+    <div className="flex flex-1 flex-col">
+      <header className="border-b border-zinc-200 dark:border-zinc-800">
+        <div className="mx-auto flex w-full max-w-5xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3">
+          <span className="font-semibold">KampüsBet Yönetim</span>
+          <nav className="flex flex-wrap gap-4 text-sm">
+            {links.map((l) => (
+              <Link key={l.href} href={l.href} className="hover:underline">
+                {l.label}
+              </Link>
+            ))}
+          </nav>
+          <div className="ml-auto flex items-center gap-3 text-sm text-zinc-500">
+            <span>
+              {staff.name} · {staff.role === "superadmin" ? "Süperadmin" : `Yetkili (${staff.schoolName})`}
+            </span>
+            <form action={logout}>
+              <button className="underline">Çıkış</button>
+            </form>
+          </div>
+        </div>
+      </header>
+      <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-6">{children}</main>
+    </div>
+  );
+}

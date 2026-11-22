@@ -553,10 +553,10 @@ select is_empty(
 
 select is_empty(
   $$select b.id from public.bets b join public.wagers w on w.bet_id = b.id
-    where b.status in ('settled', 'cancelled')
+    where (b.status = 'cancelled' or (b.status = 'settled' and b.odds_mode = 'pool'))
     group by b.id, b.pool_total
     having sum(w.payout) <> b.pool_total or count(w.payout) <> count(*)$$,
-  'sonuçlanan ve iptal edilen her bahiste dağıtılan toplam havuza eşit, ödemesiz yatırım yok'
+  'sonuçlanan havuz bahislerinde ve iptallerde dağıtılan toplam havuza eşit, ödemesiz yatırım yok'
 );
 
 select is_empty(

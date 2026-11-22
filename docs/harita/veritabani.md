@@ -11,6 +11,8 @@ Konu bölgeleri: [kimlik.md](kimlik.md), [para.md](para.md), [bahis.md](bahis.md
 | `20261020145832_kume_ust_kume_hatasi.sql` | 1 | `private.clusters_set_school` düzeltmesi (anlaşılır hata) |
 | `20261020151007_para_cekirdegi.sql` | 2 | Ekonomi ayarları, ledger, bakiye, seri, `post_ledger`, `create_profile`'ın yeni hali (bakiye + başlangıç SP), `claim_daily_login`, `admin_grant/adjust` |
 | `20261020160619_bahis_cekirdegi.sql` | 3 | Bahis, seçenek, yatırım, ledger'a bahis kısıtları, `create/lock/settle/cancel_bet`, `place_wager` |
+| `20261122080714_okul_maili_dogrulama.sql` | 5 | `pg_net`, mail ayarları + geliştirme kutusu, kod kayıtları (private), `send_mail`, `request_student_email_code`, `confirm_student_email` |
+| `20261122082914_resmi_bahisler.sql` | 6 | `odds_mode`, seçenek/yatırım oranı; `create_bet` (oranlı), `settle_bet` (sabit oran), `place_wager` (oran + sonuçlandırabilecek olan yatıramaz) yeniden; `create/lock/settle/cancel_official_bet` |
 
 ## Koda inmek gerekirse
 
@@ -22,12 +24,13 @@ grep -n "create table public.bets" supabase/migrations/*.sql         # tablo
 grep -n "create policy" supabase/migrations/*.sql                    # tüm RLS politikaları
 ```
 
-Aynı fonksiyon birden fazla migration'da tanımlıysa **en yeni dosyadaki** geçerlidir. Şu an iki tane var:
+Aynı fonksiyon birden fazla migration'da tanımlıysa **en yeni dosyadaki** geçerlidir:
 
 | Fonksiyon | Geçerli tanım | Eski tanım (okuma) |
 |---|---|---|
 | `public.create_profile` | `20261020151007_para_cekirdegi.sql` | `20261020145105_...` |
 | `private.clusters_set_school` | `20261020145832_kume_ust_kume_hatasi.sql` | `20261020145105_...` |
+| `private.create_bet`, `private.settle_bet`, `public.place_wager` | `20261122082914_resmi_bahisler.sql` | `20261020160619_...` |
 
 Buluttaki gerçek durumu görmek daha ucuzsa: `npx supabase db query --linked "select pg_get_functiondef('public.place_wager'::regproc)"`.
 
@@ -63,6 +66,13 @@ Buluttaki gerçek durumu görmek daha ucuzsa: `npx supabase db query --linked "s
 | `KB004` | Bu bahse zaten yatırım yapıldı |
 | `KB005` | Bahis henüz kilitlenmedi, sonuçlandırılamaz |
 | `KB006` | Bahis zaten sonuçlandı ya da iptal edildi |
+| `KB007` | Mail adresi kişinin okulunun öğrenci alan adında değil |
+| `KB008` | Okul maili başka bir hesaba bağlı |
+| `KB009` | Okul maili zaten doğrulanmış |
+| `KB010` | Kod isteme sınırı (60 sn bekleme / günde 5) |
+| `KB011` | Doğrulama kodunun süresi doldu |
+| `KB012` | Doğrulama kodunda deneme hakkı bitti |
+| `KB013` | Mail servisi yapılandırılmamış |
 | `42501` | Yetki yok / giriş gerekli |
 | `23514` | Geçersiz değer (kısıt) |
 | `23505` | Tekrar (benzersizlik) |

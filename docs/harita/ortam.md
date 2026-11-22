@@ -19,6 +19,7 @@ Araçlar, komutlar ve tuzaklar. Her şey Windows'ta çalışır (eski 192.168.1.
 - Proje ref: `uofbwsdkwwlznvtttkhj` — URL `https://uofbwsdkwwlznvtttkhj.supabase.co`, bölge Frankfurt.
 - CLI'a kullanıcı giriş yaptı (`supabase login`) ve projeyi bağladı (`supabase link`); bağlantı `supabase/.temp/` içinde (git'e girmez).
 - Tek proje var: geliştirme ve ileride canlı aynı proje. Canlıya geçmeden önce ayrı proje düşünülmeli.
+- **Ücretsiz plan bir hafta işlem olmazsa projeyi duraklatır** (`npx supabase projects list` → `INACTIVE`; CLI "Database is possibly not accessible"). Açmak kullanıcının işi: Dashboard → proje → "Restore project" (birkaç dakika sürer, veri kaybolmaz).
 
 ## Gizli bilgiler (hiçbiri repoda değil)
 

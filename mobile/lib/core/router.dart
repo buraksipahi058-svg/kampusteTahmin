@@ -6,6 +6,7 @@ import '../auth/auth_screen.dart';
 import '../home/home_shell.dart';
 import '../profile/create_profile_screen.dart';
 import '../profile/profile_data.dart';
+import '../profile/verify_email_screen.dart';
 import 'loading_screen.dart';
 import 'routes.dart';
 import 'supabase.dart';
@@ -49,6 +50,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: Routes.auth, builder: (_, _) => const AuthScreen()),
       GoRoute(path: Routes.loading, builder: (_, _) => const LoadingScreen()),
       GoRoute(path: Routes.createProfile, builder: (_, _) => const CreateProfileScreen()),
+      GoRoute(path: Routes.verifyEmail, builder: (_, _) => const VerifyEmailScreen()),
       StatefulShellRoute.indexedStack(
         builder: (_, _, shell) => HomeShell(shell: shell),
         branches: [

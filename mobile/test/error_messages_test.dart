@@ -12,6 +12,7 @@ void main() {
     expect(userMessage(db('KB001')), 'Bakiyen yetersiz.');
     expect(userMessage(db('KB002')), contains('okul mailini doğrula'));
     expect(userMessage(db('KB004')), 'Bu bahse zaten yatırım yaptın.');
+    expect(userMessage(db('KB007')), contains('okulunun öğrenci maili değil'));
   });
 
   test('bilinmeyen kod sunucu metnini değil genel mesajı gösterir', () {
@@ -41,7 +42,7 @@ void main() {
         .map((m) => m.group(1)!)
         .toList();
 
-    expect(codes, containsAll(['KB001', 'KB002', 'KB003', 'KB004', 'KB005', 'KB006']));
+    expect(codes, containsAll([for (var i = 1; i <= 13; i++) 'KB${i.toString().padLeft(3, '0')}']));
     for (final code in codes) {
       expect(databaseMessages, contains(code), reason: '$code için mesaj yok (lib/core/error_messages.dart)');
     }

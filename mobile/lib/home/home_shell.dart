@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../bets/bets_tab.dart';
 import '../core/error_messages.dart';
 import '../core/routes.dart';
 import '../profile/profile_tab.dart';
@@ -34,6 +35,7 @@ const homeTabs = [
     label: 'Bahisler',
     icon: Icons.how_to_vote_outlined,
     selectedIcon: Icons.how_to_vote,
+    page: BetsTab(),
   ),
   HomeTab(
     path: Routes.games,

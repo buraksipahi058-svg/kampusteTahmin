@@ -5,11 +5,11 @@ gerektirdiği bölgeleri aç. Kod dosyalarını baştan sona okuma; bölge dosya
 
 ## Şu an
 
-- **Son tamamlanan:** Adım 4 (mobil temel), commit `820d315`. Emülatörde kayıt → mail onayı → giriş → profil → bakiye (1.050 SP) → günlük ödül akışı çalıştı; `flutter analyze` temiz, 15 Flutter testi geçiyor.
-- **Sıradaki:** Adım 5 — okul maili doğrulama (mail sağlayıcısı seçilmeli; Supabase'in yerleşik maili yalnızca proje ekibine ve saatte birkaç mail gönderir).
-- **Kullanıcıdan beklenenler:** gerçek okulun adı ve öğrenci mail alan adı (şimdilik "Örnek
-  Üniversitesi" / `ogr.ornek.edu.tr`); `KARARLAR.md`'deki açık öneriler 4–8; Adım 6'dan önce resmi
-  bahiste sabit oran mı havuz mu (MIMARI §13.6); Adım 9'da ekonomi rakamları.
+- **Commit yok:** kullanıcı söyleyene kadar yerel commit de atılmıyor (KARARLAR "Repo"). Adım 5 ve 6 çalışma ağacında.
+- **Son tamamlanan:** Adım 6 (resmi SSP bahisler, sabit oran + admin paneli). 229 pgTAP, 22 Flutter testi, bahis eşzamanlılığı 5/5; admin lint/tip/build temiz. Emülatörde: resmi bahse 100 SSP → sonuçlandırma → "Kazandın: +180 SSP". Admin panelinde giriş sonrası ekranlar tarayıcıda denenmedi (kullanıcının girişi gerekiyor).
+- **Bulutta deneme verisi:** giriş yapamayan "Test Yetkili" profili (`e2e00000-...0001`, Örnek Üniversitesi, resmi bahis izinleri), onun açtığı sonuçlanmış "Bahar turnuvası finali (deneme)" bahsi; kullanıcının test hesabı `deneme@ogr.ornek.edu.tr` ile doğrulanmış ve 580 SSP'li.
+- **Sıradaki:** Adım 7 — sosyal havuz (hakem, itiraz penceresi, moderatör kuyruğu). Ayrıntı [bahis](harita/bahis.md).
+- **Kullanıcıdan beklenenler:** admin panelini denemek için hesabının yetkili/süperadmin yapılması; gerçek mail sağlayıcısı (öneri Brevo, [kimlik](harita/kimlik.md)); gerçek okulun adı ve öğrenci mail alan adı; `KARARLAR.md` açık öneriler 4–8; Adım 9'da ekonomi rakamları.
 
 | # | Adım | Durum | Commit |
 |---|---|---|---|
@@ -18,9 +18,9 @@ gerektirdiği bölgeleri aç. Kod dosyalarını baştan sona okuma; bölge dosya
 | 2 | Para çekirdeği | Bitti | `1ff2cfb` |
 | 3 | Bahis çekirdeği | Bitti | `ecc3be0` |
 | 4 | Mobil temel | Bitti | `820d315` |
-| 5 | Okul maili doğrulama | Sırada | |
-| 6 | Resmi SSP bahisler + admin paneli | | |
-| 7 | Sosyal havuz (hakem, itiraz) | | |
+| 5 | Okul maili doğrulama | Bitti (commit yok) | |
+| 6 | Resmi SSP bahisler + admin paneli | Bitti (commit yok) | |
+| 7 | Sosyal havuz (hakem, itiraz) | Sırada | |
 | 8 | Mini oyunlar | | |
 | 9 | Görevler + market | | |
 | 10 | Liderlik + istatistik | | |
