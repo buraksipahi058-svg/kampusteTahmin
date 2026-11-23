@@ -59,7 +59,7 @@ class BetOptionButton extends StatelessWidget {
           clipBehavior: Clip.antiAlias,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(Radii.md),
-            side: chosen ? BorderSide(color: scheme.primary, width: 1.5) : BorderSide.none,
+            side: chosen ? BorderSide(color: winner ? app.success : scheme.primary, width: 1.5) : BorderSide.none,
           ),
           child: InkWell(
             onTap: onTap == null

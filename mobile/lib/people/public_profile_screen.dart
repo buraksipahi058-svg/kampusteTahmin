@@ -5,8 +5,8 @@ import 'package:go_router/go_router.dart';
 import '../achievements/achievement_badge.dart';
 import '../achievements/achievements_data.dart';
 import '../core/app_theme.dart';
-import '../core/error_messages.dart';
 import '../core/routes.dart';
+import '../core/state_views.dart';
 import '../leaderboard/leaderboard_data.dart';
 import '../market/cosmetic_preview.dart';
 import '../market/market_data.dart';
@@ -125,8 +125,14 @@ class PublicProfileScreen extends ConsumerWidget {
               ),
           ],
         ),
-        AsyncError(:final error) => Center(child: Text('Profil açılamadı. ${userMessage(error)}')),
-        _ => const Center(child: CircularProgressIndicator()),
+        AsyncError(:final error) => Center(
+          child: ErrorView(
+            what: 'Profil açılamadı.',
+            error: error,
+            onRetry: () => ref.invalidate(publicProfileProvider(userId)),
+          ),
+        ),
+        _ => const LoadingView(),
       },
     );
   }

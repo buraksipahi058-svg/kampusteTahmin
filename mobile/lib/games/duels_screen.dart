@@ -38,7 +38,7 @@ class DuelsScreen extends ConsumerWidget {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Trivia düellosu'), actions: const [BalanceBar(), SizedBox(width: 8)]),
+      appBar: AppBar(title: const AppBarTitle('Trivia düellosu'), actions: const [BalanceBar(), SizedBox(width: 8)]),
       body: RefreshIndicator(
         onRefresh: () async {
           ref.invalidate(triviaDuelsProvider);

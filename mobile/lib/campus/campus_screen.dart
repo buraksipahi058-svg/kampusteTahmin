@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 import '../bets/bets_tab.dart' show formatIstanbul;
+import '../core/app_theme.dart';
 import '../core/icon_badge.dart';
 import '../core/routes.dart';
 import '../core/state_views.dart';
@@ -23,7 +24,7 @@ class CampusTasksScreen extends ConsumerWidget {
     final theme = Theme.of(context);
     final verified = ref.watch(studentEmailProvider).value?.verified;
     return Scaffold(
-      appBar: AppBar(title: const Text('Kampüs görevleri'), actions: const [BalanceBar(), SizedBox(width: 8)]),
+      appBar: AppBar(title: const AppBarTitle('Kampüs görevleri'), actions: const [BalanceBar(), SizedBox(width: 8)]),
       body: RefreshIndicator(
         onRefresh: () async {
           ref.invalidate(campusTasksProvider);
@@ -74,7 +75,7 @@ class CampusTaskCard extends StatelessWidget {
     final theme = Theme.of(context);
     final t = task;
     final status = switch (t.myStatus) {
-      'approved' => ('Yaptın, ödülü aldın', theme.colorScheme.primary),
+      'approved' => ('Yaptın, ödülü aldın', context.appColors.success),
       'pending' => ('Onay bekliyor', theme.colorScheme.tertiary),
       'rejected' => (
         'Reddedildi${t.myNote == null ? '' : ': ${t.myNote}'} · yeniden deneyebilirsin',

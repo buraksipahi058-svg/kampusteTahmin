@@ -23,7 +23,7 @@ class DailyPredictionsScreen extends ConsumerWidget {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Günün tahmini'), actions: const [BalanceBar(), SizedBox(width: 8)]),
+      appBar: AppBar(title: const AppBarTitle('Günün tahmini'), actions: const [BalanceBar(), SizedBox(width: 8)]),
       body: RefreshIndicator(
         onRefresh: () async {
           ref.invalidate(dailyPredictionsProvider);

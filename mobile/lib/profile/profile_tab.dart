@@ -5,6 +5,7 @@ import 'package:material_symbols_icons/symbols.dart';
 
 import '../achievements/achievements_data.dart';
 import '../core/app_theme.dart';
+import '../core/count_chevron.dart';
 import '../core/design_tokens.dart';
 import '../core/routes.dart';
 import '../core/supabase.dart';
@@ -137,9 +138,7 @@ class ProfileTab extends ConsumerWidget {
               leading: const Icon(Symbols.flag_rounded),
               title: const Text('Görevler'),
               subtitle: Text(readyRewards > 0 ? '$readyRewards ödül alınmayı bekliyor' : 'Günlük ve haftalık görevler'),
-              trailing: readyRewards > 0
-                  ? Badge(label: Text('$readyRewards'), child: const Icon(Symbols.chevron_right_rounded))
-                  : const Icon(Symbols.chevron_right_rounded),
+              trailing: CountChevron(count: readyRewards),
               onTap: () => context.push(Routes.quests),
             ),
           ),
@@ -154,9 +153,7 @@ class ProfileTab extends ConsumerWidget {
                     : '${achievements.where((a) => a.unlocked).length} / ${achievements.length} kazanıldı'
                           '${readyAchievements > 0 ? ' · $readyAchievements ödül hazır' : ''}',
               ),
-              trailing: readyAchievements > 0
-                  ? Badge(label: Text('$readyAchievements'), child: const Icon(Symbols.chevron_right_rounded))
-                  : const Icon(Symbols.chevron_right_rounded),
+              trailing: CountChevron(count: readyAchievements),
               onTap: () => context.push(Routes.achievements),
             ),
           ),

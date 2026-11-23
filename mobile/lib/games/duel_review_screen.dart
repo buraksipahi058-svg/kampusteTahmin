@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
-import '../core/error_messages.dart';
+import '../core/app_theme.dart';
+import '../core/state_views.dart';
 import 'trivia_data.dart';
 
 /// `/duello/:id/cevaplar`: bitmiş düelloda sorular, doğru şık, kişinin ve rakibin cevabı.
@@ -27,11 +28,14 @@ class DuelReviewScreen extends ConsumerWidget {
             for (final q in value) _QuestionCard(item: q),
           ],
         ),
-        AsyncError(:final error) => Padding(
-          padding: const EdgeInsets.all(24),
-          child: Text('Cevaplar açılamadı. ${userMessage(error)}'),
+        AsyncError(:final error) => Center(
+          child: ErrorView(
+            what: 'Cevaplar açılamadı.',
+            error: error,
+            onRetry: () => ref.invalidate(duelReviewProvider(betId)),
+          ),
         ),
-        _ => const Center(child: CircularProgressIndicator()),
+        _ => const LoadingView(),
       },
     );
   }
@@ -64,7 +68,7 @@ class _QuestionCard extends StatelessWidget {
                       i == item.correctIndex ? Symbols.check_circle_rounded : Symbols.circle_rounded,
                       fill: i == item.correctIndex ? 1 : 0,
                       size: 18,
-                      color: i == item.correctIndex ? scheme.primary : scheme.outline,
+                      color: i == item.correctIndex ? context.appColors.success : scheme.outline,
                     ),
                     const SizedBox(width: 8),
                     Expanded(
@@ -94,17 +98,19 @@ class _Tag extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final app = context.appColors;
     return Container(
       margin: const EdgeInsets.only(left: 6),
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
-        color: correct ? scheme.primaryContainer : scheme.errorContainer,
+        color: correct ? app.successContainer : scheme.errorContainer,
         borderRadius: BorderRadius.circular(8),
       ),
       child: Text(
         text,
-        style: TextStyle(color: correct ? scheme.onPrimaryContainer : scheme.onErrorContainer, fontSize: 12),
+        style: theme.textTheme.labelSmall?.copyWith(color: correct ? app.onSuccessContainer : scheme.onErrorContainer),
       ),
     );
   }

@@ -3,7 +3,7 @@
 Kaynak: Emil Kowalski'nin tasarım mühendisliği kuralları (github.com/emilkowalski/skills; özetin aslı
 `emil-design-eng`, `review-animations/STANDARDS.md`, `apple-design`, `mobile-native`, `break-ui`). Alt adımlar:
 18a mobil tasarım sistemi (`2d5e833`), 18b mobil ekranlar ve hareket, 18c ikon ve görsel uyumu (ikisi `a831471`), mor
-fütüristik tema ve 18d admin paneli (commit yok), 18e kontrol.
+fütüristik tema ve 18d admin paneli (`776e171`), 18e son kontrol (commit yok).
 
 ## Kurallar (yeni ekran / bileşen yazarken)
 
@@ -102,4 +102,18 @@ tasarım değişirken Türkçe metinler ve düğme türleri korunur ya da test b
 - **Tablolar:** başlıklar küçük, büyük harf, soluk; hücreler arasında boşluk (`@layer base`), sayılar sabit
   genişlikli.
 - Hareket mobilin eğrileriyle aynı (`--ease-out`, `--ease-in-out`); sayfa geçişi animasyonsuz.
+
+## Son kontrol (18e)
+
+Mobil kod kurallara göre tarandı (ikon ailesi, ham renk, süre / eğri, emoji, durum görünümleri), emülatörde ana
+sekmeler ve alt ekranlar normal ve %200 yazıyla, admin masaüstü ve 375 px genişlikte gezildi. Sonuç kuralları:
+
+- **Renk anlamı:** başarı / tamamlandı / doğru / onaylandı / kazanan her yerde yeşil (`appColors.success`); mor ana
+  renk marka, seçim ve vurgu içindir. (Tema yeşilken `primary` kullanılan düello cevap anahtarı, alınan görev ödülü,
+  onaylanan kampüs görevi ve günlük ödül işaretleri yeşile çevrildi; kazanan seçenek seçilmişse çerçevesi de yeşil.)
+- **Sayı rozeti oka binmez:** satır sonunda `CountChevron` (rozet okun solunda, en çok 1,3 kat büyür).
+- **Bakiyeli üst çubukta başlık** `AppBarTitle`: sığmazsa kesilmez, küçülür (%200 yazıda ve alt ekranlarda
+  "Kampüs görev..." kesiliyordu).
+- **Hata görünümü her ekranda aynı:** düello cevapları, kişi profili ve yasal metin de `ErrorView` + "Tekrar dene".
+- **Admin dar ekran:** üst şeritte etkin sayfa ortaya kaydırılır, kaydırma çubuğu gizli; klavye odağında mor halka.
 

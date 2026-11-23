@@ -150,7 +150,7 @@ class _DayTile extends StatelessWidget {
           Text('${day.day}. gün', style: theme.textTheme.labelSmall),
           const SizedBox(height: 4),
           day.claimed
-              ? Icon(Symbols.check_circle_rounded, fill: 1, color: scheme.primary, size: 24)
+              ? Icon(Symbols.check_circle_rounded, fill: 1, color: context.appColors.success, size: 24)
               : Icon(
                   day.bonus > 0 ? Symbols.featured_seasonal_and_gifts_rounded : Symbols.toll_rounded,
                   size: 24,

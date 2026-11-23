@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../core/state_views.dart';
+
 /// Yasal metinler tek yerde: `assets/legal/*.txt` (admin'in herkese açık sayfalarında aynı kopyalar; test denetler).
 enum LegalDocument {
   privacy('Gizlilik ve KVKK', 'assets/legal/kvkk_aydinlatma.txt'),
@@ -30,8 +32,14 @@ class LegalScreen extends ConsumerWidget {
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
           children: legalTextBlocks(value, Theme.of(context)),
         ),
-        AsyncError() => const Center(child: Text('Metin açılamadı.')),
-        _ => const Center(child: CircularProgressIndicator()),
+        AsyncError(:final error) => Center(
+          child: ErrorView(
+            what: 'Metin açılamadı.',
+            error: error,
+            onRetry: () => ref.invalidate(legalTextProvider(document)),
+          ),
+        ),
+        _ => const LoadingView(),
       },
     );
   }

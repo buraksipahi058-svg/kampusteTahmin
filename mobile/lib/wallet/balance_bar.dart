@@ -90,3 +90,14 @@ class _Amount extends StatelessWidget {
     );
   }
 }
+
+/// Bakiyeli alt ekranların başlığı: bakiyeye yer kalmazsa kesilmek yerine sığacak kadar küçülür.
+class AppBarTitle extends StatelessWidget {
+  const AppBarTitle(this.text, {super.key});
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) =>
+      FittedBox(fit: BoxFit.scaleDown, alignment: AlignmentDirectional.centerStart, child: Text(text));
+}

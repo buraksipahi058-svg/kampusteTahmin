@@ -144,7 +144,7 @@ class HomeShell extends ConsumerWidget {
         backgroundColor: Colors.transparent,
         appBar: AppBar(
           backgroundColor: Colors.transparent,
-          title: Text(tab.label),
+          title: AppBarTitle(tab.label),
           actions: [
             // Büyük yazı ayarında zil rozeti en çok 1,3 kat büyür (üst çubukta ekran başlığına yer kalsın).
             MediaQuery.withClampedTextScaling(

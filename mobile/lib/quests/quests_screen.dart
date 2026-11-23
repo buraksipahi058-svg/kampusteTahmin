@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 import '../bets/bets_tab.dart';
+import '../core/app_theme.dart';
 import '../core/async_button.dart';
 import '../core/error_messages.dart';
 import '../core/state_views.dart';
@@ -119,7 +120,7 @@ class QuestCard extends ConsumerWidget {
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Symbols.check_circle_rounded, size: 18, fill: 1, color: theme.colorScheme.primary),
+                      Icon(Symbols.check_circle_rounded, size: 18, fill: 1, color: context.appColors.success),
                       const SizedBox(width: 4),
                       const Text('Alındı'),
                     ],

@@ -27,7 +27,7 @@ Yapılandırma: `admin/.env.local` (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUP
 | `lib/errors.ts` | Veritabanı hata kodu → Türkçe mesaj (mobildekiyle aynı anlamlar) |
 | `lib/format.ts` | Tarih (İstanbul), tutar, oran biçimi; `datetime-local` ↔ ISO (+03:00; `istanbulLocalToIso`, `isoToIstanbulLocal`) |
 | `components/ui.tsx`, `user-search.tsx` | `ActionForm` (başarıda köşede bildirim, sonner), gönder düğmesi, form mesajı; ada göre kullanıcı arama |
-| `components/kit.tsx`, `side-nav.tsx` | Tasarım parçaları (`buttonClass`, `inputClass`, `Panel`, `PageHeader`, `Badge`, `EmptyState`; renkler `globals.css` tokenları, [tasarim](tasarim.md) "Admin paneli"); yan menü (lucide ikonları, etkin sayfa vurgusu) |
+| `components/kit.tsx`, `side-nav.tsx` | Tasarım parçaları (`buttonClass`, `inputClass`, `Panel`, `PageHeader`, `Badge`, `EmptyState`; renkler `globals.css` tokenları, [tasarim](tasarim.md) "Admin paneli"); yan menü (lucide ikonları, etkin sayfa vurgusu; dar ekranda yatay şeritte etkin sayfa ortaya kaydırılır) |
 | `app/giris/` | Giriş formu + `login` / `logout` server action'ları |
 | `app/gizlilik/`, `app/kosullar/`, `app/hesap-silme/` | **Oturumsuz** metin sayfaları (mağaza bağlantıları; `proxy.ts` `PUBLIC_PATHS`). KVKK metni ve kullanım koşulları `src/legal/*.txt` (mobildeki asset'lerin kopyası; mobil test aynılığını denetler), `lib/legal.ts` (`use cache` ile okur, derlemede statik), `components/legal-page.tsx` |
 | `app/(panel)/layout.tsx` | `instant = false` + `await connection()`; rol kontrolü (öğrenciye "yetkin yok"), sol yan menü (logo, sayfalar, kişi, çıkış) |

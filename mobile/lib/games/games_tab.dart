@@ -5,6 +5,7 @@ import 'package:material_symbols_icons/symbols.dart';
 
 import '../bets/bets_data.dart';
 import '../campus/campus_data.dart';
+import '../core/count_chevron.dart';
 import '../core/icon_badge.dart';
 import '../core/routes.dart';
 import '../core/supabase.dart';
@@ -125,13 +126,7 @@ class _GameCard extends StatelessWidget {
               Text(countText, style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.primary)),
           ],
         ),
-        // Rozet büyük yazı ayarında en çok 1,3 kat büyür (kart kenarından taşmasın).
-        trailing: count > 0
-            ? MediaQuery.withClampedTextScaling(
-                maxScaleFactor: 1.3,
-                child: Badge(label: Text('$count'), child: const Icon(Symbols.chevron_right_rounded)),
-              )
-            : const Icon(Symbols.chevron_right_rounded),
+        trailing: CountChevron(count: count),
         onTap: () => context.push(route),
       ),
     );

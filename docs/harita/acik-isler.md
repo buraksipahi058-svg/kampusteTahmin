@@ -38,8 +38,9 @@ parantez ortaya çıktığı adım.
 - [12-QA] Admin formlarının davranışı (`ActionForm`: hata alınca girilenler kalır; [18d] başarıda köşe bildirimi) tarayıcıda gönderimle denenmedi; tip kontrolü, lint ve derleme geçti.
 - [5] **Okul maili kodunun gerçek mail olarak gitmesi** (Brevo yolu). Yalnızca isteğin pg_net kuyruğuna girdiği test edildi; gerçek gönderim yok.
 - [4] **iOS derlemesi** hiç denenmedi (Mac ya da bulut CI gerekir).
-- [18-mor] Mor, fütüristik mobil tema widget testleriyle denetlendi ve APK telefona kuruldu; telefonda gözle bakılmadı (kullanıcı bakacak). Açık tema tanımlı ama kullanılmıyor (uygulama hep koyu açılır), gözle denetlenmedi.
-- [18d] Admin paneli dar ekranda (375 px) yalnızca Resmi bahisler sayfasında gözle denetlendi; panel masaüstü öncelikli.
+- [18-mor] Mor, fütüristik mobil tema emülatörde release APK ile ana sekmelerde ve alt ekranlarda (kampüs görevleri, görevler, başarımlar, günlük ödül, günün tahmini, düello) normal ve %200 yazıyla görüldü [18e]; telefonda gözle bakılmadı (APK telefona 18d öncesi kuruldu; 18e düzeltmeleri telefonda yok). Açık tema tanımlı ama kullanılmıyor (uygulama hep koyu açılır), gözle denetlenmedi.
+- [18d] Admin paneli dar ekranda (375 px) Resmi bahisler, Market, Yetkiler ve Bakiye sayfalarında gözle denetlendi [18e]; öteki sayfalar yalnızca masaüstünde. Panel masaüstü öncelikli.
+- [18e] Yeni ortak hata görünümü (`ErrorView` + "Tekrar dene") düello cevapları, kişi profili ve yasal metin ekranlarında gözle görülmedi (hata durumu üretilmedi); analiz ve 72 test temiz. Düello cevaplarının yeşil doğru / kırmızı yanlış hali emülatörde görüldü.
 
 ## Eksik (yapılmadı, sonraya bırakıldı)
 

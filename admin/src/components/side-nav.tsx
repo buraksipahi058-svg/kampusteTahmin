@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useRef } from "react";
 import {
   Award,
   ChartColumn,
@@ -38,12 +39,25 @@ const icons: Record<string, LucideIcon> = {
   "/bakiye": Coins,
 };
 
-/** Yan menü: etkin sayfa mor zeminli ve solunda ince çizgili; dar ekranda üstte yatay kayan şerit. Menü
- * geçişleri animasyonsuz (günde çok kullanılır). */
+/** Yan menü: etkin sayfa mor zeminli ve solunda ince çizgili; dar ekranda üstte yatay kayan şerit (etkin sayfa
+ * ortaya kaydırılır, kaydırma çubuğu gizli). Menü geçişleri animasyonsuz (günde çok kullanılır). */
 export function SideNav({ links }: { links: NavLink[] }) {
   const pathname = usePathname();
+  const navRef = useRef<HTMLElement>(null);
+
+  // Dar ekranda şerit yatay kayar: etkin sayfa görünmüyorsa ortaya getirilir (sayfa dikey kaymaz).
+  useEffect(() => {
+    const nav = navRef.current;
+    const active = nav?.querySelector<HTMLElement>('[aria-current="page"]');
+    if (!nav || !active || nav.scrollWidth <= nav.clientWidth) return;
+    nav.scrollLeft = active.offsetLeft - (nav.clientWidth - active.offsetWidth) / 2;
+  }, [pathname]);
+
   return (
-    <nav className="flex gap-1 overflow-x-auto md:flex-col md:overflow-visible">
+    <nav
+      ref={navRef}
+      className="relative flex gap-1 overflow-x-auto [scrollbar-width:none] md:flex-col md:overflow-visible [&::-webkit-scrollbar]:hidden"
+    >
       {links.map((l) => {
         const Icon = icons[l.href];
         const active = pathname === l.href || pathname.startsWith(`${l.href}/`);
