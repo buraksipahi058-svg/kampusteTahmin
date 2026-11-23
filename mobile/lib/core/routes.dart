@@ -12,6 +12,9 @@ abstract final class Routes {
   static const quests = '/gorevler';
   static const achievements = '/basarimlar';
   static const notifications = '/bildirimler';
+  // Oyunlar sekmesindeki kartların açtığı ekranlar.
+  static const dailyPredictions = '/gunun-tahmini';
+  static const duels = '/duellolar';
   static const campus = '/kampus-gorevleri';
   static const campusScanPattern = '/kampus-gorevleri/:id/okut';
   static String campusScan(String taskId) => '/kampus-gorevleri/$taskId/okut';

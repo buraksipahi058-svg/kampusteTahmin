@@ -41,7 +41,7 @@ Ekran görüntüsü: `adb shell screencap -p /sdcard/x.png` + `adb pull`.
 | `wallet/daily_reward_sheet.dart` | `showDailyReward`: 7 günlük takvim (alınanlar, bugün, bonus günleri), "Ödülü al (+SP · +XP)" |
 | `notifications/notifications_data.dart`, `notifications_screen.dart` | `NotificationsApi` (testte sahtesi), `notificationsProvider`, `unreadNotificationsProvider`, `markNotificationsRead`, `timeAgo`; `NotificationBell` (üst çubuk, dakikada bir + uygulamaya dönünce), `/bildirimler` |
 | `campus/photo_proof.dart`, `photo_submit_screen.dart` | `prepareProofPhoto` (döndür, ≤ 1280, EXIF sil, JPEG 80; `compute`), `randomUuid`; `/kampus-gorevleri/:id/foto` (`photoCaptureProvider`: `image_picker` yalnızca kamera, testte sahte; önizle, gönder, yeniden çek) |
-| `campus/campus_data.dart`, `campus_screen.dart`, `qr_scan_screen.dart` | `CampusApi` (testte sahtesi), `campusTasksProvider` (`my_campus_tasks`), `parseCampusQr`; `/kampus-gorevleri` (Profil'den), `/kampus-gorevleri/:id/okut` (`mobile_scanner`, `scannerViewProvider` testte sahte; "Kodu elle gir") |
+| `campus/campus_data.dart`, `campus_screen.dart`, `qr_scan_screen.dart` | `CampusApi` (testte sahtesi), `campusTasksProvider` (`my_campus_tasks`), `parseCampusQr`; `/kampus-gorevleri` (Oyunlar sekmesindeki karttan; onay / ret bildirimi de buraya; Profil'de kart yok), `/kampus-gorevleri/:id/okut` (`mobile_scanner`, `scannerViewProvider` testte sahte; "Kodu elle gir") |
 | `achievements/achievements_data.dart` | `Achievement`, `achievementsProvider` (`my_achievements`), `claimAchievement`, kademe adı / rengi, kategori başlıkları |
 | `achievements/achievements_screen.dart` | `/basarimlar`: özet (kazanılan / toplam, kademe sayıları), "Ödülün hazır", kategoriler; kartta kademe çerçevesi, ilerleme, ödül, okulda kazanan oranı, gizli başarım "???" |
 | `wallet/balance_bar.dart` | Üst çubukta SP / SSP; dokununca yenilenir |
@@ -50,7 +50,9 @@ Ekran görüntüsü: `adb shell screencap -p /sdcard/x.png` + `adb pull`.
 | `bets/bets_tab.dart` | Bahisler sekmesi: "Resmi / Sosyal" seçici; resmi bahis kartı (oran, kapanış İstanbul saati, kişinin yatırımı / sonucu), yatırım alt sayfası (oranlı ya da havuz); doğrulanmamışsa uyarı |
 | `bets/social_bet_card.dart` | Sosyal bahis kartı: havuz miktarları, hakem; duruma göre "Sonucu gir" (hakem), "İtiraz et" (katılımcı, pencere içinde), "Geri çek" (açan, yatırım yokken) |
 | `games/trivia_data.dart` | `TriviaDuel`, `DuelPlay`, `triviaDuelsProvider`, `duelGameProvider(betId)` (`start_trivia_duel`), `createDuel`, `acceptDuel`, `submitAnswers` |
-| `games/games_tab.dart` | Oyunlar sekmesi: üstte günün tahmini kartları (`dailyPredictionsProvider`, `bets_data.dart`'ta), altta "Meydan oku" (tutar) ve düello kartları ("Kabul et", "Oyna", sonuç — kazanan kişinin yatırımının ödemesinden okunur) |
+| `games/games_tab.dart` | Oyunlar sekmesi menü: Günün tahmini, Kampüs görevleri, Trivia düellosu kartları; her kart kendi ekranını açar, kişiyi bekleyen iş sayısı rozette (yatırım yapılmamış açık soru, yapılabilir görev, sırası gelen / kendisine gelen düello) |
+| `games/daily_predictions_screen.dart` | `/gunun-tahmini`: günün tahmini kartları (`dailyPredictionsProvider`, `bets_data.dart`'ta) |
+| `games/duels_screen.dart` | `/duellolar`: "Meydan oku" (tutar, herkese açık / birine) ve düello kartları ("Kabul et", "Oyna", sonuç — kazanan kişinin yatırımının ödemesinden okunur); düello daveti / kabul bildirimi buraya açar |
 | `games/daily_prediction_card.dart` | Günün tahmini kartı: Evet / Hayır havuzları, dokununca `WagerSheet` (havuz kipi, `place_wager`), sonuç metni `wagerText` (bets_tab ile ortak) |
 | `games/duel_play_screen.dart` | `/duello/:id`: sorular sırayla, geri sayım (sunucunun kalan süresi), süre bitince ya da son soruda gönderir |
 | `market/market_data.dart` | `MarketItem`, `OwnedItem`, `Cosmetics`; `marketItemsProvider` (satıştakiler, ucuzdan pahalıya), `myInventoryProvider`, `myCosmeticsProvider` (kuşanılmışlar), `purchaseItem`, `setItemEquipped` |
@@ -86,7 +88,7 @@ Profil yok → `/profil-olustur` (okullar `clusters where type = 'school'`). Pro
 Kabuk açılınca `claim_daily_login()` bir kez çağrılır; ödül alındıysa bildirim + bakiye/seri sunucudan yeniden okunur.
 Sağlayıcılar `currentUserIdProvider`'a bağlı: çıkış/giriş olunca kendiliğinden yeniden çalışır.
 
-## Testler (`mobile/test/`, 68)
+## Testler (`mobile/test/`, 69)
 
 `app_test.dart` `pumpApp` test ekranını telefon boyutuna (1080×2400, dpr 2.625) ayarlar; varsayılan 800×600'de
 düğmeler görünür alanın dışında kalır, ayrıca alttaki günlük ödül bildirimi düğmeleri örtebilir.

@@ -14,6 +14,7 @@ import 'package:kampusbet/campus/campus_data.dart';
 import 'package:kampusbet/campus/photo_proof.dart';
 import 'package:kampusbet/campus/photo_submit_screen.dart';
 import 'package:kampusbet/campus/qr_scan_screen.dart';
+import 'package:kampusbet/games/games_tab.dart';
 import 'package:kampusbet/core/app_info.dart';
 import 'package:kampusbet/core/supabase.dart';
 import 'package:kampusbet/games/trivia_data.dart';
@@ -237,6 +238,14 @@ class FakePrivacyApi implements PrivacyApi {
 
   @override
   Future<void> shareFile(String name, Uint8List bytes) async => shared.add((name, utf8.decode(bytes)));
+}
+
+/// Oyunlar sekmesine geçip oyunun kartına dokunur (her oyun kendi ekranında açılır).
+Future<void> openGame(WidgetTester tester, String title) async {
+  await tester.tap(find.text('Oyunlar'));
+  await tester.pumpAndSettle();
+  await tester.tap(find.text(title));
+  await tester.pumpAndSettle();
 }
 
 void main() {
@@ -555,8 +564,7 @@ void main() {
         ),
       ],
     );
-    await tester.tap(find.text('Oyunlar'));
-    await tester.pumpAndSettle();
+    await openGame(tester, 'Trivia düellosu');
 
     expect(find.text('Veli Demir'), findsOneWidget);
     expect(find.text('herkese açık'), findsOneWidget);
@@ -589,8 +597,7 @@ void main() {
       ],
       wagers: const {'d2': Wager(betId: 'd2', optionId: 'x', amount: 20, payout: 40)},
     );
-    await tester.tap(find.text('Oyunlar'));
-    await tester.pumpAndSettle();
+    await openGame(tester, 'Trivia düellosu');
 
     expect(find.text('Ada Yılmaz'), findsOneWidget);
     expect(find.text('Veli Demir'), findsOneWidget);
@@ -615,8 +622,7 @@ void main() {
 
   testWidgets('günün tahmini havuzlarıyla görünür, seçeneğe dokununca havuzlu yatırım ekranı açılır', (tester) async {
     await pumpApp(tester, userId: 'u1', profile: _profile, studentEmail: verified, predictions: [prediction()]);
-    await tester.tap(find.text('Oyunlar'));
-    await tester.pumpAndSettle();
+    await openGame(tester, 'Günün tahmini');
 
     expect(find.text('Bugün yemekhanede mercimek çorbası çıkar mı?'), findsOneWidget);
     expect(find.text('120 SP'), findsOneWidget);
@@ -637,8 +643,7 @@ void main() {
       predictions: [prediction(status: 'settled', yesWins: true)],
       wagers: const {'p1': Wager(betId: 'p1', optionId: 'y', amount: 30, payout: 37)},
     );
-    await tester.tap(find.text('Oyunlar'));
-    await tester.pumpAndSettle();
+    await openGame(tester, 'Günün tahmini');
 
     expect(find.text('Sonuçlandı'), findsOneWidget);
     expect(find.text('Kazandın: net +7 SP · 37 SP aldın (30 SP · Evet)'), findsOneWidget);
@@ -1007,8 +1012,7 @@ void main() {
         Person(id: 'u3', firstName: 'Ece', lastName: 'Kaya'),
       ],
     );
-    await tester.tap(find.text('Oyunlar'));
-    await tester.pumpAndSettle();
+    await openGame(tester, 'Trivia düellosu');
     await tester.tap(find.widgetWithText(FilledButton, 'Meydan oku'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Birine'));
@@ -1056,8 +1060,7 @@ void main() {
         DuelReviewItem(no: 2, question: 'En büyük gezegen?', options: ['Mars', 'Jüpiter'], correctIndex: 1),
       ],
     );
-    await tester.tap(find.text('Oyunlar'));
-    await tester.pumpAndSettle();
+    await openGame(tester, 'Trivia düellosu');
     await tester.ensureVisible(find.text('Cevapları gör'));
     await tester.tap(find.text('Cevapları gör'));
     await tester.pumpAndSettle();
@@ -1088,8 +1091,7 @@ void main() {
         ),
       ],
     );
-    await tester.tap(find.text('Oyunlar'));
-    await tester.pumpAndSettle();
+    await openGame(tester, 'Trivia düellosu');
 
     expect(find.text('Cevapları gör'), findsNothing);
   });
@@ -1103,9 +1105,20 @@ void main() {
     );
     await tester.tap(find.text('Oyunlar'));
     await tester.pumpAndSettle();
-    expect(find.text('Okulundaki tahminleri ve düelloları görmek, oynamak için okul mailini doğrula'), findsOneWidget);
+    expect(
+      find.text('Okulundaki tahminleri, kampüs görevlerini ve düelloları görmek, oynamak için okul mailini doğrula'),
+      findsOneWidget,
+    );
     expect(find.text('Henüz düello yok. İlk meydan okuyan sen ol.'), findsNothing);
     expect(find.text('Şu an tahmin sorusu yok.'), findsNothing);
+    expect(find.text('Okulunda şu an açık kampüs görevi yok.'), findsNothing);
+    await tester.tap(find.text('Trivia düellosu'));
+    await tester.pumpAndSettle();
+    expect(find.text('Okulundaki düelloları görmek ve oynamak için okul mailini doğrula'), findsOneWidget);
+    expect(find.text('Henüz düello yok. İlk meydan okuyan sen ol.'), findsNothing);
+    expect(find.widgetWithText(FilledButton, 'Meydan oku'), findsNothing);
+    await tester.pageBack();
+    await tester.pumpAndSettle();
 
     await tester.tap(find.text('Liderlik'));
     await tester.pumpAndSettle();
@@ -1391,6 +1404,30 @@ void main() {
     expect(find.descendant(of: find.byTooltip('Bildirimler'), matching: find.text('1')), findsNothing);
   });
 
+  testWidgets('düello daveti bildirimi düello ekranını açar, geri Oyunlar', (tester) async {
+    final api = FakeNotificationsApi([
+      AppNotification(
+        id: 3,
+        kind: 'duel_invite',
+        title: 'Sana meydan okundu!',
+        body: 'Veli Demir seni 20 SP\'lik trivia düellosuna çağırdı.',
+        link: '/oyunlar',
+        createdAt: DateTime.now().subtract(const Duration(minutes: 1)),
+      ),
+    ]);
+    await pumpApp(tester, userId: 'u1', profile: _profile, studentEmail: verified, notifications: api);
+    await tester.tap(find.byTooltip('Bildirimler'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Sana meydan okundu!'));
+    await tester.pumpAndSettle();
+    expect(find.widgetWithText(FilledButton, 'Meydan oku'), findsOneWidget);
+    expect(find.text('Henüz düello yok. İlk meydan okuyan sen ol.'), findsOneWidget);
+
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    expect(find.byType(GamesTab), findsOneWidget);
+  });
+
   test('bildirim zamanı kısa yazılır', () {
     final now = DateTime(2026, 11, 23, 12);
     expect(timeAgo(now.subtract(const Duration(seconds: 20)), now), 'şimdi');
@@ -1432,17 +1469,28 @@ void main() {
       userId: 'u1',
       profile: _profile,
       campus: api,
+      studentEmail: verified,
       scannedQr: 'com.kampusbet.kampusbet://kampus-gorev?t=t1&c=ABC123ABC123',
     );
+    // Kampüs görevleri Oyunlar sekmesinde; Profil'de giriş kartı yok.
     await tester.tap(find.text('Profil'));
     await tester.pumpAndSettle();
     final profileList = find.descendant(of: find.byType(ProfileTab), matching: find.byType(Scrollable)).first;
-    await tester.scrollUntilVisible(find.text('Kampüs görevleri'), 200, scrollable: profileList);
-    await tester.ensureVisible(find.text('Kampüs görevleri'));
+    await tester.scrollUntilVisible(find.text('Başarımlar'), 200, scrollable: profileList);
+    await tester.drag(profileList, const Offset(0, -600));
     await tester.pumpAndSettle();
+    expect(find.text('Kampüs görevleri'), findsNothing);
+
+    // Oyunlar sekmesi menü: her oyunun kartı; yapılabilir görev sayısı kartta.
+    await tester.tap(find.text('Oyunlar'));
+    await tester.pumpAndSettle();
+    expect(find.text('Günün tahmini'), findsOneWidget);
+    expect(find.text('Trivia düellosu'), findsOneWidget);
+    expect(find.text('1 görev yapılabilir'), findsOneWidget);
+    expect(find.text('QR okut'), findsNothing);
     await tester.tap(find.text('Kampüs görevleri'));
     await tester.pumpAndSettle();
-
+    expect(find.byType(GamesTab), findsNothing);
     expect(find.text('+30 SP · +15 XP · Her gün · QR'), findsOneWidget);
     expect(find.text('Bugün 37 kişi yaptı · kalan kontenjan 63'), findsOneWidget);
     expect(find.text('Yaptın, ödülü aldın'), findsOneWidget);
@@ -1457,6 +1505,7 @@ void main() {
     await tester.tap(find.text('Harika'));
     await tester.pumpAndSettle();
     expect(find.text('Kampüs görevleri'), findsOneWidget);
+    expect(find.text('QR okut'), findsOneWidget);
 
     // Elle yanlış kod: sunucunun hatası gösterilir.
     await tester.tap(find.text('QR okut'));
@@ -1498,14 +1547,7 @@ void main() {
     ]);
     final photo = Uint8List.fromList(img.encodeJpg(img.Image(width: 40, height: 30)));
     await pumpApp(tester, userId: 'u1', profile: _profile, campus: api, capturedPhoto: photo);
-    await tester.tap(find.text('Profil'));
-    await tester.pumpAndSettle();
-    final profileList = find.descendant(of: find.byType(ProfileTab), matching: find.byType(Scrollable)).first;
-    await tester.scrollUntilVisible(find.text('Kampüs görevleri'), 200, scrollable: profileList);
-    await tester.ensureVisible(find.text('Kampüs görevleri'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Kampüs görevleri'));
-    await tester.pumpAndSettle();
+    await openGame(tester, 'Kampüs görevleri');
     expect(find.text('Reddedildi: Çöp kutusu görünmüyor. · yeniden deneyebilirsin'), findsOneWidget);
 
     await tester.tap(find.text('Fotoğraf çek').first);

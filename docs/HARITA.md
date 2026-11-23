@@ -5,10 +5,10 @@ gerektirdiği bölgeleri aç. Kod dosyalarını baştan sona okuma; bölge dosya
 
 ## Şu an
 
-- **Commit:** yalnızca kullanıcı onay verince, yalnızca yerel (push yok). Adım 7-9 `f45f3dc`'de; Adım 10 + XP / seviye `0ca9789`'da, Adım 11 `2fa4c08`'de, Adım 12 `ae29d5e`'de, Adım 13 `c205879`'da, Adım 14 `e62ac52`'de; Adım 15, 16, 17, 17a, 17b ve güvenlik kontrolü 2 çalışma ağacında, commit edilmedi.
-- **Son tamamlanan:** Adım 17b (fotoğraflı kampüs görevleri, onay kuyruğu, 30 gün silme) ve genel güvenlik kontrolü 2 (bağımsız inceleme; 8 bulgu düzeltildi, [guvenlik](harita/guvenlik.md) sonu). 867 pgTAP, 68 Flutter; canlıda fotoğraf yükleme → onay → ödül ve güvenlik düzeltmesinden sonra uygulamanın açılışı denendi. Adım 15-17b ve güvenlik kontrolü çalışma ağacında (commit yok). Önceki commit: Adım 14 (`e62ac52`).
-- **Bulutta deneme verisi:** giriş yapamayan "Test Yetkili" profili (`e2e00000-...0001`), sonuçlanmış resmi ve sosyal deneme bahisleri, bir trivia düellosu, bir günün tahmini; kullanıcının test hesabı `deneme@ogr.ornek.edu.tr` ile doğrulanmış (820 SP, 20 XP, "Mor isim" kuşanılı). Seed'de 5 genel görev, 8 genel ürün.
-- **Sıradaki:** commit (kullanıcı onayıyla); fotoğraf silme için Vault anahtarı (kullanıcının işi, [yayin](harita/yayin.md)). Sonrası öneri: gruplar, izleme / analitik. Ayrıca kullanıcının canlıya geçiş adımları ([yayin](harita/yayin.md) "Canlıya geçiş sırası"); uygulama tarafında kalanlar [acik-isler](harita/acik-isler.md)'de (bildirimler, ikon, admin panelinin girişle denenmesi, eksik özellikler).
+- **Commit:** yalnızca kullanıcı onay verince, yalnızca yerel (push yok). Adım 7-9 `f45f3dc`'de; Adım 10 + XP / seviye `0ca9789`'da, Adım 11 `2fa4c08`'de, Adım 12 `ae29d5e`'de, Adım 13 `c205879`'da, Adım 14 `e62ac52`'de; Adım 15 `d1fbcb0`, 16 `820159b`, 17 `5a5cb8a`, 17a `5a82a51`, 17b `7111dc2`, güvenlik kontrolü 2 `d937b4f` (adım başına ayrı commit; ara commit'lerde de mobil analiz, Flutter testleri ve admin tip kontrolü temiz).
+- **Son tamamlanan (commit yok):** Oyunlar sekmesi düğmeli menü oldu: Günün tahmini, Kampüs görevleri (Profil'den taşındı), Trivia düellosu kartları kendi ekranlarını açar; kartlarda bekleyen iş sayısı; düello bildirimi düello ekranına açılır. 69 Flutter testi. Ondan önce: Adım 17b (fotoğraflı kampüs görevleri, onay kuyruğu, 30 gün silme) ve genel güvenlik kontrolü 2 (bağımsız inceleme; 8 bulgu düzeltildi, [guvenlik](harita/guvenlik.md) sonu). 867 pgTAP, 68 Flutter; canlıda fotoğraf yükleme → onay → ödül ve güvenlik düzeltmesinden sonra uygulamanın açılışı denendi. Son commit: güvenlik kontrolü 2 (`d937b4f`).
+- **Bulutta deneme verisi:** giriş yapamayan "Test Yetkili" profili (`e2e00000-...0001`), sonuçlanmış resmi ve sosyal deneme bahisleri, bir trivia düellosu, bir günün tahmini; kullanıcının test hesabı `deneme@ogr.ornek.edu.tr` ile doğrulanmış (820 SP, 20 XP, "Mor isim" kuşanılı); ikinci test hesabı `test1@ogr.ornek.edu.tr` (giriş e-postası da okul maili de bu; Supabase uydurma alan adıyla kayda izin vermediği için panelden "Auto Confirm" ile açıldı, okul maili veritabanında doğrulandı, şifre kullanıcıda). Seed'de 5 genel görev, 8 genel ürün.
+- **Sıradaki:** fotoğraf silme için Vault anahtarı (kullanıcının işi, [yayin](harita/yayin.md)). Sonrası öneri: gruplar, izleme / analitik. Ayrıca kullanıcının canlıya geçiş adımları ([yayin](harita/yayin.md) "Canlıya geçiş sırası"); uygulama tarafında kalanlar [acik-isler](harita/acik-isler.md)'de (bildirimler, ikon, admin panelinin girişle denenmesi, eksik özellikler).
 - **Açık işler** (denenmemiş, eksik, çözülmemiş, kullanıcıdan beklenen): [harita/acik-isler.md](harita/acik-isler.md).
 
 | # | Adım | Durum | Commit |
@@ -28,12 +28,12 @@ gerektirdiği bölgeleri aç. Kod dosyalarını baştan sona okuma; bölge dosya
 | 12 | Yayına hazırlık (linkler, şifre, Android imza, mağaza sayfaları) + kalite kontrolü | Bitti | `ae29d5e` |
 | 13 | Yönetim ve güvenlik eksikleri (istek bekçisi, yasaklama, ihtar, oran, admin ekranları) | Bitti | `c205879` |
 | 14 | Gizlilik (sıralamadan çıkma, veri dışa aktarma, istek sınırı, kullanım koşulları) | Bitti | `e62ac52` |
-| 15 | Mobil eksikler (kişi seçme, düello cevapları, kozmetikli isimler, başkasının profili, geçmiş, kutlama) | Bitti (commit yok) | |
-| 16 | Başarımlar (+ admin yönetimi, haber) + günlük ödül takvimi | Bitti (commit yok) | |
-| 17 | Uygulama içi bildirimler | Bitti (commit yok) | |
-| 17a | Kampüs görevleri: QR | Bitti (commit yok) | |
-| 17b | Kampüs görevleri: fotoğraf, onay, 30 gün silme | Bitti (commit yok) | |
-| G2 | Genel güvenlik kontrolü 2 (bağımsız inceleme, 8 düzeltme) | Bitti (commit yok) | |
+| 15 | Mobil eksikler (kişi seçme, düello cevapları, kozmetikli isimler, başkasının profili, geçmiş, kutlama) | Bitti | `d1fbcb0` |
+| 16 | Başarımlar (+ admin yönetimi, haber) + günlük ödül takvimi | Bitti | `820159b` |
+| 17 | Uygulama içi bildirimler | Bitti | `5a5cb8a` |
+| 17a | Kampüs görevleri: QR | Bitti | `5a82a51` |
+| 17b | Kampüs görevleri: fotoğraf, onay, 30 gün silme | Bitti | `7111dc2` |
+| G2 | Genel güvenlik kontrolü 2 (bağımsız inceleme, 8 düzeltme) | Bitti | `d937b4f` |
 
 ## Görev → ne okunur
 

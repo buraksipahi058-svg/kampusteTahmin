@@ -5,49 +5,62 @@ import 'package:go_router/go_router.dart';
 import '../bets/bets_tab.dart' show formatIstanbul;
 import '../core/error_messages.dart';
 import '../core/routes.dart';
+import '../core/verify_email_card.dart';
+import '../profile/student_email_data.dart';
+import '../wallet/balance_bar.dart';
 import '../wallet/wallet_data.dart';
 import 'campus_data.dart';
 
-/// `/kampus-gorevleri`: okulun kampüs görevleri. QR görevinde "QR okut", fotoğraflı görevde "Fotoğraf çek".
+/// `/kampus-gorevleri` (Oyunlar sekmesindeki karttan): okulun kampüs görevleri. QR görevinde "QR okut",
+/// fotoğraflı görevde "Fotoğraf çek". Gönderinin onay / ret bildirimi de buraya getirir.
 class CampusTasksScreen extends ConsumerWidget {
   const CampusTasksScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    final verified = ref.watch(studentEmailProvider).value?.verified;
     return Scaffold(
-      appBar: AppBar(title: const Text('Kampüs görevleri')),
+      appBar: AppBar(
+        title: const Text('Kampüs görevleri'),
+        actions: const [BalanceBar(), SizedBox(width: 8)],
+      ),
       body: RefreshIndicator(
         onRefresh: () async {
           ref.invalidate(campusTasksProvider);
+          ref.invalidate(balanceProvider);
           await ref.read(campusTasksProvider.future);
         },
-        child: switch (ref.watch(campusTasksProvider)) {
-          AsyncData(:final value) when value.isEmpty => ListView(
-            padding: const EdgeInsets.all(32),
-            children: const [Center(child: Text('Okulunda şu an açık kampüs görevi yok.'))],
-          ),
-          AsyncData(:final value) => ListView(
-            padding: const EdgeInsets.all(16),
-            children: [
-              Text(
-                'Kampüste görevleri yap, ödülü kap. QR görevinde mekândaki kodu okut; fotoğraflı görevde okulunun '
-                'yetkilisi onaylar.',
-                style: theme.textTheme.bodySmall,
+        child: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            if (verified == false) ...[
+              const VerifyEmailCard('Okulundaki kampüs görevlerini görmek ve yapmak için okul mailini doğrula'),
+              const SizedBox(height: 16),
+            ],
+            Text(
+              'Kampüste görevleri yap, ödülü kap. QR görevinde mekândaki kodu okut; fotoğraflı görevde okulunun '
+              'yetkilisi onaylar.',
+              style: theme.textTheme.bodySmall,
+            ),
+            const SizedBox(height: 12),
+            switch (ref.watch(campusTasksProvider)) {
+              AsyncData(:final value) when value.isEmpty && verified == false => const SizedBox.shrink(),
+              AsyncData(:final value) when value.isEmpty => const Padding(
+                padding: EdgeInsets.symmetric(vertical: 32),
+                child: Center(child: Text('Okulunda şu an açık kampüs görevi yok.')),
               ),
-              const SizedBox(height: 12),
-              for (final t in value) CampusTaskCard(task: t),
-            ],
-          ),
-          AsyncError(:final error) => ListView(
-            padding: const EdgeInsets.all(32),
-            children: [
-              Text('Görevler alınamadı. ${userMessage(error)}', textAlign: TextAlign.center),
-              TextButton(onPressed: () => ref.invalidate(campusTasksProvider), child: const Text('Tekrar dene')),
-            ],
-          ),
-          _ => const Center(child: CircularProgressIndicator()),
-        },
+              AsyncData(:final value) => Column(children: [for (final t in value) CampusTaskCard(task: t)]),
+              AsyncError(:final error) => Column(
+                children: [
+                  Text('Görevler alınamadı. ${userMessage(error)}', textAlign: TextAlign.center),
+                  TextButton(onPressed: () => ref.invalidate(campusTasksProvider), child: const Text('Tekrar dene')),
+                ],
+              ),
+              _ => const Padding(padding: EdgeInsets.all(32), child: Center(child: CircularProgressIndicator())),
+            },
+          ],
+        ),
       ),
     );
   }

@@ -46,7 +46,8 @@ Kod: `20261122215319_kampus_gorevi_degerleri.sql` (enum: `kampus_gorevi_yonet`, 
 - Başarımlar: ölçüt `campus_tasks` (onaylı gönderi sayısı): Kampüs Kâşifi (1), Kampüs Gönüllüsü (10), Kampüs Efsanesi (50).
 - Admin: `/kampus-gorevleri` (liste, gönderi sayısı, ekle, `[id]` düzenle, aç / kapat), `[id]/qr` (QR'ı sunucuda SVG
   üretir; dönen QR'da süresi dolunca kendiliğinden yenilenir; "QR'ı yenile"). `qrcode` paketi.
-- Mobil: Profil > Kampüs görevleri (`/kampus-gorevleri`), `/kampus-gorevleri/:id/okut` (`mobile_scanner`; kamerasız
+- Mobil: Oyunlar sekmesindeki "Kampüs görevleri" kartı → `/kampus-gorevleri` (`campus_screen.dart`; onay / ret
+  bildirimi de buraya), `/kampus-gorevleri/:id/okut` (`mobile_scanner`; kamerasız
   "Kodu elle gir"). Kamera izni: Android eklentiden, iOS `NSCameraUsageDescription`.
 
 ## Kampüs görevleri — fotoğraf ve onay (Adım 17b)

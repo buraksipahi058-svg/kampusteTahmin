@@ -9,8 +9,10 @@ import '../bets/create_social_bet_screen.dart';
 import '../campus/campus_screen.dart';
 import '../campus/photo_submit_screen.dart';
 import '../campus/qr_scan_screen.dart';
+import '../games/daily_predictions_screen.dart';
 import '../games/duel_play_screen.dart';
 import '../games/duel_review_screen.dart';
+import '../games/duels_screen.dart';
 import '../home/home_shell.dart';
 import '../legal/legal_screen.dart';
 import '../notifications/notifications_screen.dart';
@@ -75,6 +77,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: Routes.quests, builder: (_, _) => const QuestsScreen()),
       GoRoute(path: Routes.achievements, builder: (_, _) => const AchievementsScreen()),
       GoRoute(path: Routes.notifications, builder: (_, _) => const NotificationsScreen()),
+      GoRoute(path: Routes.dailyPredictions, builder: (_, _) => const DailyPredictionsScreen()),
+      GoRoute(path: Routes.duels, builder: (_, _) => const DuelsScreen()),
       GoRoute(path: Routes.campus, builder: (_, _) => const CampusTasksScreen()),
       GoRoute(
         path: Routes.campusPhotoPattern,

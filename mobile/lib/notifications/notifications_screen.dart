@@ -86,6 +86,12 @@ class NotificationsScreen extends ConsumerWidget {
     }
     final link = n.link;
     if (link == null || !link.startsWith('/')) return;
+    // Düello daveti / kabulü sunucuda Oyunlar sekmesine bağlı; doğrudan düello ekranı açılır (geri: Oyunlar).
+    if (link == Routes.games && n.kind.startsWith('duel_')) {
+      router.go(Routes.games);
+      router.push(Routes.duels);
+      return;
+    }
     // Sekmeler yerine geçer, diğer ekranlar üstüne açılır.
     if (Routes.tabs.contains(link)) {
       router.go(link);
