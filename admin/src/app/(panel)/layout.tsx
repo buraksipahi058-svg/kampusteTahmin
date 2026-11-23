@@ -70,7 +70,7 @@ export default async function PanelLayout({ children }: LayoutProps<"/">) {
       {/* Yan menü: logo, sayfalar (etkin olan vurgulu), altta kişi ve çıkış. Dar ekranda üstte şerit. */}
       <aside className="flex flex-col gap-4 border-b border-line bg-panel/80 p-3 backdrop-blur md:sticky md:top-0 md:h-screen md:w-64 md:shrink-0 md:border-r md:border-b-0 md:p-4">
         <Link href="/" className="flex items-center gap-2.5 px-1">
-          <Image src="/logo.png" alt="" width={32} height={32} className="rounded-lg" priority />
+          <Image src="/logo.png" alt="" width={36} height={32} className="h-8 w-auto" priority />
           <span className="font-semibold tracking-tight">
             KampüsBet <span className="text-muted">Yönetim</span>
           </span>

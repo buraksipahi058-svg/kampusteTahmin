@@ -16,6 +16,7 @@ import 'package:kampusbet/campus/qr_scan_screen.dart';
 import 'package:kampusbet/core/account_guard.dart';
 import 'package:kampusbet/core/app_info.dart';
 import 'package:kampusbet/core/app_theme.dart';
+import 'package:kampusbet/core/brand_logo.dart';
 import 'package:kampusbet/core/state_views.dart';
 import 'package:kampusbet/core/supabase.dart';
 import 'package:kampusbet/games/games_tab.dart';
@@ -256,7 +257,8 @@ void main() {
   testWidgets('oturum yoksa giriş ekranı', (tester) async {
     await pumpApp(tester);
 
-    expect(find.text(AppInfo.name), findsOneWidget);
+    expect(find.byType(BrandLogo), findsOneWidget);
+    expect(find.bySemanticsLabel(AppInfo.name), findsOneWidget);
     expect(find.widgetWithText(FilledButton, 'Giriş yap'), findsOneWidget);
 
     await tester.tap(find.text('Kayıt ol').first);

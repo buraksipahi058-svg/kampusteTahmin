@@ -3,7 +3,7 @@
 Kaynak: Emil Kowalski'nin tasarım mühendisliği kuralları (github.com/emilkowalski/skills; özetin aslı
 `emil-design-eng`, `review-animations/STANDARDS.md`, `apple-design`, `mobile-native`, `break-ui`). Alt adımlar:
 18a mobil tasarım sistemi (`2d5e833`), 18b mobil ekranlar ve hareket, 18c ikon ve görsel uyumu (ikisi `a831471`), mor
-fütüristik tema ve 18d admin paneli (`776e171`), 18e son kontrol (commit yok).
+fütüristik tema ve 18d admin paneli (`776e171`), 18e son kontrol (`18eb187`).
 
 ## Kurallar (yeni ekran / bileşen yazarken)
 
@@ -72,12 +72,18 @@ fütüristik tema ve 18d admin paneli (`776e171`), 18e son kontrol (commit yok).
   bilinmeyen anahtarda kategori ikonu; kazanılmamış gri, gizli kilit) `achievements/achievement_badge.dart`.
 - **İçerik emojisi** (kampüs görevi simgesi, market rozeti / unvanı): `EmojiToken` / `CosmeticPreview` aynı boyutta
   yuvarlatılmış kare jeton içinde; isim rengi önizlemesi okunur renkte.
-- **Uygulama ikonu ve logo:** mor → gece moru degrade zemin, sağ altta camgöbeği hüzme, beyaz yuvarlak uçlu "K"
-  monogramı, ışıldayan neon camgöbeği nokta.
-  `mobile/tool/make_icon.py` (PIL) `assets/brand/` altına üretir; `dart run flutter_launcher_icons` Android
-  (uyarlanabilir: degrade arka + monogram ön katman) ve iOS ikonlarını yazar. Araç iOS
-  `project.pbxproj`'de `ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS`'ı bozar: geri alınır.
-  Logo (`BrandLogo`) giriş ve yükleniyor ekranlarında.
+- **Logo ve uygulama ikonu (kullanıcının logosu, 2026-11-23):** beyaz kep + "K" + mor oynat üçgeni (işaret), altında
+  "kampusbet" yazısı ("kampus" beyaz, "bet" mor #7A4FF1), koyu zemin #08070C. Kaynak
+  `mobile/tool/brand/kampusbet_logo.webp` (1536 x 1024). `mobile/tool/make_icon.py` (PIL) zeminden saydamlığı ve mor
+  oranını çıkarır, büyütüp kenarı keskinleştirerek üretir: `assets/brand/logo.png` (işaret + yazı, saydam),
+  `app_icon.png` (koyu zeminde işaret, %62), uyarlanabilir ikonun ön (işaret %50, daire maskede de sığar) / arka
+  (düz koyu) katmanı; admin için `public/logo.png` (işaret), `public/logo-full.png`, `public/icon.png`,
+  `src/app/favicon.ico` (BMP'li ICO: Next, ICO içindeki PNG'yi çözemiyor). Sonra `dart run flutter_launcher_icons`
+  Android ve iOS ikonlarını yazar; araç iOS `project.pbxproj`'de
+  `ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS`'ı bozar: geri alınır.
+- **Kullanım:** giriş ve yükleniyor ekranlarında `BrandLogo` tam logo (adı da taşıdığı için yanında ayrıca
+  "KampüsBet" yazılmaz; ekran okuyucu adı okur). Admin yan menüde işaret + "KampüsBet Yönetim", girişte tam logo.
+  Logodaki yazı "kampusbet" (ü'süz); uygulamanın görünen adı "KampüsBet" (`AppInfo.name`) olarak kalır.
 
 ## Testler
 

@@ -138,10 +138,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const Center(child: BrandLogo(size: 80)),
-                    const SizedBox(height: 16),
-                    Text(AppInfo.name, textAlign: TextAlign.center, style: theme.textTheme.headlineLarge),
-                    const SizedBox(height: 8),
+                    const Center(child: BrandLogo(width: 220)),
+                    const SizedBox(height: 12),
                     Text(
                       'Kampüsünde tahmin yap, sanal puan kazan.',
                       textAlign: TextAlign.center,

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../profile/profile_data.dart';
-import 'app_info.dart';
 import 'brand_logo.dart';
 import 'error_messages.dart';
 import 'supabase.dart';
@@ -14,7 +13,6 @@ class LoadingScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final profile = ref.watch(myProfileProvider);
-    final theme = Theme.of(context);
 
     return Scaffold(
       body: Center(
@@ -23,9 +21,7 @@ class LoadingScreen extends ConsumerWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const BrandLogo(size: 72),
-              const SizedBox(height: 16),
-              Text(AppInfo.name, style: theme.textTheme.headlineMedium),
+              const BrandLogo(width: 180),
               const SizedBox(height: 24),
               if (profile.hasError && !profile.isLoading) ...[
                 Text(userMessage(profile.error!), textAlign: TextAlign.center),

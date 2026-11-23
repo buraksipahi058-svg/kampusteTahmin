@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "KampüsBet Yönetim",
   description: "KampüsBet admin ve yetkili paneli",
-  icons: { icon: "/logo.png" },
+  icons: { icon: "/icon.png" },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

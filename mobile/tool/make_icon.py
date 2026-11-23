@@ -1,107 +1,121 @@
-"""KampüsBet uygulama ikonu ve logosu (fütüristik mor): mor → gece moru degrade zemin, sağ altta camgöbeği ışık
-hüzmesi, beyaz yuvarlak uçlu "K" monogramı, ışıldayan neon camgöbeği nokta.
-4 kat büyük çizilip küçültülür (pürüzsüz kenar). Çıktılar mobile/assets/brand/ altına.
-Kullanım (mobile/): python tool/make_icon.py && dart run flutter_launcher_icons (sonra ios/Runner.xcodeproj/project.pbxproj değişikliğini geri al: aracın bilinen hatası)."""
+"""KampüsBet logosu ve uygulama ikonu, kullanıcının verdiği logodan (tool/brand/kampusbet_logo.webp: koyu zeminde
+beyaz kep + "K" + mor oynat üçgeni, altında "kampusbet" yazısı).
+
+Kaynak düz renkli (beyaz, mor) ve küçük olduğundan: zeminden saydamlık ve mor oranı çıkarılır, ikisi büyütülüp
+kenarları keskinleştirilir, hedef boyuta küçültülür (pürüzsüz, bulanık olmayan kenar). Çıktılar:
+  mobile/assets/brand/  logo.png (işaret + yazı, saydam), app_icon.png (koyu zeminde işaret),
+                        app_icon_foreground.png / app_icon_background.png (Android uyarlanabilir ikon)
+  admin/public/         logo.png (işaret, saydam), logo-full.png (işaret + yazı), icon.png; admin/src/app/favicon.ico
+Kullanım (mobile/): python tool/make_icon.py && dart run flutter_launcher_icons
+(sonra ios/Runner.xcodeproj/project.pbxproj değişikliğini geri al: aracın bilinen hatası)."""
 import os
-from PIL import Image, ImageDraw, ImageFilter
+from PIL import Image
 
-OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'assets', 'brand')
-os.makedirs(OUT, exist_ok=True)
-S = 4096            # çizim tuvali (1024 x 4)
-TOP = (139, 92, 246)           # #8B5CF6 canlı mor
-BOTTOM = (30, 12, 74)          # #1E0C4A gece moru
-ACCENT = (34, 211, 238)        # #22D3EE neon camgöbeği
-WHITE = (255, 255, 255)
+HERE = os.path.dirname(os.path.abspath(__file__))
+SRC = os.path.join(HERE, 'brand', 'kampusbet_logo.webp')
+MOBILE = os.path.join(HERE, '..', 'assets', 'brand')
+ADMIN = os.path.join(HERE, '..', '..', 'admin')
 
-
-def gradient(size):
-    img = Image.new('RGB', (size, size))
-    px = img.load()
-    for y in range(size):
-        for x in range(size):
-            t = (x + y) / (2 * (size - 1))      # sol üstten sağ alta
-            px[x, y] = tuple(round(a + (b - a) * t) for a, b in zip(TOP, BOTTOM))
-    return img
+BG = (8, 7, 12)              # kaynağın zemini #08070C
+WHITE = (246, 245, 245)
+PURPLE = (122, 79, 241)      # kaynağın moru #7A4FF1
+BG_MAX, FG_MAX = 16, 238     # en parlak kanal: zemin ~12, beyaz / mor ~240
+SUPER = 4                    # hedefin 4 katında keskinleştirilip küçültülür
 
 
-def stroke(d, p, q, w, fill):
-    d.line([p, q], fill=fill, width=w)
-    r = w / 2
-    for (x, y) in (p, q):
-        d.ellipse([x - r, y - r, x + r, y + r], fill=fill)
+def clamp(v):
+    return 0.0 if v < 0 else 1.0 if v > 1 else v
 
 
-def mark(scale=1.0, offset=(0, 0)):
-    """Saydam zeminde monogram (S x S). scale: 1024'lük koordinatların çarpanı."""
-    img = Image.new('RGBA', (S, S), (0, 0, 0, 0))
-    d = ImageDraw.Draw(img)
-    k = S / 1024 * scale
-    ox = S / 2 * (1 - scale) + offset[0] * S / 1024
-    oy = S / 2 * (1 - scale) + offset[1] * S / 1024
-
-    def P(x, y):
-        return (ox + x * k, oy + y * k)
-
-    w = round(96 * k)
-    stem_top, stem_bottom = P(392, 300), P(392, 724)
-    joint = P(404, 548)
-    upper_end = P(624, 318)
-    lower_start = P(486, 462)
-    lower_end = P(640, 712)
-    # Neon noktanın ışıltısı önce (monogramın altında kalır, beyaz kolu boyamaz).
-    cx, cy = P(716, 252)
-    r = 46 * k
-    halo = Image.new('RGBA', (S, S), (0, 0, 0, 0))
-    ImageDraw.Draw(halo).ellipse([cx - r * 1.9, cy - r * 1.9, cx + r * 1.9, cy + r * 1.9], fill=ACCENT + (150,))
-    img.alpha_composite(halo.filter(ImageFilter.GaussianBlur(radius=round(34 * k))))
-    # Gölge (hafif, aşağı): monograma derinlik.
-    shadow = Image.new('RGBA', (S, S), (0, 0, 0, 0))
-    sd = ImageDraw.Draw(shadow)
-    sh = round(14 * k)
-    for p, q in ((stem_top, stem_bottom), (joint, upper_end), (lower_start, lower_end)):
-        stroke(sd, (p[0], p[1] + sh), (q[0], q[1] + sh), w, (0, 0, 0, 70))
-    shadow = shadow.filter(ImageFilter.GaussianBlur(radius=round(18 * k)))
-    img.alpha_composite(shadow)
-    d = ImageDraw.Draw(img)
-    for p, q in ((stem_top, stem_bottom), (joint, upper_end), (lower_start, lower_end)):
-        stroke(d, p, q, w, WHITE + (255,))
-    # Neon nokta: üst kolun ucunun sağ üstünde.
-    d.ellipse([cx - r, cy - r, cx + r, cy + r], fill=ACCENT + (255,))
-    return img
+def layers(src, box):
+    """Kırpılan bölgeden saydamlık (A) ve mor oranı (P) katmanları (L kipinde)."""
+    crop = src.crop(box)
+    w, h = crop.size
+    a_img, p_img = Image.new('L', (w, h)), Image.new('L', (w, h))
+    px, pa, pp = crop.load(), a_img.load(), p_img.load()
+    for y in range(h):
+        for x in range(w):
+            r, g, b = px[x, y]
+            a = clamp((max(r, g, b) - BG_MAX) / (FG_MAX - BG_MAX))
+            pa[x, y] = round(a * 255)
+            if a > 0.05:
+                # Zeminle karışmış kenar renginden asıl rengi çöz: c = a * fg + (1 - a) * bg.
+                fr = (r - (1 - a) * BG[0]) / a
+                fb = (b - (1 - a) * BG[2]) / a
+                pp[x, y] = round(clamp((fb - fr) / (PURPLE[2] - PURPLE[0])) * 255)
+    return a_img, p_img
 
 
-def glow_bg(size):
-    """Degrade zemin + sağ altta camgöbeği ışık hüzmesi (fütüristik derinlik)."""
-    img = gradient(256).resize((size, size), Image.BICUBIC).convert('RGBA')
-    glow = Image.new('RGBA', (size, size), (0, 0, 0, 0))
-    gd = ImageDraw.Draw(glow)
-    c, r = size * 0.95, size * 0.55
-    gd.ellipse([c - r, c - r, c + r, c + r], fill=ACCENT + (70,))
-    img.alpha_composite(glow.filter(ImageFilter.GaussianBlur(radius=size // 10)))
-    return img
+def sharp(img, lo, hi):
+    """Büyütmenin yumuşattığı kenarı daralt (lo altı 0, hi üstü 255)."""
+    return img.point(lambda v: 0 if v <= lo else 255 if v >= hi else round((v - lo) / (hi - lo) * 255))
 
 
-def rounded_mask(size, radius):
-    m = Image.new('L', (size, size), 0)
-    ImageDraw.Draw(m).rounded_rectangle([0, 0, size - 1, size - 1], radius=radius, fill=255)
-    return m
+def render(src, box, width):
+    """Kutudaki çizimi saydam zeminde `width` px genişliğinde RGBA olarak çiz."""
+    a_img, p_img = layers(src, box)
+    w, h = a_img.size
+    big = (width * SUPER, round(h * width * SUPER / w))
+    a_big = sharp(a_img.resize(big, Image.LANCZOS), 90, 165)
+    p_big = sharp(p_img.resize(big, Image.LANCZOS), 100, 155)
+    color = Image.composite(Image.new('RGB', big, PURPLE), Image.new('RGB', big, WHITE), p_big)
+    rgba = color.copy()
+    rgba.putalpha(a_big)
+    target = (width, round(big[1] / SUPER))
+    return rgba.convert('RGBa').resize(target, Image.LANCZOS).convert('RGBA')
 
 
-# 1) Tam ikon (iOS ve eski Android): kare, saydamlık yok (iOS köşeyi kendisi yuvarlar).
-bg = glow_bg(S)
-full = bg.copy()
-full.alpha_composite(mark())
-full.convert('RGB').resize((1024, 1024), Image.LANCZOS).save(os.path.join(OUT, 'app_icon.png'))
+def bbox(src, rows):
+    """Satır aralığındaki çizimin sınır kutusu (8 px pay)."""
+    y0, y1 = rows
+    region = src.crop((0, y0, src.width, y1)).convert('L').point(lambda v: 255 if v > 60 else 0)
+    x0, t, x1, b = region.getbbox()
+    return (x0 - 8, y0 + t - 8, x1 + 8, y0 + b + 8)
 
-# 2) Android uyarlanabilir ikon ön katmanı: saydam, tam ölçek (flutter_launcher_icons %16 içeriden yerleştirir).
-fg = mark(scale=1.0)
-fg.resize((1024, 1024), Image.LANCZOS).save(os.path.join(OUT, 'app_icon_foreground.png'))
 
-# 3) Uyarlanabilir ikon arka katmanı: degrade.
-glow_bg(1024).convert('RGB').save(os.path.join(OUT, 'app_icon_background.png'))
+def place(canvas_size, art, width_ratio, bg=None):
+    """Çizimi kare tuvalin ortasına, genişliği tuvalin `width_ratio` katı olacak biçimde koy."""
+    canvas = Image.new('RGBA', (canvas_size, canvas_size), bg + (255,) if bg else (0, 0, 0, 0))
+    w = round(canvas_size * width_ratio)
+    scaled = art.resize((w, round(art.height * w / art.width)), Image.LANCZOS) if art.width != w else art
+    canvas.alpha_composite(scaled, ((canvas_size - scaled.width) // 2, (canvas_size - scaled.height) // 2))
+    return canvas
 
-# 4) Uygulama içi logo: yuvarlatılmış kare (512), saydam köşeler.
-logo = full.copy()
-logo.putalpha(rounded_mask(S, round(S * 0.23)))
-logo.resize((512, 512), Image.LANCZOS).save(os.path.join(OUT, 'logo.png'))
-print('ok', os.listdir(OUT))
+
+def main():
+    src = Image.open(SRC).convert('RGB')
+    # Kaynakta işaret ile yazı arasında boş satırlar var: işaret üstte, yazı altta.
+    gray = src.convert('L').point(lambda v: 255 if v > 60 else 0)
+    full = gray.getbbox()
+    rows = [any(gray.getpixel((x, y)) for x in range(full[0], full[2], 2)) for y in range(full[1], full[3])]
+    gap = next(i for i, filled in enumerate(rows) if not filled) + full[1]
+    mark_box = bbox(src, (full[1], gap))
+    lockup_box = (full[0] - 8, full[1] - 8, full[2] + 8, full[3] + 8)
+
+    mark = render(src, mark_box, 1024)
+    lockup = render(src, lockup_box, 1200)
+
+    os.makedirs(MOBILE, exist_ok=True)
+    lockup.save(os.path.join(MOBILE, 'logo.png'))
+    # iOS / eski Android: koyu kare zemin, işaret ortada (köşe yuvarlatmasına pay bırakılır).
+    icon = place(1024, mark, 0.62, BG)
+    icon.convert('RGB').save(os.path.join(MOBILE, 'app_icon.png'))
+    # Uyarlanabilir ikon: maske daire de olabilir; işaret güvenli bölgenin (ortadaki %61) içinde.
+    place(1024, mark, 0.50).save(os.path.join(MOBILE, 'app_icon_foreground.png'))
+    Image.new('RGB', (1024, 1024), BG).save(os.path.join(MOBILE, 'app_icon_background.png'))
+
+    public = os.path.join(ADMIN, 'public')
+    os.makedirs(public, exist_ok=True)
+    mark.resize((256, round(mark.height * 256 / mark.width)), Image.LANCZOS).save(os.path.join(public, 'logo.png'))
+    lockup.resize((800, round(lockup.height * 800 / lockup.width)), Image.LANCZOS).save(
+        os.path.join(public, 'logo-full.png'))
+    small_icon = icon.convert('RGB').resize((512, 512), Image.LANCZOS)
+    small_icon.save(os.path.join(public, 'icon.png'))
+    # Next (Turbopack) ICO içindeki PNG'yi çözemiyor: BMP biçiminde, saydamlık kanallı yazılır.
+    small_icon.convert('RGBA').save(
+        os.path.join(ADMIN, 'src', 'app', 'favicon.ico'), sizes=[(16, 16), (32, 32), (48, 48)], bitmap_format='bmp')
+    print('mark', mark.size, 'lockup', lockup.size)
+
+
+if __name__ == '__main__':
+    main()

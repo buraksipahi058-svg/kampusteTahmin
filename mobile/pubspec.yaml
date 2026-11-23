@@ -103,7 +103,7 @@ flutter:
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
 
-# Uygulama ikonu (Adım 18c): python tool/make_icon.py, sonra dart run flutter_launcher_icons (kaynak assets/brand/). Android uyarlanabilir ikon: degrade arka katman + monogram ön katman.
+# Uygulama ikonu ve logo: kullanıcının logosundan (tool/brand/kampusbet_logo.webp) python tool/make_icon.py, sonra dart run flutter_launcher_icons (kaynak assets/brand/). Android uyarlanabilir ikon: koyu arka katman + işaret ön katman.
 flutter_launcher_icons:
   android: true
   ios: true
