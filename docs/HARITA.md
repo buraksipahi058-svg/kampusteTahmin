@@ -5,10 +5,10 @@ gerektirdiği bölgeleri aç. Kod dosyalarını baştan sona okuma; bölge dosya
 
 ## Şu an
 
-- **Commit:** yalnızca kullanıcı onay verince, yalnızca yerel (push yok). Adım 7-9 `f45f3dc`'de; Adım 10 + XP / seviye `0ca9789`'da, Adım 11 `2fa4c08`'de, Adım 12 `ae29d5e`'de, Adım 13 `c205879`'da, Adım 14 `e62ac52`'de; Adım 15, 16, 17, 17a ve 17b çalışma ağacında, commit edilmedi.
-- **Son tamamlanan:** Adım 17 (uygulama içi bildirimler: zil, okunmamış sayısı, olay tetikleyicileri) ve 17a (QR'lı kampüs görevleri: admin'de görev + QR sayfası, mobilde Kampüs görevleri + QR okuyucu, kontenjan, SSP yalnızca süperadmin). 781 pgTAP, 64 Flutter, eşzamanlılık para 9/9, bahis 6/6, kampüs 4/4; release APK'da bildirim, kamera, elle kodla görev ve ödül canlıda denendi. Sıradaki: 17b (fotoğraflı görevler), sonra genel güvenlik kontrolü. Adım 15-17a çalışma ağacında (commit yok). Önceki commit: Adım 14 (`e62ac52`).
+- **Commit:** yalnızca kullanıcı onay verince, yalnızca yerel (push yok). Adım 7-9 `f45f3dc`'de; Adım 10 + XP / seviye `0ca9789`'da, Adım 11 `2fa4c08`'de, Adım 12 `ae29d5e`'de, Adım 13 `c205879`'da, Adım 14 `e62ac52`'de; Adım 15, 16, 17, 17a, 17b ve güvenlik kontrolü 2 çalışma ağacında, commit edilmedi.
+- **Son tamamlanan:** Adım 17b (fotoğraflı kampüs görevleri, onay kuyruğu, 30 gün silme) ve genel güvenlik kontrolü 2 (bağımsız inceleme; 8 bulgu düzeltildi, [guvenlik](harita/guvenlik.md) sonu). 867 pgTAP, 68 Flutter; canlıda fotoğraf yükleme → onay → ödül ve güvenlik düzeltmesinden sonra uygulamanın açılışı denendi. Adım 15-17b ve güvenlik kontrolü çalışma ağacında (commit yok). Önceki commit: Adım 14 (`e62ac52`).
 - **Bulutta deneme verisi:** giriş yapamayan "Test Yetkili" profili (`e2e00000-...0001`), sonuçlanmış resmi ve sosyal deneme bahisleri, bir trivia düellosu, bir günün tahmini; kullanıcının test hesabı `deneme@ogr.ornek.edu.tr` ile doğrulanmış (820 SP, 20 XP, "Mor isim" kuşanılı). Seed'de 5 genel görev, 8 genel ürün.
-- **Sıradaki (kullanıcı sırası):** 17b fotoğraflı kampüs görevleri + onay kuyruğu + 30 gün silme, sonra baştan sona güvenlik kontrolü. Sonrası öneri: gruplar, izleme / analitik. Ayrıca kullanıcının canlıya geçiş adımları ([yayin](harita/yayin.md) "Canlıya geçiş sırası"); uygulama tarafında kalanlar [acik-isler](harita/acik-isler.md)'de (bildirimler, ikon, admin panelinin girişle denenmesi, eksik özellikler).
+- **Sıradaki:** commit (kullanıcı onayıyla); fotoğraf silme için Vault anahtarı (kullanıcının işi, [yayin](harita/yayin.md)). Sonrası öneri: gruplar, izleme / analitik. Ayrıca kullanıcının canlıya geçiş adımları ([yayin](harita/yayin.md) "Canlıya geçiş sırası"); uygulama tarafında kalanlar [acik-isler](harita/acik-isler.md)'de (bildirimler, ikon, admin panelinin girişle denenmesi, eksik özellikler).
 - **Açık işler** (denenmemiş, eksik, çözülmemiş, kullanıcıdan beklenen): [harita/acik-isler.md](harita/acik-isler.md).
 
 | # | Adım | Durum | Commit |
@@ -33,6 +33,7 @@ gerektirdiği bölgeleri aç. Kod dosyalarını baştan sona okuma; bölge dosya
 | 17 | Uygulama içi bildirimler | Bitti (commit yok) | |
 | 17a | Kampüs görevleri: QR | Bitti (commit yok) | |
 | 17b | Kampüs görevleri: fotoğraf, onay, 30 gün silme | Bitti (commit yok) | |
+| G2 | Genel güvenlik kontrolü 2 (bağımsız inceleme, 8 düzeltme) | Bitti (commit yok) | |
 
 ## Görev → ne okunur
 

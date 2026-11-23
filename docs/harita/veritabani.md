@@ -35,6 +35,7 @@ Konu bölgeleri: [kimlik.md](kimlik.md), [para.md](para.md), [bahis.md](bahis.md
 | `20261122215319_kampus_gorevi_degerleri.sql` | 17a | enum: `kampus_gorevi_yonet`, `campus_task_reward`, `ledger_ref_type.campus_task`, `xp_reason.campus_task` |
 | `20261122215322_kampus_gorevleri.sql` | 17a | `campus_tasks`, `private.campus_task_secrets`, `campus_task_submissions` + RLS, QR kodu (HMAC), `save_campus_task`, `reset_campus_task_qr`, `campus_task_qr`, `my_campus_tasks`, `submit_campus_task_qr`; `xp_on_ledger_entry` ve `achievement_metrics` yeniden, `campus_tasks` başarımları ([kampus](kampus.md)) |
 | `20261122221347_kampus_fotograf.sql` | 17b | `campus-proofs` depolama alanı + `storage.objects` politikaları, `private.storage_settings`, `private.storage_delete` (pg_net), `submit_campus_task_photo`, `review_campus_submission`, `process_campus_submissions` + saatlik iş, bildirim türleri, `notify_profile` yeniden (silinince fotoğraf) ([kampus](kampus.md)) |
+| `20261122223007_guvenlik_duzeltmeleri.sql` | G2 | Güvenlik kontrolü 2 ([guvenlik](guvenlik.md) sonu): `export_my_data` biçim 2, `current_school_id` / `my_cluster_ids` doğrulanmışa, `get_leaderboard` (KB002), `profiles` kolon bazlı okuma (`banned_at` kapalı) + `banned_users`, `place_wager` (resmi_bahis_ac), kampüs görevi tavanı / günlük sınır (`check_campus_daily_limit`) / SSP yalnızca süperadmin / onay kenar durumları, depolama 1 MB + saatlik / günlük sınır, `trivia_duel_review` yalnızca sonuçlanmış, `achievements_select` gizli |
 | `20261122105335_gunun_tahmini.sql` | 8 | günün tahmini ayarları, `bets_settlement_by_type` (mini oyunda `admin` de olur), `place_wager` (yalnızca `auto` mini oyuna kapalı; admin sonuçlandırmalıda açan / kapatan yatıramaz), `create/settle/cancel_daily_prediction`, saatlik pg_cron işi |
 
 ## Koda inmek gerekirse
@@ -90,6 +91,7 @@ Buluttaki gerçek durumu görmek daha ucuzsa: `npx supabase db query --linked "s
 4. `npx supabase db push`, sonra `npm run db:test`; para veya bahsi değiştirdiysen `npm run db:test:concurrency`.
 5. `npx supabase db advisors --linked --type security` — yeni uyarı var mı; `12_guvenlik` testi şema kurallarını zaten tarar.
 6. Kararsa `KARARLAR.md`'ye, yapıysa ilgili bölge dosyasına işle.
+7. `profiles`'a kolon eklersen istemci okuma izni kolon kolondur: `grant select (...) on public.profiles to authenticated` listesine ekle (ya da bilinçli kapalı bırak); `12_guvenlik` kolon listesini denetler.
 
 ## Hata kodları (SQLSTATE)
 
@@ -128,6 +130,8 @@ Buluttaki gerçek durumu görmek daha ucuzsa: `npx supabase db query --linked "s
 | `KB032` | Kampüs görevi şu an açık değil (kapalı, başlamadı, bitti ya da doğrulama yöntemi farklı) |
 | `KB033` | Kampüs gönderisi zaten karara bağlandı (onay / ret yeniden yapılamaz) |
 | `KB034` | Kampüs gönderisinin fotoğrafı yok, kişinin klasöründe değil ya da daha önce kullanıldı |
+| `KB035` | Kişinin bugünkü kampüs görevi sınırı doldu (`campus_task_daily_limit`) |
+| `KB036` | Gönderenin hesabı yasaklı ya da silinmiş: gönderi yalnızca reddedilebilir |
 | `KB026` | İstek sınırı: kişinin son bir dakikadaki yazma isteği `economy_settings.api_write_limit_per_minute`'a ulaştı (bekçi) |
 | `42501` | Yetki yok / giriş gerekli |
 | `23514` | Geçersiz değer (kısıt) |

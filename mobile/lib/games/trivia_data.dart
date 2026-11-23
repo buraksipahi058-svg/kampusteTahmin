@@ -60,6 +60,9 @@ class TriviaDuel {
 
   bool get finished => status == 'settled' || status == 'cancelled';
 
+  /// Cevaplar yalnızca sonuçlanmış düelloda görünür (iptal olanda değil; sunucu da denetler).
+  bool get reviewable => status == 'settled';
+
   /// Kişi rakip olarak katılabilir mi (sunucu da denetler).
   bool canAccept(String? userId, DateTime now) =>
       userId != null &&

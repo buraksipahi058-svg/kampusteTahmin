@@ -24,13 +24,18 @@ export default async function UsersPage({ searchParams }: PageProps<"/kullanicil
   const supabase = await createClient();
   let query = supabase
     .from("profiles")
-    .select("id, first_name, last_name, role, referee_strikes, banned_at, school_id, school:clusters!school_id(name)")
+    .select("id, first_name, last_name, role, referee_strikes, school_id, school:clusters!school_id(name)")
     .is("deleted_at", null)
     .neq("id", staff.id)
     .order("first_name", { ascending: true })
     .limit(50);
   if (q) query = query.or(`first_name.ilike.%${q}%,last_name.ilike.%${q}%`);
   const { data: users, error } = await query;
+  // Yasak bilgisi profilde istemciye kapalı; yalnızca yetkili olduğu kişiler için ayrı sorgu.
+  const { data: bans } = users?.length
+    ? await supabase.rpc("banned_users", { p_user_ids: users.map((u) => u.id) })
+    : { data: [] };
+  const bannedAt = new Map((bans ?? []).map((b) => [b.user_id, b.banned_at]));
 
   return (
     <div className="flex flex-col gap-6">
@@ -45,27 +50,30 @@ export default async function UsersPage({ searchParams }: PageProps<"/kullanicil
       {error && <p className="text-sm text-red-700">Kullanıcılar alınamadı: {dbErrorMessage(error)}</p>}
       {users?.length === 0 && <p className="text-sm text-zinc-500">Kimse bulunamadı.</p>}
       <ul className="flex flex-col divide-y divide-zinc-200 dark:divide-zinc-800">
-        {users?.map((u) => (
+        {users?.map((u) => {
+          const banned = bannedAt.get(u.id);
+          return (
           <li key={u.id} className="flex flex-wrap items-start justify-between gap-3 py-3 text-sm">
             <div>
               <p className="font-medium">
                 {u.first_name} {u.last_name}
-                {u.banned_at && <span className="ml-2 text-red-700">yasaklı</span>}
+                {banned && <span className="ml-2 text-red-700">yasaklı</span>}
               </p>
               <p className="text-zinc-500">
                 {u.school?.name} · {roleLabels[u.role]} · hakem ihtarı {u.referee_strikes}
-                {u.banned_at && ` · yasak: ${formatDateTime(u.banned_at)}`}
+                {banned && ` · yasak: ${formatDateTime(banned)}`}
               </p>
             </div>
             <UserActions
               userId={u.id}
-              banned={u.banned_at != null}
+              banned={banned != null}
               strikes={u.referee_strikes}
               canBan={isSuper && u.role !== "superadmin"}
               canForgive={can(staff, u.school_id, "kullanici_bahsi_denetle")}
             />
           </li>
-        ))}
+          );
+        })}
       </ul>
     </div>
   );

@@ -166,8 +166,9 @@ select throws_ok($$select * from public.submit_campus_task_qr(pg_temp.id('kutuph
 
 select pg_temp.as_user(1);
 select throws_ok($$select public.reset_campus_task_qr(pg_temp.id('kutuphane'))$$, 'P0002', null, 'öğrenci QR''ı yenileyemez');
-select pg_temp.as_user(4);
-select lives_ok($$select public.reset_campus_task_qr(pg_temp.id('kutuphane'))$$, 'yetkili QR''ı yeniler');
+-- SSP ödüllü görevin QR'ını yalnızca süperadmin yeniler (yetkilinin reddi 22_guvenlik_duzeltmeleri'nde).
+select pg_temp.as_user(5);
+select lives_ok($$select public.reset_campus_task_qr(pg_temp.id('kutuphane'))$$, 'süperadmin SSP görevinin QR''ını yeniler');
 select pg_temp.as_user(6);
 select throws_ok($$select * from public.submit_campus_task_qr(pg_temp.id('kutuphane'), pg_temp.code('kut-simdi'))$$, 'KB029', null,
                  'yenilenince eski kod geçmez');

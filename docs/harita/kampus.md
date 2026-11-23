@@ -22,7 +22,7 @@ Kod: `20261122214819_bildirimler.sql`. Test: `19_bildirimler.test.sql` (26).
 ## Kampüs görevleri — QR (Adım 17a)
 
 Kod: `20261122215319_kampus_gorevi_degerleri.sql` (enum: `kampus_gorevi_yonet`, `campus_task_reward`, ref ve XP),
-`20261122215322_kampus_gorevleri.sql`. Test: `20_kampus_gorevleri.test.sql` (38), eşzamanlılık `kampus.mjs` (4).
+`20261122215322_kampus_gorevleri.sql`. Test: `20_kampus_gorevleri.test.sql` (38), eşzamanlılık `kampus.mjs` (5; 5. kontrol günlük sınır, güvenlik kontrolü 2).
 
 - `campus_tasks`: okul (zorunlu, sonradan değişmez), ad, açıklama, simge, doğrulama (`qr` / `photo`, sonradan
   değişmez), dönem (`once` / `daily` / `weekly`, İstanbul), ödül (SP; SSP yalnızca süperadmin), XP, kontenjan,
@@ -72,4 +72,18 @@ Kod: `20261122221347_kampus_fotograf.sql`. Test: `21_kampus_fotograf.test.sql` (
   `kampusbet_storage_service_key` adlı servis anahtarı (**kullanıcının işi**; anahtar yoksa silme bekler, fotoğraf kalır).
 - Admin: `/kampus-gorevleri/onay` (bekleyenler, 5 dakikalık imzalı fotoğraf bağlantısı, onayla / gerekçeyle reddet).
 - Mobil: `/kampus-gorevleri/:id/foto` (`image_picker` yalnızca kamera; `prepareProofPhoto`: yöne göre döndür, uzun kenar
-  ≤ 1280, EXIF tamamen silinir, JPEG 80; `CampusApi.submitPhoto` yükler + gönderir).
+  ≤ 1280, EXIF tamamen silinir, JPEG 80, 900 KB'ı aşarsa kalite düşer; `CampusApi.submitPhoto` yükler + gönderir).
+
+## Güvenlik kontrolü 2 sonrası kurallar
+
+Kod: `20261122223007_guvenlik_duzeltmeleri.sql`. Test: `22_guvenlik_duzeltmeleri.test.sql`.
+
+- Yetkilinin açtığı / düzenlediği görevde ödül en çok `economy_settings.campus_task_staff_max_reward` (100) SP ve
+  `campus_task_staff_max_xp` (50) XP (`23514`); süperadmin kolon sınırına kadar (1000 / 500). Admin formu tavanı gösterir (`limits.ts`).
+- Kişi günde (İstanbul) en çok `campus_task_daily_limit` (5) bekleyen / onaylı gönderi yapar (`KB035`;
+  `private.check_campus_daily_limit`, kişi başı danışma kilidi, görev satırı kilidinden sonra).
+- SSP ödüllü görevin QR'ını alma / yenileme ve gönderisine karar yalnızca süperadmin (admin'de QR bağlantısı ve onay
+  düğmeleri yetkiliye gösterilmez). Kişi kendi gönderisine karar veremez (`42501`); yasaklı / silinmiş hesabın
+  gönderisi onaylanamaz (`KB036`), reddedilir.
+- Depolama: dosya en çok 1 MB; kişi başı saatte 10, günde 30 yükleme (sayım danışma kilidinden sonra); yasaklı /
+  silinmiş yetkili fotoğraf göremez.

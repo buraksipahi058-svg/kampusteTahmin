@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../core/error_messages.dart';
 import '../core/routes.dart';
 import '../core/supabase.dart';
+import '../core/verify_email_card.dart';
 import '../market/market_data.dart';
 import '../people/people_data.dart';
 import '../profile/student_email_data.dart';
@@ -67,14 +68,7 @@ class _BetsTabState extends ConsumerState<BetsTab> {
           ),
           if (verified == false) ...[
             const SizedBox(height: 12),
-            Card(
-              child: ListTile(
-                leading: const Icon(Icons.mark_email_unread_outlined),
-                title: const Text('Bahis için okul mailini doğrula'),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: () => context.push(Routes.verifyEmail),
-              ),
-            ),
+            const VerifyEmailCard('Okulundaki bahisleri görmek ve oynamak için okul mailini doğrula'),
           ],
           if (_social && verified == true) ...[
             const SizedBox(height: 12),
@@ -86,6 +80,8 @@ class _BetsTabState extends ConsumerState<BetsTab> {
           ],
           const SizedBox(height: 12),
           switch (bets) {
+            // Doğrulanmamış kişiye okulun bahisleri gelmez: "bahis yok" denmez, üstteki kart yeter.
+            AsyncData(value: final list) when list.isEmpty && verified == false => const SizedBox.shrink(),
             AsyncData(value: final list) when list.isEmpty => Padding(
               padding: const EdgeInsets.symmetric(vertical: 32),
               child: Center(child: Text(_social ? 'Henüz sosyal bahis yok.' : 'Şu an resmi bahis yok.')),

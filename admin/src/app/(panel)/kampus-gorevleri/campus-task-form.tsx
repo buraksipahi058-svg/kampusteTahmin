@@ -4,12 +4,22 @@ import { useActionState, useEffect, useState } from "react";
 import { ActionForm, FormAlert, SubmitButton, inputClass, type ActionState } from "@/components/ui";
 import { isoToIstanbulLocal } from "@/lib/format";
 import { loadCampusQr, resetCampusQr, saveCampusTask, toggleCampusTask, type QrView } from "./actions";
-import { periodLabels, rotationLabels, verificationLabels, type CampusTask } from "./labels";
+import { periodLabels, rotationLabels, verificationLabels, type CampusTask, type RewardLimits } from "./labels";
 
 type School = { id: string; name: string };
 
 // Yeni kampüs görevi ya da (initial verilirse) düzenleme. Okul ve doğrulama yöntemi sonradan değişmez.
-export function CampusTaskForm({ schools, isSuper, initial }: { schools: School[]; isSuper: boolean; initial?: CampusTask }) {
+export function CampusTaskForm({
+  schools,
+  isSuper,
+  limits,
+  initial,
+}: {
+  schools: School[];
+  isSuper: boolean;
+  limits: RewardLimits;
+  initial?: CampusTask;
+}) {
   const [state, action, pending] = useActionState(saveCampusTask, {} as ActionState);
   const [verification, setVerification] = useState(initial?.verification ?? "qr");
 
@@ -102,8 +112,8 @@ export function CampusTaskForm({ schools, isSuper, initial }: { schools: School[
       </div>
       <div className="flex flex-wrap gap-3">
         <label className="flex flex-col gap-1 text-sm">
-          Ödül (1–1000)
-          <input name="reward_amount" type="number" min={1} max={1000} required defaultValue={initial?.reward_amount ?? 20} className={`${inputClass} w-28`} />
+          Ödül (1–{limits.sp})
+          <input name="reward_amount" type="number" min={1} max={limits.sp} required defaultValue={initial?.reward_amount ?? 20} className={`${inputClass} w-28`} />
         </label>
         <label className="flex flex-col gap-1 text-sm">
           Para birimi
@@ -113,8 +123,8 @@ export function CampusTaskForm({ schools, isSuper, initial }: { schools: School[
           </select>
         </label>
         <label className="flex flex-col gap-1 text-sm">
-          XP (0–500)
-          <input name="reward_xp" type="number" min={0} max={500} required defaultValue={initial?.reward_xp ?? 10} className={`${inputClass} w-24`} />
+          XP (0–{limits.xp})
+          <input name="reward_xp" type="number" min={0} max={limits.xp} required defaultValue={initial?.reward_xp ?? 10} className={`${inputClass} w-24`} />
         </label>
       </div>
       <div className="flex flex-wrap gap-3">

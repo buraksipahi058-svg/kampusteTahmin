@@ -637,6 +637,9 @@ export type Database = {
       economy_settings: {
         Row: {
           api_write_limit_per_minute: number
+          campus_task_daily_limit: number
+          campus_task_staff_max_reward: number
+          campus_task_staff_max_xp: number
           daily_base_sp: number
           daily_max_sp: number
           daily_max_stake_sp: number
@@ -665,6 +668,9 @@ export type Database = {
         }
         Insert: {
           api_write_limit_per_minute?: number
+          campus_task_daily_limit?: number
+          campus_task_staff_max_reward?: number
+          campus_task_staff_max_xp?: number
           daily_base_sp: number
           daily_max_sp: number
           daily_max_stake_sp?: number
@@ -693,6 +699,9 @@ export type Database = {
         }
         Update: {
           api_write_limit_per_minute?: number
+          campus_task_daily_limit?: number
+          campus_task_staff_max_reward?: number
+          campus_task_staff_max_xp?: number
           daily_base_sp?: number
           daily_max_sp?: number
           daily_max_stake_sp?: number
@@ -1636,6 +1645,13 @@ export type Database = {
           p_user_id: string
         }
         Returns: number
+      }
+      banned_users: {
+        Args: { p_user_ids: string[] }
+        Returns: {
+          banned_at: string
+          user_id: string
+        }[]
       }
       campus_task_qr: {
         Args: { p_task_id: string }

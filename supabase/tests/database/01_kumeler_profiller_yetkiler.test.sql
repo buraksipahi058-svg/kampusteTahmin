@@ -170,6 +170,12 @@ do $$ begin perform public.create_profile('Su', 'Er', 'a0000000-0000-4000-8000-0
 -- Öğrenci olarak Ali: görünürlük ve yazma sınırları
 -- ---------------------------------------------------------------------------
 
+-- Okul verisi (alt kümeler, okul arkadaşları) okul maili doğrulanmış öğrenciye açılır; doğrulanmamış hali
+-- 22_guvenlik_duzeltmeleri'nde.
+set local role postgres;
+update public.profile_private set student_email = 'ali@ogr.test.edu.tr', student_email_verified_at = now()
+where user_id = 'c0000000-0000-4000-8000-000000000001';
+set local role authenticated;
 set local request.jwt.claims to '{"sub":"c0000000-0000-4000-8000-000000000001","role":"authenticated"}';
 
 select is(

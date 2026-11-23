@@ -66,7 +66,11 @@ export default async function CampusReviewPage() {
               ) : (
                 <p className="text-sm text-red-700">Fotoğraf açılamadı.</p>
               )}
-              <ReviewForm id={s.id} />
+              {s.reward_currency === "SSP" && staff.role !== "superadmin" ? (
+                <p className="text-sm text-zinc-500">SSP ödüllü gönderiye yalnızca süperadmin karar verir.</p>
+              ) : (
+                <ReviewForm id={s.id} />
+              )}
             </li>
           );
         })}

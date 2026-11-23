@@ -8,7 +8,7 @@ set local role postgres;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
 
-select plan(32);
+select plan(34);
 
 -- Uzantıların ve Supabase'in kendi nesneleri hariç: yalnızca bizim public / private nesnelerimiz.
 create temp table our_functions on commit drop as
@@ -37,6 +37,23 @@ select is(
   (select array_agg(g.column_name::text order by g.column_name) from information_schema.column_privileges g
    where g.grantee = 'authenticated' and g.table_schema = 'public' and g.privilege_type <> 'SELECT'),
   array['department', 'first_name', 'last_name'], 'tek kolon izni: kişi profilinde ad, soyad, bölüm'
+);
+-- Profil okuma kolon kolon: yasak bilgisi (`banned_at`) istemciye kapalı. Profile yeni kolon eklenince ikinci test
+-- düşer: kolon `grant select (...)` listesine eklenmeli (ya da bilinçli olarak kapalı bırakılmalı).
+select is(
+  (select array_agg(g.column_name::text order by g.column_name) from information_schema.column_privileges g
+   where g.grantee = 'authenticated' and g.table_schema = 'public' and g.table_name = 'profiles'
+     and g.privilege_type = 'SELECT'),
+  array['created_at', 'deleted_at', 'department', 'first_name', 'id', 'last_name', 'level', 'referee_strikes', 'role',
+        'school_id', 'updated_at', 'xp'],
+  'profilde istemci yasak bilgisi dışındaki kolonları okur'
+);
+select is(
+  (select array_agg(c.column_name::text order by c.column_name) from information_schema.columns c
+   where c.table_schema = 'public' and c.table_name = 'profiles'),
+  array['banned_at', 'created_at', 'deleted_at', 'department', 'first_name', 'id', 'last_name', 'level',
+        'referee_strikes', 'role', 'school_id', 'updated_at', 'xp'],
+  'profil kolonları değişmedi (yeni kolonun okuma izni düşünülmeli)'
 );
 select is(
   (select count(*)::int from information_schema.role_table_grants g

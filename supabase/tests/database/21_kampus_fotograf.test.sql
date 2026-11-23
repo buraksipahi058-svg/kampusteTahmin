@@ -175,7 +175,9 @@ select is((select count(*)::int from public.ledger_entries where user_id = pg_te
 select is((select array_agg(kind order by id) from public.notifications where user_id = pg_temp.uid(1)
            and kind in ('campus_rejected', 'campus_approved')),
           array['campus_rejected', 'campus_approved'], 'öğrenciye ret ve onay bildirimi');
-select is((select count(*)::int from public.admin_audit_log where action = 'campus_review'), 2, 'kararlar denetim kaydında');
+select is((select count(*)::int from public.admin_audit_log
+           where action = 'campus_review' and target_user_id in (select pg_temp.uid(n) from generate_series(1, 8) n)),
+          2, 'kararlar denetim kaydında');
 
 set local role authenticated;
 select pg_temp.as_user(2);

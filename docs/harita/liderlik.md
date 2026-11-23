@@ -40,6 +40,8 @@ Kazanan tarafa kimse yatırmadığı için iade alan **yanlış** bilmiş sayıl
 - `get_leaderboard(metric, period, weeks_ago = 0, school_id = null, limit = 50)` — ilk N + listede yoksa çağıranın
   satırı; ad, soyad, seviye, kuşanılmış unvan / rozet / çerçeve / isim rengi, `computed_at`. Başka okul için `analitik_gor`
   (yoksa `P0002`); `weeks_ago` 0–52, `limit` 1–100 (`23514`).
+- Güvenlik kontrolü 2: okul maili doğrulanmamış öğrenci kendi okulunun sıralamasını göremez (`KB002`; geçerli
+  tanım `20261122223007_guvenlik_duzeltmeleri.sql`); `leaderboard_snapshots` RLS'i de aynı (`current_school_id`).
 - `my_stats()` — tüm zamanlar, istek anında: tahmin, doğru, net SP / SSP, şu anki ve en iyi seri, düello oyun /
   galibiyet, sonucu bekleyen yatırım, bu haftaki sıralar (isabet, kazanç, seri; son hesaplamadan).
 - `school_stats(school_id)` — admin, `analitik_gor` / süperadmin: üye, doğrulanmış, bu hafta bahse katılan / yatırım /

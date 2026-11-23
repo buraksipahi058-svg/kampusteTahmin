@@ -8,6 +8,7 @@ import '../core/async_button.dart';
 import '../core/error_messages.dart';
 import '../core/routes.dart';
 import '../core/supabase.dart';
+import '../core/verify_email_card.dart';
 import '../market/market_data.dart';
 import '../people/people_data.dart';
 import '../people/person_picker.dart';
@@ -46,6 +47,10 @@ class GamesTab extends ConsumerWidget {
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          if (verified == false) ...[
+            const VerifyEmailCard('Okulundaki tahminleri ve düelloları görmek, oynamak için okul mailini doğrula'),
+            const SizedBox(height: 16),
+          ],
           Text('Günün tahmini', style: theme.textTheme.titleLarge),
           const SizedBox(height: 4),
           Text(
@@ -55,6 +60,7 @@ class GamesTab extends ConsumerWidget {
           ),
           const SizedBox(height: 12),
           switch (predictions) {
+            AsyncData(value: final list) when list.isEmpty && verified == false => const SizedBox.shrink(),
             AsyncData(value: final list) when list.isEmpty => const Padding(
               padding: EdgeInsets.symmetric(vertical: 16),
               child: Center(child: Text('Şu an tahmin sorusu yok.')),
@@ -87,18 +93,10 @@ class GamesTab extends ConsumerWidget {
               onPressed: () => _challenge(context, ref),
               icon: const Icon(Icons.sports_kabaddi),
               label: const Text('Meydan oku'),
-            )
-          else if (verified == false)
-            Card(
-              child: ListTile(
-                leading: const Icon(Icons.mark_email_unread_outlined),
-                title: const Text('Düello için okul mailini doğrula'),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: () => context.push(Routes.verifyEmail),
-              ),
             ),
           const SizedBox(height: 12),
           switch (duels) {
+            AsyncData(value: final list) when list.isEmpty && verified == false => const SizedBox.shrink(),
             AsyncData(value: final list) when list.isEmpty => const Padding(
               padding: EdgeInsets.symmetric(vertical: 32),
               child: Center(child: Text('Henüz düello yok. İlk meydan okuyan sen ol.')),
@@ -196,7 +194,7 @@ class DuelCard extends ConsumerWidget {
                       onPressed: () => context.push(Routes.duelPlay(duel.betId)),
                       child: Text(myPlay == null ? 'Oyna' : 'Oyuna dön'),
                     ),
-                  if (mine && duel.finished && myPlay != null)
+                  if (mine && duel.reviewable && myPlay != null)
                     OutlinedButton(
                       onPressed: () => context.push(Routes.duelReview(duel.betId)),
                       child: const Text('Cevapları gör'),

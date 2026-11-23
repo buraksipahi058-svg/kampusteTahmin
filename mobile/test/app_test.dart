@@ -427,7 +427,7 @@ void main() {
   testWidgets('okul maili doğrulanmamışsa uyarı çıkar, seçenekler yatırım açmaz', (tester) async {
     await pumpApp(tester, userId: 'u1', profile: _profile, bets: [finalBet()]);
 
-    expect(find.text('Bahis için okul mailini doğrula'), findsOneWidget);
+    expect(find.text('Okulundaki bahisleri görmek ve oynamak için okul mailini doğrula'), findsOneWidget);
     await tester.tap(find.text('Kırmızı'));
     await tester.pumpAndSettle();
     expect(find.widgetWithText(FilledButton, 'Yatır'), findsNothing);
@@ -1068,6 +1068,49 @@ void main() {
     expect(find.text('Sen'), findsOneWidget);
     expect(find.text('Rakip'), findsOneWidget);
     expect(find.text('Bu soruyu cevaplamadın.'), findsOneWidget);
+  });
+
+  testWidgets('iptal olan düelloda cevaplar gösterilmez (bedava cevap anahtarı yok)', (tester) async {
+    await pumpApp(
+      tester,
+      userId: 'u1',
+      profile: _profile,
+      studentEmail: verified,
+      duels: [
+        TriviaDuel(
+          betId: 'd3',
+          challengerId: 'u1',
+          challengerName: 'Ada Yılmaz',
+          stake: 20,
+          status: 'cancelled',
+          acceptDeadline: DateTime.now(),
+          plays: const [DuelPlay(playerId: 'u1', submitted: true, score: 3)],
+        ),
+      ],
+    );
+    await tester.tap(find.text('Oyunlar'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Cevapları gör'), findsNothing);
+  });
+
+  testWidgets('okul maili doğrulanmamışsa okul verisi yerine doğrulama kartı çıkar', (tester) async {
+    await pumpApp(
+      tester,
+      userId: 'u1',
+      profile: _profile,
+      leaderboard: (_) => throw const PostgrestException(message: 'okul mailini doğrula', code: 'KB002'),
+    );
+    await tester.tap(find.text('Oyunlar'));
+    await tester.pumpAndSettle();
+    expect(find.text('Okulundaki tahminleri ve düelloları görmek, oynamak için okul mailini doğrula'), findsOneWidget);
+    expect(find.text('Henüz düello yok. İlk meydan okuyan sen ol.'), findsNothing);
+    expect(find.text('Şu an tahmin sorusu yok.'), findsNothing);
+
+    await tester.tap(find.text('Liderlik'));
+    await tester.pumpAndSettle();
+    expect(find.text('Okulundaki sıralamayı görmek için okul mailini doğrula'), findsOneWidget);
+    expect(find.textContaining('Sıralama alınamadı'), findsNothing);
   });
 
   testWidgets('liderlikten başkasının profili: kozmetik ve sıralamalar', (tester) async {

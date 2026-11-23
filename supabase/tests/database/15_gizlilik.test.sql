@@ -150,7 +150,7 @@ select throws_ok($$select public.export_my_data()$$, 'P0002', null, 'silinmiş h
 select pg_temp.as_user(1);
 set local role postgres;
 create temp table ex on commit drop as select public.export_my_data() as d;
-select is((select d ->> 'format' from ex), 'kampusbet-verilerim-1', 'kişi verilerini dışa aktarır');
+select is((select d ->> 'format' from ex), 'kampusbet-verilerim-2', 'kişi verilerini dışa aktarır');
 select is((select d -> 'account' ->> 'email' from ex), 'kisi1@test.local', 'hesap e-postası dahil');
 select is((select d -> 'profile' ->> 'first_name' from ex), 'Ali', 'profil dahil');
 select is((select jsonb_array_length(d -> 'ledger') from ex),

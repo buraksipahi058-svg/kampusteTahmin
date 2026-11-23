@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' show PostgrestException;
 
 import '../bets/bets_tab.dart' show formatIstanbul;
 import '../core/error_messages.dart';
 import '../core/routes.dart';
+import '../core/verify_email_card.dart';
 import '../market/cosmetic_preview.dart';
 import '../profile/privacy_data.dart';
 import 'leaderboard_data.dart';
@@ -67,6 +69,8 @@ class LeaderboardTab extends ConsumerWidget {
               child: Center(child: Text('Bu dönemde henüz sıralamaya giren yok.')),
             ),
             AsyncData(:final value) => _Board(rows: value, metric: query.metric),
+            AsyncError(:final error) when error is PostgrestException && error.code == 'KB002' =>
+              const VerifyEmailCard('Okulundaki sıralamayı görmek için okul mailini doğrula'),
             AsyncError(:final error) => Column(
               children: [
                 Text('Sıralama alınamadı. ${userMessage(error)}'),

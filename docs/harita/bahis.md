@@ -27,7 +27,7 @@ Her an (sonuçlanmadan önce) → `cancel_bet` → `cancelled`.
 ## Fonksiyonlar
 
 İstemciye açık:
-- `place_wager(bet_id, option_id, amount) → wagers` — doğrulanmış okul maili (`KB002`), bahis görünür olmalı (`P0002`), açık ve süresi geçmemiş (`KB003`), hakem / resmi bahsi açan / resmi bahsi sonuçlandırabilecek olan (`resmi_bahis_kapat`, süperadmin) yatıramaz (`42501`), tutar sınırlar içinde (`23514`), tek yatırım (`KB004`), bakiye (`KB001`). Bahis satırını kilitler.
+- `place_wager(bet_id, option_id, amount) → wagers` — doğrulanmış okul maili (`KB002`), bahis görünür olmalı (`P0002`), açık ve süresi geçmemiş (`KB003`), hakem / resmi bahsi açan / resmi bahis açabilen ya da oranını değiştirebilen (`resmi_bahis_ac`) / sonuçlandırabilecek olan (`resmi_bahis_kapat`, süperadmin) yatıramaz (`42501`; `resmi_bahis_ac` kuralı güvenlik kontrolü 2'de, geçerli tanım `20261122223007_guvenlik_duzeltmeleri.sql`), tutar sınırlar içinde (`23514`), tek yatırım (`KB004`), bakiye (`KB001`). Bahis satırını kilitler.
 - Resmi bahis yönetimi (admin paneli çağırır; her biri `admin_audit_log`'a yazar):
   `create_official_bet(school_id, title, description, options[], odds[], locks_at, max_stake?)` (`resmi_bahis_ac`),
   `lock_official_bet(bet_id)`, `settle_official_bet(bet_id, winning_option_id)`, `cancel_official_bet(bet_id, reason)` (`resmi_bahis_kapat`).

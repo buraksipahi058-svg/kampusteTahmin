@@ -22,6 +22,9 @@ export type CampusTask = {
   active: boolean;
 };
 
+/** Ödül üst sınırı: süperadmin 1000 SP / 500 XP; yetkili ekonomi ayarındaki tavan (veritabanı da denetler). */
+export type RewardLimits = { sp: number; xp: number };
+
 export const verificationLabels: Record<CampusVerification, string> = {
   qr: "QR kod (okutunca hemen ödül)",
   photo: "Fotoğraf (yetkili onaylar)",

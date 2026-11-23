@@ -67,7 +67,7 @@ ve hız sınırı Adım 13-14'te kapatıldı (aşağıda).
 Kod: `supabase/migrations/20261122200659_gizlilik.sql`. Test: `15_gizlilik.test.sql` (36).
 
 - **Sıralamadan çıkma:** `set_leaderboard_hidden(hidden)` → `profile_private.leaderboard_hidden` (yalnızca kişi ve okulunda `kullanici_yonet` görür). Gizlenince sıralama satırları hemen silinir; `store_leaderboard` gizliyi hiç saymaz (sırada boşluk olmaz), `get_leaderboard` artakalan satırı da göstermez. Açınca sonraki hesaplamada (≤ 10 dk) döner; donmuş geçmiş haftalara dönmez. Okul özeti ve kişinin kendi istatistikleri etkilenmez.
-- **Veri dışa aktarma:** `export_my_data()` → tek JSON (`format: kampusbet-verilerim-1`): hesap (Auth e-postası, tarihler), profil, gizli profil, bakiye, seri, üyelik, izin, ledger, yatırımlar, açtığı / hakemlik yaptığı bahisler, itirazlar, düello oyunları, görev ödülleri, envanter, XP, sıralama satırları, yetkililerin kişi hakkındaki kayıtları (yapanın kimliği yok) ve kişinin kendi yönetim işlemleri. Başkasının kimliği, e-postası, adı girmez (test denetler). Silinmiş hesap alamaz. Mobil: Profil > Gizlilik > "Verilerimi indir" → `kampusbet-verilerim-YYYYAAGG.json` paylaş menüsüyle (`share_plus`, dosya önce uygulamanın geçici klasörüne yazılır).
+- **Veri dışa aktarma:** `export_my_data()` → tek JSON (`format: kampusbet-verilerim-2`; 2. sürümde düello rolü, başarımlar, bildirimler, kampüs görevi gönderileri eklendi): hesap (Auth e-postası, tarihler), profil, gizli profil, bakiye, seri, üyelik, izin, ledger, yatırımlar, açtığı / hakemlik yaptığı bahisler, itirazlar, düello oyunları, görev ödülleri, envanter, XP, sıralama satırları, yetkililerin kişi hakkındaki kayıtları (yapanın kimliği yok) ve kişinin kendi yönetim işlemleri. Başkasının kimliği, e-postası, adı girmez (test denetler). Silinmiş hesap alamaz. Mobil: Profil > Gizlilik > "Verilerimi indir" → `kampusbet-verilerim-YYYYAAGG.json` paylaş menüsüyle (`share_plus`, dosya önce uygulamanın geçici klasörüne yazılır).
 - **İstek sınırı:** `guard.check_request()` giriş yapmış kişinin **yazma** isteklerini sayar: salt okunur transaction'lar (tablo okumaları, `stable` RPC'ler: `my_progress`, `my_quests`, `my_stats`, `get_leaderboard`, `school_stats`) sayılmaz. Son bir dakikada `economy_settings.api_write_limit_per_minute` (varsayılan 60) isteğe ulaşan `KB026` alır. Sayaç `private.request_log` (unlogged, istemciye kapalı), `kampusbet_istek_sayaci` 10 dakikada bir 5 dakikadan eskileri siler. **Sınır:** başarısız istek transaction'la geri alındığı için sayılmaz; IP başına sınır yok (anonim zaten hiçbir şey yapamaz). Tam koruma için önüne ağ geçidi (ör. Cloudflare) gerekir. Supabase Auth'un kendi giriş / kayıt / mail sınırları ayrıca var (panelde Rate Limits).
 - **Kullanım koşulları:** tek kaynak `mobile/assets/legal/kullanim_kosullari.txt` (mobil `/kosullar`, girişten önce de açılır; admin'de oturumsuz `/kosullar`, kopyanın aynılığını ve sürümünü `app_info_test` denetler). Kayıtta "18 yaşını doldurdum; Kullanım Koşulları'nı okudum ve kabul ediyorum" kutusu zorunlu; kabul edilen sürüm Supabase Auth kullanıcı metadatasına `terms_version` (`AppInfo.termsVersion`) olarak yazılır. **Taslak:** hukuk incelemesi, köşeli parantezler (işletmeci, iletişim, yetkili mahkeme), yaş sınırı kararı.
 
@@ -101,3 +101,32 @@ Kod: `supabase/migrations/20261122200659_gizlilik.sql`. Test: `15_gizlilik.test.
 - İçerik: işlenen veriler, amaç ve hukuki sebep (m. 5), kimin gördüğü (okul arkadaşları, yetkililer, Supabase,
   mail sağlayıcısı), yurt dışına aktarım (AB / Frankfurt, m. 9), saklama ve silme, haklar (m. 11), başvuru.
   Adım 14: sıralamadan çıkma, uygulamadan veri indirme ve istek sayacı eklendi (admin kopyası da).
+
+## Genel güvenlik kontrolü 2 (2026-11-23, Adım 17b sonrası)
+
+Kod: `supabase/migrations/20261122223007_guvenlik_duzeltmeleri.sql`. Test: `22_guvenlik_duzeltmeleri.test.sql` (45),
+`12_guvenlik` (+2: profil okuma kolonları).
+
+Yapılan: kodu görmeden bağımsız saldırgan gözüyle inceleme (veritabanı, admin, mobil), Supabase advisors, girişsiz
+canlı API denemesi (29 tablo kapalı, depolama listesi boş, genel adres yok, anonim yükleme reddedildi, GraphQL kapalı,
+şema gizli), repoda ve git geçmişinde sır taraması (yok), admin `npm audit` (0), canlı depolama / politika / zamanlanmış
+iş denetimi (7 iş, son 6 saatte hepsi başarılı).
+
+| Bulgu | Önem | Düzeltme |
+|---|---|---|
+| Oran değiştirebilen (`resmi_bahis_ac`) resmi bahsin oranını yükseltip yatırabiliyordu | Orta | `place_wager`: `resmi_bahis_ac` sahibi de yatıramaz |
+| Kampüs görevi yetkilisi sınırsız SP / XP'li görev açıp kodu arkadaşlarına verebiliyordu; SSP görevinin QR'ını ve onayını yetkili de yapabiliyordu | Orta | Yetkili görevinde tavan (`economy_settings.campus_task_staff_max_reward` 100 SP, `campus_task_staff_max_xp` 50 XP); kişi başı günde 5 görev (`campus_task_daily_limit`, `KB035`); SSP görevinde QR, QR yenileme ve onay yalnızca süperadmin |
+| Kayıtta okul seçen herkes (okul maili doğrulamadan) okulun öğrenci adlarını, bahislerini, sıralamasını okuyabiliyordu | Orta (KVKK) | `current_school_id()` / `my_cluster_ids()` yalnızca okul maili doğrulanmış öğrenciye ya da yetkiliye okul döndürür; `get_leaderboard` doğrulanmamışa `KB002`. Mobilde boş liste yerine doğrulama kartı |
+| İptal olan (rakipsiz) düellodan bedava cevap anahtarı toplanabiliyordu | Düşük-orta | `trivia_duel_review` yalnızca sonuçlanmış düelloda |
+| Fotoğraf depolama doldurulabilirdi (sayım kilitsiz, günlük sınır yok, 2 MB) | Düşük | 1 MB; saatte 10 + günde 30; sayım kişi başı danışma kilidinden sonra |
+| Kendi gönderisini (sonradan yetki alınca) onaylama; yasaklı / silinmiş hesaba ödül | Düşük | `review_campus_submission`: kendi gönderisi `42501`, kapalı hesabı onaylama `KB036` (yalnızca ret) |
+| Gizli başarımın adı / açıklaması tablodan okunabiliyordu; yasak bilgisi okul arkadaşlarına açıktı | Düşük | `achievements_select`: gizli olanı yalnızca açan ve süperadmin görür. `profiles.banned_at` istemciye kapalı (kolon bazlı okuma izni); admin `banned_users(ids)` ile okur |
+| Yasaklı / silinmiş yetkili Storage API'den fotoğraf okuyabiliyordu (bekçi Storage'a uygulanmaz) | Düşük | `campus_proof_readable` okuyanın yasaklı / silinmiş olmadığını denetler |
+| Veri dışa aktarmada bildirimler, başarımlar, kampüs gönderileri, düellolar yoktu | KVKK | Biçim 2 |
+
+Temiz bulunan: bütün `SECURITY DEFINER` fonksiyonlarda `search_path` sabit, dinamik SQL yok, anonime yalnızca bekçi
+açık; para yarışları (başarım / görev ödülü, QR / fotoğraf gönderisi, onay, günlük ödül, sonuçlandırma); okul
+sınırları; depolama adı kuralı ve üzerine yazamama; QR kodu (48 bit, anahtar API'ye kapalı); admin'de yalnızca
+publishable anahtar, arama girdisi temizleniyor, açık yönlendirme yok; mobilde sır yok, bağlantılar yalnızca uygulama
+içi. Advisors: yalnızca bilinen uyarılar (RPC'ler tasarım gereği, `rls_auto_enable`, sızdırılmış şifre koruması).
+Kalan riskler [acik-isler](acik-isler.md)'de.

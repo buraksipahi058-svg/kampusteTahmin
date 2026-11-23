@@ -6,6 +6,7 @@ import { formatAmount, formatDateTime } from "@/lib/format";
 import { createClient } from "@/lib/supabase/server";
 import { CampusTaskForm, ToggleCampusTask } from "./campus-task-form";
 import { periodLabels, rotationLabels, verificationLabels } from "./labels";
+import { rewardLimits } from "./limits";
 
 export const metadata: Metadata = { title: "Kampüs görevleri · KampüsBet Yönetim" };
 
@@ -20,7 +21,7 @@ export default async function CampusTasksPage() {
 
   const supabase = await createClient();
   // RLS: yöneten okulun görevlerini (kapalılar dahil), süperadmin hepsini görür.
-  const [{ data: tasks, error }, { data: schools }] = await Promise.all([
+  const [{ data: tasks, error }, { data: schools }, limits] = await Promise.all([
     supabase
       .from("campus_tasks")
       .select("id, school_id, title, description, icon, verification, period, reward_currency, reward_amount, reward_xp, quota, qr_rotation_seconds, starts_at, ends_at, active, school:clusters!school_id(name), campus_task_submissions(count)")
@@ -28,6 +29,7 @@ export default async function CampusTasksPage() {
       .order("created_at", { ascending: false })
       .limit(200),
     supabase.from("clusters").select("id, name").eq("type", "school").order("name"),
+    rewardLimits(supabase, isSuper),
   ]);
   const allowedSchools = (schools ?? []).filter((s) => isSuper || managed.includes(s.id));
 
@@ -43,7 +45,7 @@ export default async function CampusTasksPage() {
       <Link href="/kampus-gorevleri/onay" className="self-start rounded-md border border-zinc-300 px-3 py-1.5 text-sm font-medium hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-800">
         Onay bekleyen fotoğraflar
       </Link>
-      <CampusTaskForm schools={allowedSchools} isSuper={isSuper} />
+      <CampusTaskForm schools={allowedSchools} isSuper={isSuper} limits={limits} />
       {error && <p className="text-sm text-red-700">Görevler alınamadı: {dbErrorMessage(error)}</p>}
       <ul className="flex flex-col divide-y divide-zinc-200 dark:divide-zinc-800">
         {tasks?.map((t) => (
@@ -67,7 +69,7 @@ export default async function CampusTasksPage() {
               </p>
             </div>
             <div className="flex items-center gap-3">
-              {t.verification === "qr" && (
+              {t.verification === "qr" && (t.reward_currency !== "SSP" || isSuper) && (
                 <Link href={`/kampus-gorevleri/${t.id}/qr`} className="text-sm underline">
                   QR
                 </Link>

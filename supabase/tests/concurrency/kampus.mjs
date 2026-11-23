@@ -1,5 +1,6 @@
 // Eşzamanlılık testi (Adım 17a): aynı QR'ı aynı anda okutan kişi ödülü bir kez almalı; kontenjanlı görevde
-// aynı anda gelen gönderilerden yalnızca kontenjan kadarı geçmeli. Ayrıntılar: lib.mjs.
+// aynı anda gelen gönderilerden yalnızca kontenjan kadarı geçmeli; aynı kişinin farklı görevlere aynı anda gönderileri
+// günlük sınırı (güvenlik kontrolü 2) aşmamalı. Ayrıntılar: lib.mjs.
 //
 // Kullanım (proje kökünde, Docker gerekmez): npm run db:test:concurrency
 
@@ -55,6 +56,29 @@ select (now() < ${at}) as on_time, balance from public.submit_campus_task_qr('${
       passed === 3 && full === 7 && approved === 3,
       `geçen: ${passed}, kontenjan doldu: ${full}, onaylı gönderi: ${approved}, ${onTime(res)}`);
     showUnexpected(res, ["KB031"]);
+  }
+
+  // 3) Aynı kişi 10 farklı görevi aynı anda gönderir: günlük sınır (güvenlik kontrolü 2) aşılmaz.
+  {
+    const tasks = [];
+    for (let i = 0; i < 10; i++) tasks.push(await createTask(null));
+    const [{ limit, before }] = await mustRun(`select
+      (select campus_task_daily_limit from public.economy_settings where id) as limit,
+      (select count(*)::int from public.campus_task_submissions where user_id = '${users.o5}'
+         and status in ('pending', 'approved')
+         and created_at >= date_trunc('day', now() at time zone 'Europe/Istanbul') at time zone 'Europe/Istanbul') as before`);
+    const res = await parallel(10, (at, i) => `${asUser(users.o5)}
+select (now() < ${at}) as on_time, balance from public.submit_campus_task_qr('${tasks[i].id}', '${tasks[i].code}');`);
+    const passed = res.filter((r) => r.ok).length;
+    const capped = res.filter((r) => !r.ok && r.code === "KB035").length;
+    const [{ today }] = await mustRun(`select count(*)::int as today from public.campus_task_submissions
+      where user_id = '${users.o5}' and status in ('pending', 'approved')
+        and created_at >= date_trunc('day', now() at time zone 'Europe/Istanbul') at time zone 'Europe/Istanbul'`);
+    const expected = Math.max(limit - before, 0);
+    check(`aynı kişinin 10 eşzamanlı görev gönderisinden yalnızca günlük sınır (${limit}) kadarı geçer`,
+      passed === expected && capped === 10 - expected && today === Math.max(before, limit),
+      `önceden: ${before}, geçen: ${passed}, sınır doldu: ${capped}, bugünkü gönderi: ${today}, ${onTime(res)}`);
+    showUnexpected(res, ["KB035"]);
   }
 
   await checkLedgerIntegrity(w);
