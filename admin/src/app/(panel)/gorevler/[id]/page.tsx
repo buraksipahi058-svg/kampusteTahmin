@@ -32,7 +32,7 @@ export default async function EditQuestPage(props: PageProps<"/gorevler/[id]">) 
       {quest ? (
         <QuestForm schools={allowedSchools} isSuper={isSuper} initial={quest} />
       ) : (
-        <p className="text-sm text-zinc-500">Görev bulunamadı.</p>
+        <p className="text-sm text-muted">Görev bulunamadı.</p>
       )}
     </div>
   );

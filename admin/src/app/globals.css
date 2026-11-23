@@ -1,26 +1,85 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* Panel her zaman koyu (mobil uygulamayla aynı mor, fütüristik kimlik): `dark:` sınıfları .dark ile çalışır. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Renk tokenları: sayfalar `zinc-*` / `red-*` yerine bunları kullanır (docs/harita/tasarim.md). */
+@theme {
+  --color-bg: #0b0914;
+  --color-panel: #110e1f;
+  --color-panel-2: #161328;
+  --color-panel-3: #1e1a35;
+  --color-line: #2f2a4e;
+  --color-line-strong: #4a4373;
+  --color-fg: #eeeaff;
+  --color-muted: #a9a2cf;
+  --color-primary: #8b5cf6;
+  --color-primary-hover: #7c3aed;
+  --color-primary-soft: #2e2266;
+  --color-primary-fg: #ffffff;
+  --color-accent: #22d3ee;
+  --color-success: #34d399;
+  --color-danger: #f87171;
+  --color-danger-strong: #dc2626;
+  --color-warning: #fbbf24;
+
+  /* Hareket (mobille aynı): güçlü ease-out, ekranda yer değiştirme ease-in-out. */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  color-scheme: dark;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  color: var(--color-fg);
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  /* Gece moru zemin, sol üstte mor, sağ altta camgöbeği çok hafif ışık hüzmesi (durağan). */
+  background:
+    radial-gradient(720px circle at 0% 0%, rgb(139 92 246 / 0.16), transparent 60%),
+    radial-gradient(820px circle at 100% 100%, rgb(34 211 238 / 0.07), transparent 60%),
+    var(--color-bg);
+  background-attachment: fixed;
+}
+
+/* Değişen sayılar sabit genişlikli. */
+table,
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Tablolar: başlık küçük, büyük harf, soluk; çizgiler token renginde. */
+@layer base {
+  th {
+    color: var(--color-muted);
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  th,
+  td,
+  tr {
+    border-color: var(--color-line);
+  }
+  /* Dar ekranda sütunlar birbirine yapışmasın (sayfadaki py-/pr- sınıfları bunu ezer). */
+  th,
+  td {
+    padding-block: 0.25rem;
+    vertical-align: top;
+  }
+  th:not(:last-child),
+  td:not(:last-child) {
+    padding-right: 0.75rem;
+  }
+}
+
+::selection {
+  background: rgb(139 92 246 / 0.45);
 }

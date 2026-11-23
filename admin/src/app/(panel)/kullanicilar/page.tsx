@@ -41,15 +41,15 @@ export default async function UsersPage({ searchParams }: PageProps<"/kullanicil
     <div className="flex flex-col gap-6">
       <div>
         <h1 className="text-2xl font-semibold">Kullanıcılar</h1>
-        <p className="text-sm text-zinc-500">
+        <p className="text-sm text-muted">
           Yasaklanan kişinin oturumları hemen kapanır ve uygulamaya giremez; gerekçe yalnızca denetim kaydında tutulur.
           Hakem ihtarı {"≥"} sınır olan kişi sosyal bahis açamaz ve hakem olamaz.
         </p>
       </div>
       <UserSearch q={q} />
-      {error && <p className="text-sm text-red-700">Kullanıcılar alınamadı: {dbErrorMessage(error)}</p>}
-      {users?.length === 0 && <p className="text-sm text-zinc-500">Kimse bulunamadı.</p>}
-      <ul className="flex flex-col divide-y divide-zinc-200 dark:divide-zinc-800">
+      {error && <p className="text-sm text-danger">Kullanıcılar alınamadı: {dbErrorMessage(error)}</p>}
+      {users?.length === 0 && <p className="text-sm text-muted">Kimse bulunamadı.</p>}
+      <ul className="flex flex-col divide-y divide-line">
         {users?.map((u) => {
           const banned = bannedAt.get(u.id);
           return (
@@ -57,9 +57,9 @@ export default async function UsersPage({ searchParams }: PageProps<"/kullanicil
             <div>
               <p className="font-medium">
                 {u.first_name} {u.last_name}
-                {banned && <span className="ml-2 text-red-700">yasaklı</span>}
+                {banned && <span className="ml-2 text-danger">yasaklı</span>}
               </p>
-              <p className="text-zinc-500">
+              <p className="text-muted">
                 {u.school?.name} · {roleLabels[u.role]} · hakem ihtarı {u.referee_strikes}
                 {banned && ` · yasak: ${formatDateTime(banned)}`}
               </p>

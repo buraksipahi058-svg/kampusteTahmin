@@ -24,17 +24,17 @@ export function PermissionRow({
   return (
     <div className="flex flex-col gap-2">
       <div className="flex flex-wrap gap-2">
-        {held.length === 0 && <span className="text-sm text-zinc-500">İzni yok</span>}
+        {held.length === 0 && <span className="text-sm text-muted">İzni yok</span>}
         {held.map((key) => (
           <ActionForm key={key} action={(formData) => {
             setLast("revoke");
             revokeAction(formData);
-          }} state={revokeState} pending={revokeActionPending} className="flex items-center gap-1 rounded-full border border-zinc-300 px-2 py-0.5 text-xs dark:border-zinc-700">
+          }} state={revokeState} pending={revokeActionPending} className="flex items-center gap-1 rounded-full border border-line-strong px-2 py-0.5 text-xs">
             <input type="hidden" name="user_id" value={userId} />
             <input type="hidden" name="school_id" value={schoolId} />
             <input type="hidden" name="key" value={key} />
             {labels[key]}
-            <button type="submit" aria-label={`${labels[key]} iznini geri al`} className="ml-1 text-red-700">
+            <button type="submit" aria-label={`${labels[key]} iznini geri al`} className="ml-1 text-danger">
               ×
             </button>
           </ActionForm>

@@ -35,15 +35,15 @@ export default async function QuestsPage() {
     <div className="flex flex-col gap-6">
       <div>
         <h1 className="text-2xl font-semibold">Görevler</h1>
-        <p className="text-sm text-zinc-500">
+        <p className="text-sm text-muted">
           İlerleme sunucuda öğrencinin kayıtlarından sayılır; ödülü öğrenci uygulamadan alır, dönem başına bir kez.
           Tüm okullara görev ve SSP ödülü yalnızca süperadmin içindir. Bahis sayısını öne çıkaran görevlerde ödülü
           küçük tut (MIMARI §11).
         </p>
       </div>
       <QuestForm schools={allowedSchools} isSuper={isSuper} />
-      {error && <p className="text-sm text-red-700">Görevler alınamadı: {dbErrorMessage(error)}</p>}
-      <ul className="flex flex-col divide-y divide-zinc-200 dark:divide-zinc-800">
+      {error && <p className="text-sm text-danger">Görevler alınamadı: {dbErrorMessage(error)}</p>}
+      <ul className="flex flex-col divide-y divide-line">
         {quests?.map((q) => {
           const canManage = q.school_id == null ? isSuper : isSuper || managedSchoolIds.includes(q.school_id);
           return (
@@ -53,11 +53,11 @@ export default async function QuestsPage() {
                   {q.title} · {formatAmount(q.reward_amount)} {q.reward_currency}
                   {q.reward_xp > 0 && ` · ${q.reward_xp} XP`}
                 </p>
-                <p className="text-zinc-500">
+                <p className="text-muted">
                   {periodLabels[q.period]} · {actionLabels[q.action]} × {q.target}
                   {q.description && ` · ${q.description}`}
                 </p>
-                <p className="text-xs text-zinc-500">
+                <p className="text-xs text-muted">
                   {q.school?.name ?? "Tüm okullar"}
                   {q.starts_at && ` · başlangıç ${formatDateTime(q.starts_at)}`}
                   {q.ends_at && ` · bitiş ${formatDateTime(q.ends_at)}`}

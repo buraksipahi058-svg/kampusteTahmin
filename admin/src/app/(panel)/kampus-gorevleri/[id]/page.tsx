@@ -32,7 +32,7 @@ export default async function EditCampusTaskPage(props: PageProps<"/kampus-gorev
       {task ? (
         <CampusTaskForm schools={schools ?? []} isSuper={isSuper} limits={limits} initial={task} />
       ) : (
-        <p className="text-sm text-zinc-500">Görev bulunamadı.</p>
+        <p className="text-sm text-muted">Görev bulunamadı.</p>
       )}
     </div>
   );

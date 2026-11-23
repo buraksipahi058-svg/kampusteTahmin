@@ -225,7 +225,14 @@ class _SectionTitle extends StatelessWidget {
     final theme = Theme.of(context);
     return Padding(
       padding: const EdgeInsets.fromLTRB(Space.xs, Space.xl, Space.xs, Space.sm),
-      child: Text(text, style: theme.textTheme.titleSmall?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
+      child: Text(
+        text.toUpperCase(),
+        style: theme.textTheme.labelMedium?.copyWith(
+          color: theme.colorScheme.primary,
+          letterSpacing: 1.6,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
     );
   }
 }

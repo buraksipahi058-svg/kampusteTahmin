@@ -41,7 +41,7 @@ export default async function DailyPredictionsPage() {
     <div className="flex flex-col gap-6">
       <div>
         <h1 className="text-2xl font-semibold">Günün tahmini</h1>
-        <p className="text-sm text-zinc-500">
+        <p className="text-sm text-muted">
           Evet / hayır sorusu, SP ile havuz sistemi: kazananlar tüm havuzu yatırdıkları oranda paylaşır. Kazanan
           tarafa kimse yatırmadıysa herkese iade. Kapanıştan sonra 3 gün içinde sonuç girilmezse kendiliğinden iptal
           edilir. Soruyu açan ve sonuç girebilen yatırım yapamaz.
@@ -50,8 +50,8 @@ export default async function DailyPredictionsPage() {
 
       {allowed.length > 0 && <PredictionForm schools={allowed} />}
 
-      {error && <p className="text-sm text-red-700">Tahminler alınamadı: {dbErrorMessage(error)}</p>}
-      {predictions?.length === 0 && <p className="text-sm text-zinc-500">Henüz günün tahmini yok.</p>}
+      {error && <p className="text-sm text-danger">Tahminler alınamadı: {dbErrorMessage(error)}</p>}
+      {predictions?.length === 0 && <p className="text-sm text-muted">Henüz günün tahmini yok.</p>}
 
       {predictions?.map((p) => {
         const options = [...p.bet_options].sort((a, b) => a.position - b.position);
@@ -59,29 +59,29 @@ export default async function DailyPredictionsPage() {
         const active = p.status === "open" || p.status === "locked";
         const canClose = active && can(staff, p.cluster_id, "resmi_bahis_kapat");
         return (
-          <section key={p.id} className="rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
+          <section key={p.id} className="rounded-xl border border-line bg-panel/90 p-4">
             <div className="flex flex-wrap items-baseline justify-between gap-2">
               <h2 className="text-lg font-medium">{p.title}</h2>
-              <span className="text-sm text-zinc-500">
+              <span className="text-sm text-muted">
                 {statusLabels[p.status]}
                 {p.status === "open" && lockPassed && " · kapandı, sonuç bekliyor"}
               </span>
             </div>
-            <p className="text-sm text-zinc-500">
+            <p className="text-sm text-muted">
               {p.school?.name} · Kapanış: {formatDateTime(p.locks_at)}
               {p.max_stake != null && ` · Kişi başı en fazla ${formatAmount(p.max_stake)} SP`}
             </p>
             {p.description && <p className="mt-1 text-sm">{p.description}</p>}
-            {p.cancel_reason && <p className="mt-1 text-sm text-red-700">İptal gerekçesi: {p.cancel_reason}</p>}
+            {p.cancel_reason && <p className="mt-1 text-sm text-danger">İptal gerekçesi: {p.cancel_reason}</p>}
 
             <ul className="mt-3 flex flex-wrap gap-4 text-sm">
               {options.map((o) => (
-                <li key={o.id} className={o.is_winner ? "font-semibold text-green-700 dark:text-green-400" : ""}>
+                <li key={o.id} className={o.is_winner ? "font-semibold text-success" : ""}>
                   {o.label}: {formatAmount(o.pool_amount)} SP
                   {o.is_winner && " ✓ sonuç"}
                 </li>
               ))}
-              <li className="text-zinc-500">Toplam havuz: {formatAmount(p.pool_total)} SP</li>
+              <li className="text-muted">Toplam havuz: {formatAmount(p.pool_total)} SP</li>
             </ul>
 
             {canClose && (

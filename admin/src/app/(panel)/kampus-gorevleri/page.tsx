@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 import { CampusTaskForm, ToggleCampusTask } from "./campus-task-form";
 import { periodLabels, rotationLabels, verificationLabels } from "./labels";
 import { rewardLimits } from "./limits";
+import { buttonClass } from "@/components/kit";
 
 export const metadata: Metadata = { title: "Kampüs görevleri · KampüsBet Yönetim" };
 
@@ -37,17 +38,17 @@ export default async function CampusTasksPage() {
     <div className="flex flex-col gap-6">
       <div>
         <h1 className="text-2xl font-semibold">Kampüs görevleri</h1>
-        <p className="text-sm text-zinc-500">
+        <p className="text-sm text-muted">
           Öğrenci QR görevinde mekândaki kodu uygulamadan okutur ve ödülü hemen alır; kişi görevi dönem başına bir kez
           yapar. Basılı QR sızarsa &quot;QR&apos;ı yenile&quot; ile eskisini geçersiz kıl. Görevi yönetenler ödül alamaz.
         </p>
       </div>
-      <Link href="/kampus-gorevleri/onay" className="self-start rounded-md border border-zinc-300 px-3 py-1.5 text-sm font-medium hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-800">
+      <Link href="/kampus-gorevleri/onay" className={`self-start ${buttonClass("secondary")}`}>
         Onay bekleyen fotoğraflar
       </Link>
       <CampusTaskForm schools={allowedSchools} isSuper={isSuper} limits={limits} />
-      {error && <p className="text-sm text-red-700">Görevler alınamadı: {dbErrorMessage(error)}</p>}
-      <ul className="flex flex-col divide-y divide-zinc-200 dark:divide-zinc-800">
+      {error && <p className="text-sm text-danger">Görevler alınamadı: {dbErrorMessage(error)}</p>}
+      <ul className="flex flex-col divide-y divide-line">
         {tasks?.map((t) => (
           <li key={t.id} className={`flex flex-wrap items-start justify-between gap-3 py-3 ${t.active ? "" : "opacity-50"}`}>
             <div className="text-sm">
@@ -55,12 +56,12 @@ export default async function CampusTasksPage() {
                 {t.icon} {t.title} · {formatAmount(t.reward_amount)} {t.reward_currency}
                 {t.reward_xp > 0 && ` · ${t.reward_xp} XP`}
               </p>
-              <p className="text-zinc-500">
+              <p className="text-muted">
                 {verificationLabels[t.verification]} · {periodLabels[t.period]}
                 {t.verification === "qr" && ` · ${rotationLabels[t.qr_rotation_seconds]}`}
                 {t.description && ` · ${t.description}`}
               </p>
-              <p className="text-xs text-zinc-500">
+              <p className="text-xs text-muted">
                 {t.school?.name} · gönderi {t.campus_task_submissions[0]?.count ?? 0}
                 {t.quota != null && ` · kontenjan ${t.quota}`}
                 {t.starts_at && ` · başlangıç ${formatDateTime(t.starts_at)}`}

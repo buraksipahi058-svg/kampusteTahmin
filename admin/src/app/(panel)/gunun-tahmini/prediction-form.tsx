@@ -11,7 +11,7 @@ export function PredictionForm({ schools }: { schools: School[] }) {
   const [state, action, actionPending] = useActionState(createDailyPrediction, {} as ActionState);
 
   return (
-    <ActionForm action={action} state={state} pending={actionPending} className="flex max-w-xl flex-col gap-3 rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
+    <ActionForm action={action} state={state} pending={actionPending} className="flex max-w-xl flex-col gap-3 rounded-xl border border-line bg-panel/90 p-4">
       <h2 className="font-medium">Yeni günün tahmini</h2>
       <label className="flex flex-col gap-1 text-sm">
         Okul

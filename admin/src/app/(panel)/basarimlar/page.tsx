@@ -27,15 +27,15 @@ export default async function AchievementsPage() {
     <div className="flex flex-col gap-6">
       <div>
         <h1 className="text-2xl font-semibold">Başarımlar</h1>
-        <p className="text-sm text-zinc-500">
+        <p className="text-sm text-muted">
           İlerleme sunucuda öğrencinin kayıtlarından hesaplanır; hedefe ulaşan öğrenci ödülü uygulamada kendisi alır
           (yalnızca SP + XP). &quot;Çok bahis yap&quot; baskısı yaratmamak için sayı başarımlarını düşük, becerininkileri
           yüksek tut. Silme yok, kapatılır; kazananlarda kalır.
         </p>
       </div>
       <AchievementForm />
-      {error && <p className="text-sm text-red-700">Başarımlar alınamadı: {dbErrorMessage(error)}</p>}
-      <ul className="flex flex-col divide-y divide-zinc-200 dark:divide-zinc-800">
+      {error && <p className="text-sm text-danger">Başarımlar alınamadı: {dbErrorMessage(error)}</p>}
+      <ul className="flex flex-col divide-y divide-line">
         {achievements?.map((a) => (
           <li key={a.id} className={`flex flex-wrap items-start justify-between gap-3 py-3 ${a.active ? "" : "opacity-50"}`}>
             <div className="text-sm">
@@ -44,10 +44,10 @@ export default async function AchievementsPage() {
                 {a.reward_xp > 0 && ` · ${a.reward_xp} XP`}
                 {a.hidden && " · gizli"}
               </p>
-              <p className="text-zinc-500">
+              <p className="text-muted">
                 {a.description} · {metricLabels[a.metric] ?? a.metric} ≥ {formatAmount(a.target)}
               </p>
-              <p className="text-xs text-zinc-500">
+              <p className="text-xs text-muted">
                 {categoryLabels[a.category]} · {a.key} · sıra {a.sort} · kazanan {a.achievement_unlocks[0]?.count ?? 0}
                 {!a.active && " · kapalı"}
               </p>

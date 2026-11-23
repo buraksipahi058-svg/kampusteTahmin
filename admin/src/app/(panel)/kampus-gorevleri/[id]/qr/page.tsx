@@ -27,8 +27,8 @@ export default async function CampusQrPage(props: PageProps<"/kampus-gorevleri/[
           <h1 className="text-2xl font-semibold">
             {task.icon} {task.title}
           </h1>
-          {task.description && <p className="text-zinc-500">{task.description}</p>}
-          <p className="mt-1 text-sm">KampüsBet uygulamasında Profil &gt; Kampüs görevleri &gt; QR okut</p>
+          {task.description && <p className="text-muted">{task.description}</p>}
+          <p className="mt-1 text-sm">KampüsBet uygulamasında Oyunlar &gt; Kampüs görevleri &gt; QR okut</p>
         </div>
       )}
       <CampusQr taskId={id} initial={qr} />

@@ -31,14 +31,14 @@ export default async function PermissionsPage({ searchParams }: PageProps<"/yetk
     <div className="flex flex-col gap-4">
       <div>
         <h1 className="text-2xl font-semibold">Yetkiler</h1>
-        <p className="text-sm text-zinc-500">
+        <p className="text-sm text-muted">
           İzinler kişinin okuluna verilir. İzin alan öğrenci yetkili olur, izni kalmayınca öğrenciye döner.
           Her değişiklik denetim kaydına yazılır.
         </p>
       </div>
       <UserSearch q={q} />
-      {users?.length === 0 && <p className="text-sm text-zinc-500">Kullanıcı bulunamadı.</p>}
-      <ul className="flex flex-col divide-y divide-zinc-200 dark:divide-zinc-800">
+      {users?.length === 0 && <p className="text-sm text-muted">Kullanıcı bulunamadı.</p>}
+      <ul className="flex flex-col divide-y divide-line">
         {users?.map((u) => {
           const held = (permissions ?? [])
             .filter((p) => p.user_id === u.id && p.cluster_id === u.school_id)
@@ -49,12 +49,12 @@ export default async function PermissionsPage({ searchParams }: PageProps<"/yetk
                 <span className="font-medium">
                   {u.first_name} {u.last_name}
                 </span>{" "}
-                <span className="text-zinc-500">
+                <span className="text-muted">
                   · {u.school?.name} · {roleLabels[u.role]}
                 </span>
               </div>
               {u.role === "superadmin" ? (
-                <span className="text-sm text-zinc-500">Süperadmin her işlemi yapabilir.</span>
+                <span className="text-sm text-muted">Süperadmin her işlemi yapabilir.</span>
               ) : (
                 <PermissionRow userId={u.id} schoolId={u.school_id} held={held} labels={permissionLabels} />
               )}

@@ -24,7 +24,7 @@ export default async function EditAchievementPage(props: PageProps<"/basarimlar/
       <Link href="/basarimlar" className="text-sm underline">
         ← Başarımlar
       </Link>
-      {achievement ? <AchievementForm initial={achievement} /> : <p className="text-sm text-zinc-500">Başarım bulunamadı.</p>}
+      {achievement ? <AchievementForm initial={achievement} /> : <p className="text-sm text-muted">Başarım bulunamadı.</p>}
     </div>
   );
 }

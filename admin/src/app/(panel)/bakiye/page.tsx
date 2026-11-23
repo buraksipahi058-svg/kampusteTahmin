@@ -35,7 +35,7 @@ export default async function BalancePage({ searchParams }: PageProps<"/bakiye">
     <div className="flex flex-col gap-6">
       <div>
         <h1 className="text-2xl font-semibold">SSP ver / bakiye düzelt</h1>
-        <p className="text-sm text-zinc-500">
+        <p className="text-sm text-muted">
           Yalnızca süperadmin. Gerekçe zorunlu, tek işlemde en fazla 1.000.000; kendi bakiyeni değiştiremezsin.
         </p>
       </div>
@@ -46,12 +46,12 @@ export default async function BalancePage({ searchParams }: PageProps<"/bakiye">
 
       <section>
         <h2 className="mb-2 text-lg font-medium">Son yönetim işlemleri</h2>
-        {recent?.length === 0 && <p className="text-sm text-zinc-500">Henüz işlem yok.</p>}
+        {recent?.length === 0 && <p className="text-sm text-muted">Henüz işlem yok.</p>}
         <ul className="flex flex-col gap-1 text-sm">
           {recent?.map((r) => (
             <li key={r.id}>
               {formatDateTime(r.created_at)} · {r.user?.first_name} {r.user?.last_name} ·{" "}
-              <span className={r.amount > 0 ? "text-green-700" : "text-red-700"}>
+              <span className={r.amount > 0 ? "text-success" : "text-danger"}>
                 {r.amount > 0 ? "+" : ""}
                 {formatAmount(r.amount)} {r.currency}
               </span>{" "}

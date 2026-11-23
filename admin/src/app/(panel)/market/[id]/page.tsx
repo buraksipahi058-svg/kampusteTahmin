@@ -29,7 +29,7 @@ export default async function EditItemPage(props: PageProps<"/market/[id]">) {
       <Link href="/market" className="text-sm underline">
         ← Market
       </Link>
-      {item ? <ItemForm schools={allowedSchools} isSuper={isSuper} initial={item} /> : <p className="text-sm text-zinc-500">Ürün bulunamadı.</p>}
+      {item ? <ItemForm schools={allowedSchools} isSuper={isSuper} initial={item} /> : <p className="text-sm text-muted">Ürün bulunamadı.</p>}
     </div>
   );
 }

@@ -3,6 +3,7 @@
 import { useActionState, useState } from "react";
 import { ActionForm, FormAlert, SubmitButton, inputClass, type ActionState } from "@/components/ui";
 import { saveQuestion, toggleQuestion } from "./actions";
+import { buttonClass } from "@/components/kit";
 
 type School = { id: string; name: string };
 export type Question = {
@@ -28,7 +29,7 @@ export function QuestionForm({
   const [count, setCount] = useState(initial?.options.length ?? 4);
 
   return (
-    <ActionForm action={action} state={state} pending={actionPending} className="flex max-w-xl flex-col gap-3 rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
+    <ActionForm action={action} state={state} pending={actionPending} className="flex max-w-xl flex-col gap-3 rounded-xl border border-line bg-panel/90 p-4">
       <h2 className="font-medium">{initial ? "Soruyu düzenle" : "Yeni soru"}</h2>
       {initial && <input type="hidden" name="id" value={initial.id} />}
       {initial && <input type="hidden" name="active" value={initial.active ? "on" : ""} />}
@@ -75,12 +76,12 @@ export function QuestionForm({
         ))}
         <div className="flex gap-3">
           {count < 4 && (
-            <button type="button" className="underline" onClick={() => setCount(count + 1)}>
+            <button type="button" className={buttonClass("secondary", "sm")} onClick={() => setCount(count + 1)}>
               Şık ekle
             </button>
           )}
           {count > 2 && (
-            <button type="button" className="underline" onClick={() => setCount(count - 1)}>
+            <button type="button" className={buttonClass("ghost", "sm")} onClick={() => setCount(count - 1)}>
               Son şıkkı kaldır
             </button>
           )}

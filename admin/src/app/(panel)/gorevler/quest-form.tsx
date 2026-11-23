@@ -21,7 +21,7 @@ export function QuestForm({
   const [state, action, actionPending] = useActionState(saveQuest, {} as ActionState);
 
   return (
-    <ActionForm action={action} state={state} pending={actionPending} className="flex max-w-xl flex-col gap-3 rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
+    <ActionForm action={action} state={state} pending={actionPending} className="flex max-w-xl flex-col gap-3 rounded-xl border border-line bg-panel/90 p-4">
       <h2 className="font-medium">{initial ? "Görevi düzenle" : "Yeni görev"}</h2>
       {initial && <input type="hidden" name="id" value={initial.id} />}
       <label className="flex flex-col gap-1 text-sm">

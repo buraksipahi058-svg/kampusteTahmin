@@ -41,54 +41,71 @@ class BetOptionButton extends StatelessWidget {
         ? Symbols.gavel_rounded
         : null;
 
+    final glow = winner
+        ? app.success.withValues(alpha: 0.30)
+        : chosen
+        ? app.glow
+        : null;
     return Padding(
       padding: const EdgeInsets.only(bottom: Space.sm),
-      child: Material(
-        color: background,
-        clipBehavior: Clip.antiAlias,
-        shape: RoundedRectangleBorder(
+      child: DecoratedBox(
+        // Seçilen / kazanan seçenek hafifçe ışıldar (fütüristik vurgu).
+        decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(Radii.md),
-          side: chosen ? BorderSide(color: scheme.primary, width: 1.5) : BorderSide.none,
+          boxShadow: glow == null ? null : [BoxShadow(color: glow, blurRadius: 14)],
         ),
-        child: InkWell(
-          onTap: onTap == null
-              ? null
-              : () {
-                  Haptics.selection();
-                  onTap!();
-                },
-          child: Stack(
-            children: [
-              if (share != null && share! > 0)
-                Positioned.fill(
-                  child: FractionallySizedBox(
-                    alignment: Alignment.centerLeft,
-                    widthFactor: share!.clamp(0.0, 1.0),
-                    child: ColoredBox(color: scheme.primary.withValues(alpha: 0.10)),
+        child: Material(
+          color: background,
+          clipBehavior: Clip.antiAlias,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(Radii.md),
+            side: chosen ? BorderSide(color: scheme.primary, width: 1.5) : BorderSide.none,
+          ),
+          child: InkWell(
+            onTap: onTap == null
+                ? null
+                : () {
+                    Haptics.selection();
+                    onTap!();
+                  },
+            child: Stack(
+              children: [
+                if (share != null && share! > 0)
+                  Positioned.fill(
+                    child: FractionallySizedBox(
+                      alignment: Alignment.centerLeft,
+                      widthFactor: share!.clamp(0.0, 1.0),
+                      child: ColoredBox(color: scheme.primary.withValues(alpha: 0.10)),
+                    ),
+                  ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: Space.lg, vertical: Space.md),
+                  child: Row(
+                    children: [
+                      if (icon != null) ...[
+                        Icon(
+                          icon,
+                          size: 20,
+                          fill: winner ? 1 : 0,
+                          color: winner ? app.success : scheme.onSurfaceVariant,
+                        ),
+                        const SizedBox(width: Space.sm),
+                      ],
+                      Expanded(
+                        child: Text(
+                          label,
+                          style: theme.textTheme.titleSmall?.copyWith(color: foreground),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 2,
+                        ),
+                      ),
+                      const SizedBox(width: Space.md),
+                      Text(value, style: tabular(theme.textTheme.titleMedium?.copyWith(color: foreground))),
+                    ],
                   ),
                 ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: Space.lg, vertical: Space.md),
-                child: Row(
-                  children: [
-                    if (icon != null) ...[
-                      Icon(icon, size: 20, fill: winner ? 1 : 0, color: winner ? app.success : scheme.onSurfaceVariant),
-                      const SizedBox(width: Space.sm),
-                    ],
-                    Expanded(
-                      child: Text(
-                        label,
-                        style: theme.textTheme.titleSmall?.copyWith(color: foreground),
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 2,
-                      ),
-                    ),
-                    const SizedBox(width: Space.md),
-                    Text(value, style: tabular(theme.textTheme.titleMedium?.copyWith(color: foreground))),
-                  ],
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

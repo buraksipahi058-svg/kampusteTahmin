@@ -14,7 +14,7 @@ export function ItemForm({ schools, isSuper, initial }: { schools: School[]; isS
   const [category, setCategory] = useState<MarketCategory>(initial?.category ?? "title");
 
   return (
-    <ActionForm action={action} state={state} pending={actionPending} className="flex max-w-xl flex-col gap-3 rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
+    <ActionForm action={action} state={state} pending={actionPending} className="flex max-w-xl flex-col gap-3 rounded-xl border border-line bg-panel/90 p-4">
       <h2 className="font-medium">{initial ? "Ürünü düzenle" : "Yeni ürün"}</h2>
       {initial && <input type="hidden" name="id" value={initial.id} />}
       <label className="flex flex-col gap-1 text-sm">

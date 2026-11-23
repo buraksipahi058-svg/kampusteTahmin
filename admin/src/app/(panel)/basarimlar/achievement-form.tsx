@@ -10,7 +10,7 @@ export function AchievementForm({ initial }: { initial?: Achievement }) {
   const [state, action, pending] = useActionState(saveAchievement, {} as ActionState);
 
   return (
-    <ActionForm action={action} state={state} pending={pending} className="flex max-w-xl flex-col gap-3 rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
+    <ActionForm action={action} state={state} pending={pending} className="flex max-w-xl flex-col gap-3 rounded-xl border border-line bg-panel/90 p-4">
       <h2 className="font-medium">{initial ? "Başarımı düzenle" : "Yeni başarım"}</h2>
       {initial && <input type="hidden" name="id" value={initial.id} />}
       <div className="flex flex-wrap gap-3">

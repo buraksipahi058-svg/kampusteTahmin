@@ -32,14 +32,14 @@ export default async function SocialBetsPage() {
 
   const list = (items: typeof overdue, empty: string) =>
     items.length === 0 ? (
-      <p className="text-sm text-zinc-500">{empty}</p>
+      <p className="text-sm text-muted">{empty}</p>
     ) : (
-      <ul className="flex flex-col divide-y divide-zinc-200 dark:divide-zinc-800">
+      <ul className="flex flex-col divide-y divide-line">
         {items.map((b) => (
           <li key={b.id} className="flex flex-wrap items-start justify-between gap-3 py-3 text-sm">
             <div>
               <p className="font-medium">{b.title}</p>
-              <p className="text-zinc-500">
+              <p className="text-muted">
                 {b.school?.name} · hakem {b.referee?.first_name} {b.referee?.last_name} (ihtar {b.referee?.referee_strikes ?? 0}) ·
                 havuz {formatAmount(b.pool_total)} SP · kapanış {formatDateTime(b.locks_at)}
               </p>
@@ -54,12 +54,12 @@ export default async function SocialBetsPage() {
     <div className="flex flex-col gap-6">
       <div>
         <h1 className="text-2xl font-semibold">Sosyal bahisler</h1>
-        <p className="text-sm text-zinc-500">
+        <p className="text-sm text-muted">
           Sonucu girilmemiş sosyal bahisler. Hakem kapanıştan sonra süresi içinde sonuç girmezse bahis kendiliğinden
           iptal edilir ve hakeme ihtar yazılır. İptal herkese iade eder ve geri alınamaz.
         </p>
       </div>
-      {error && <p className="text-sm text-red-700">Bahisler alınamadı: {dbErrorMessage(error)}</p>}
+      {error && <p className="text-sm text-danger">Bahisler alınamadı: {dbErrorMessage(error)}</p>}
       <section className="flex flex-col gap-2">
         <h2 className="text-lg font-medium">Kapanışı geçmiş, sonuç bekleyen ({overdue.length})</h2>
         {list(overdue, "Sonuç bekleyen bahis yok.")}

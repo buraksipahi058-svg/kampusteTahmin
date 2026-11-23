@@ -3,6 +3,7 @@
 import { useActionState, useState } from "react";
 import { ActionForm, FormAlert, SubmitButton, inputClass, type ActionState } from "@/components/ui";
 import { createOfficialBet } from "../actions";
+import { buttonClass } from "@/components/kit";
 
 type School = { id: string; name: string };
 
@@ -39,7 +40,7 @@ export function OfficialBetForm({ schools }: { schools: School[] }) {
             <input name="label" required maxLength={100} placeholder={`Seçenek ${i + 1}`} className={`${inputClass} flex-1`} />
             <input name="odds" required inputMode="decimal" placeholder="1,85" className={`${inputClass} w-24`} />
             {rows.length > 2 && (
-              <button type="button" onClick={() => setRows(rows.filter((r) => r !== key))} className="text-sm underline">
+              <button type="button" onClick={() => setRows(rows.filter((r) => r !== key))} className={buttonClass("ghost", "sm")}>
                 Kaldır
               </button>
             )}
@@ -52,7 +53,7 @@ export function OfficialBetForm({ schools }: { schools: School[] }) {
               setRows([...rows, nextKey]);
               setNextKey(nextKey + 1);
             }}
-            className="self-start text-sm underline"
+            className={`self-start ${buttonClass("secondary", "sm")}`}
           >
             Seçenek ekle
           </button>

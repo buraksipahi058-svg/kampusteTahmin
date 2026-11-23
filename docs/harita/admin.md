@@ -4,7 +4,7 @@ Yönetici ve yetkili paneli, mobilden ayrı web uygulaması. Adım 6'da kuruldu:
 yetkiler ve bakiye işlemleri. Panelde iş mantığı yok; her işlem yetkiyi kendisi denetleyen bir veritabanı
 fonksiyonuna gider. Secret key kullanılmaz: kullanıcının kendi oturumuyla çalışır.
 
-Kod: `admin/`. Next.js 16.4.6 (güvenlik yaması, 2026-11-22), React 19.3, Tailwind 4, TypeScript, `@supabase/ssr`.
+Kod: `admin/`. Next.js 16.4.6 (güvenlik yaması, 2026-11-22), React 19.3, Tailwind 4, TypeScript, `@supabase/ssr`, `lucide-react` (ikon), `sonner` (köşe bildirimi).
 
 ## Çalıştırma
 
@@ -26,10 +26,11 @@ Yapılandırma: `admin/.env.local` (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUP
 | `lib/auth.ts` | `getStaff()` (oturumdaki kişi: rol, izinler; öğrenciyse null), `can(staff, schoolId, key)`, izin etiketleri |
 | `lib/errors.ts` | Veritabanı hata kodu → Türkçe mesaj (mobildekiyle aynı anlamlar) |
 | `lib/format.ts` | Tarih (İstanbul), tutar, oran biçimi; `datetime-local` ↔ ISO (+03:00; `istanbulLocalToIso`, `isoToIstanbulLocal`) |
-| `components/ui.tsx`, `user-search.tsx` | Gönder düğmesi, form mesajı; ada göre kullanıcı arama |
+| `components/ui.tsx`, `user-search.tsx` | `ActionForm` (başarıda köşede bildirim, sonner), gönder düğmesi, form mesajı; ada göre kullanıcı arama |
+| `components/kit.tsx`, `side-nav.tsx` | Tasarım parçaları (`buttonClass`, `inputClass`, `Panel`, `PageHeader`, `Badge`, `EmptyState`; renkler `globals.css` tokenları, [tasarim](tasarim.md) "Admin paneli"); yan menü (lucide ikonları, etkin sayfa vurgusu) |
 | `app/giris/` | Giriş formu + `login` / `logout` server action'ları |
 | `app/gizlilik/`, `app/kosullar/`, `app/hesap-silme/` | **Oturumsuz** metin sayfaları (mağaza bağlantıları; `proxy.ts` `PUBLIC_PATHS`). KVKK metni ve kullanım koşulları `src/legal/*.txt` (mobildeki asset'lerin kopyası; mobil test aynılığını denetler), `lib/legal.ts` (`use cache` ile okur, derlemede statik), `components/legal-page.tsx` |
-| `app/(panel)/layout.tsx` | `instant = false`; rol kontrolü (öğrenciye "yetkin yok"), menü |
+| `app/(panel)/layout.tsx` | `instant = false` + `await connection()`; rol kontrolü (öğrenciye "yetkin yok"), sol yan menü (logo, sayfalar, kişi, çıkış) |
 | `app/(panel)/resmi-bahisler/` | Liste (seçenek, oran, yatırılan, olası ödeme), açık sabit oranlıda oran değiştirme (`update_official_bet_odds`), kilitle / sonuçlandır / iptal; `yeni/` açma formu |
 | `app/(panel)/itirazlar/` | Moderatör (`kullanici_bahsi_denetle` / süperadmin): açık itirazlı sosyal bahisler, hakemin sonucu, havuz, itiraz gerekçeleri; onayla / değiştir / iptal (`resolve_social_dispute`) |
 | `app/(panel)/gunun-tahmini/` | `resmi_bahis_ac` / `resmi_bahis_kapat` / süperadmin: Evet / Hayır sorusu açma (okul, soru, kapanış), havuzlar, kapanıştan sonra sonuç girme, iptal (`create/settle/cancel_daily_prediction`) |
@@ -56,6 +57,8 @@ Yapılandırma: `admin/.env.local` (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUP
 - supabase-js sorgu tipini yalnızca **tek parça** select metninden çıkarır; `"..." + "..."` ile bölünen metin `GenericStringError` tipine düşer.
 - Bileşen içinde doğrudan `Date.now()` lint hatası (react-hooks/purity): `lib/format.ts` `isPast()`.
 - Eski bir route silinince `.next/dev/types` bayat kalır, `tsc` hata verir: `.next` silinip `next typegen`.
+- `globals.css` değiştiği halde tarayıcıya eski CSS geliyorsa (ör. `git stash` / `pop` sonrası) Turbopack önbelleği bayattır: sunucuyu durdur, `admin/.next` klasörünü sil, yeniden başlat.
+- Renk için `zinc-*` / `red-*` gibi ham Tailwind rengi yazma; `globals.css` tokenlarını kullan (`text-muted`, `border-line`, `bg-panel`, `text-danger`).
 - `next build` bilinen güvenlik açığı olan sürümde durup yükseltme önerir. 16.4.2'den 16.4.6'ya kullanıcı onayıyla `npm install next@16.4.6 eslint-config-next@16.4.6` ile geçildi (uyarının önerdiği `next upgrade --agent=security` komutu kullanılmadı); `npm audit` 0 açık.
 
 ## Durum

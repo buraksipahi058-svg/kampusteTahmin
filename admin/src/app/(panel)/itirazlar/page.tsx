@@ -29,22 +29,22 @@ export default async function DisputesPage() {
     <div className="flex flex-col gap-6">
       <div>
         <h1 className="text-2xl font-semibold">İtirazlar</h1>
-        <p className="text-sm text-zinc-500">
+        <p className="text-sm text-muted">
           Sosyal bahislerde hakemin sonucuna yapılan itirazlar. Karar verene kadar ödeme yapılmaz. Sonucu
           değiştirmek ya da iptal etmek hakeme ihtar yazar; ihtar sınırına ulaşan kişi sosyal bahis açamaz.
           Hakemi olduğun ya da yatırım yaptığın bahiste karar veremezsin.
         </p>
       </div>
-      {error && <p className="text-sm text-red-700">İtirazlar alınamadı: {dbErrorMessage(error)}</p>}
-      {bets?.length === 0 && <p className="text-sm text-zinc-500">Bekleyen itiraz yok.</p>}
+      {error && <p className="text-sm text-danger">İtirazlar alınamadı: {dbErrorMessage(error)}</p>}
+      {bets?.length === 0 && <p className="text-sm text-muted">Bekleyen itiraz yok.</p>}
 
       {bets?.map((bet) => {
         const options = [...bet.bet_options].sort((a, b) => a.position - b.position);
         const proposed = options.find((o) => o.id === bet.proposed_option_id);
         return (
-          <section key={bet.id} className="rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
+          <section key={bet.id} className="rounded-xl border border-line bg-panel/90 p-4">
             <h2 className="text-lg font-medium">{bet.title}</h2>
-            <p className="text-sm text-zinc-500">
+            <p className="text-sm text-muted">
               {bet.school?.name}
               {bet.school?.type === "group" && " (özel grup)"} · Hakem: {bet.referee?.first_name}{" "}
               {bet.referee?.last_name} ({bet.referee?.referee_strikes ?? 0} ihtar) · Sonuç girildi:{" "}
@@ -59,7 +59,7 @@ export default async function DisputesPage() {
                 </li>
               ))}
             </ul>
-            <p className="text-sm text-zinc-500">Toplam havuz: {formatAmount(bet.pool_total)} SP</p>
+            <p className="text-sm text-muted">Toplam havuz: {formatAmount(bet.pool_total)} SP</p>
 
             <h3 className="mt-3 text-sm font-medium">İtirazlar</h3>
             <ul className="text-sm">

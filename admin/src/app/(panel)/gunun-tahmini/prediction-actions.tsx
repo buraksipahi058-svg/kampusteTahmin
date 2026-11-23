@@ -21,7 +21,7 @@ export function PredictionActions({
   const [cancelState, cancelAction, cancelActionPending] = useActionState(cancelDailyPrediction, {} as ActionState);
 
   return (
-    <div className="mt-3 flex flex-col gap-3 border-t border-zinc-200 pt-3 dark:border-zinc-800">
+    <div className="mt-3 flex flex-col gap-3 border-t border-line pt-3">
       {canSettle && (
         <ActionForm action={settleAction} state={settleState} pending={settleActionPending} className="flex flex-wrap items-center gap-2">
           <input type="hidden" name="bet_id" value={betId} />

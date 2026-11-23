@@ -24,7 +24,7 @@ export function BetActions({
   const [cancelState, cancelAction, cancelActionPending] = useActionState(cancelBet, {} as ActionState);
 
   return (
-    <div className="mt-3 flex flex-col gap-3 border-t border-zinc-200 pt-3 dark:border-zinc-800">
+    <div className="mt-3 flex flex-col gap-3 border-t border-line pt-3">
       {canLock && (
         <ActionForm action={lockAction} state={lockState} pending={lockActionPending} className="flex flex-wrap items-center gap-2">
           <input type="hidden" name="bet_id" value={betId} />

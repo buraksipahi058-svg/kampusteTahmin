@@ -23,7 +23,7 @@ export default async function NewOfficialBetPage() {
       </Link>
       <h1 className="text-2xl font-semibold">Yeni resmi bahis</h1>
       {allowed.length === 0 ? (
-        <p className="text-sm text-zinc-500">Resmi bahis açma iznin olan bir okul yok.</p>
+        <p className="text-sm text-muted">Resmi bahis açma iznin olan bir okul yok.</p>
       ) : (
         <OfficialBetForm schools={allowed} />
       )}

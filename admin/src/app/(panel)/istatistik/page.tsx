@@ -90,7 +90,7 @@ export default async function StatsPage({ searchParams }: PageProps<"/istatistik
     <div className="flex flex-col gap-6">
       <div>
         <h1 className="text-2xl font-semibold">İstatistik</h1>
-        <p className="text-sm text-zinc-500">
+        <p className="text-sm text-muted">
           Okul özeti istek anında sayılır; hafta pazartesi başlar (İstanbul). Sıralama 10 dakikada bir hesaplanır ve
           beceriyi öne çıkarır: isabet oranı, net kazanç, en uzun doğru tahmin serisi. Bahis sayısı sıralaması yoktur.
         </p>
@@ -109,13 +109,13 @@ export default async function StatsPage({ searchParams }: PageProps<"/istatistik
       <section className="flex flex-col gap-3">
         <h2 className="text-lg font-semibold">
           {school.name}
-          {stats && <span className="text-sm font-normal text-zinc-500"> · hafta başı {formatDate(stats.week_start)}</span>}
+          {stats && <span className="text-sm font-normal text-muted"> · hafta başı {formatDate(stats.week_start)}</span>}
         </h2>
-        {statsError && <p className="text-sm text-red-700">Özet alınamadı: {dbErrorMessage(statsError)}</p>}
+        {statsError && <p className="text-sm text-danger">Özet alınamadı: {dbErrorMessage(statsError)}</p>}
         <dl className="grid grid-cols-2 gap-3 sm:grid-cols-5">
           {cards.map((c) => (
-            <div key={c.label} className="rounded border border-zinc-200 p-3 dark:border-zinc-800">
-              <dt className="text-xs text-zinc-500">{c.label}</dt>
+            <div key={c.label} className="rounded-xl border border-line bg-panel/90 p-3">
+              <dt className="text-xs text-muted">{c.label}</dt>
               <dd className="text-lg font-semibold">{c.value}</dd>
             </div>
           ))}
@@ -138,11 +138,11 @@ export default async function StatsPage({ searchParams }: PageProps<"/istatistik
             </Link>
           ))}
         </nav>
-        {boardError && <p className="text-sm text-red-700">Sıralama alınamadı: {dbErrorMessage(boardError)}</p>}
-        {board && board.length === 0 && <p className="text-sm text-zinc-500">Bu dönemde sıralamaya giren yok.</p>}
+        {boardError && <p className="text-sm text-danger">Sıralama alınamadı: {dbErrorMessage(boardError)}</p>}
+        {board && board.length === 0 && <p className="text-sm text-muted">Bu dönemde sıralamaya giren yok.</p>}
         {board && board.length > 0 && (
           <table className="w-full text-sm">
-            <thead className="text-left text-zinc-500">
+            <thead className="text-left text-muted">
               <tr>
                 <th className="py-1 pr-3 font-normal">Sıra</th>
                 <th className="py-1 pr-3 font-normal">Kişi</th>
@@ -150,14 +150,14 @@ export default async function StatsPage({ searchParams }: PageProps<"/istatistik
                 <th className="py-1 font-normal">Değer</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
+            <tbody className="divide-y divide-line">
               {board.map((row) => (
                 <tr key={row.user_id}>
                   <td className="py-1 pr-3">{row.rank}</td>
                   <td className="py-1 pr-3">
                     {row.badge && <span className="mr-1">{row.badge}</span>}
                     {row.first_name} {row.last_name}
-                    {row.title && <span className="ml-2 text-xs text-zinc-500">{row.title}</span>}
+                    {row.title && <span className="ml-2 text-xs text-muted">{row.title}</span>}
                   </td>
                   <td className="py-1 pr-3">{row.level}</td>
                   <td className="py-1">{formatValue(metric.key, row.value, row.sample)}</td>
@@ -166,7 +166,7 @@ export default async function StatsPage({ searchParams }: PageProps<"/istatistik
             </tbody>
           </table>
         )}
-        {computedAt && <p className="text-xs text-zinc-500">Son hesaplama: {formatDateTime(computedAt)}</p>}
+        {computedAt && <p className="text-xs text-muted">Son hesaplama: {formatDateTime(computedAt)}</p>}
       </section>
     </div>
   );

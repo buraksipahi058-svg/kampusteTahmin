@@ -10,7 +10,7 @@ type Option = { id: string; label: string; odds: number | null };
 export function OddsForm({ betId, options }: { betId: string; options: Option[] }) {
   const [state, action, pending] = useActionState(updateOdds, {} as ActionState);
   return (
-    <ActionForm action={action} state={state} pending={pending} className="mt-3 flex flex-wrap items-end gap-2 border-t border-zinc-200 pt-3 dark:border-zinc-800">
+    <ActionForm action={action} state={state} pending={pending} className="mt-3 flex flex-wrap items-end gap-2 border-t border-line pt-3">
       <input type="hidden" name="bet_id" value={betId} />
       {options.map((o) => (
         <label key={o.id} className="flex flex-col gap-1 text-sm">
@@ -28,7 +28,7 @@ export function OddsForm({ betId, options }: { betId: string; options: Option[] 
         Oranları güncelle
       </SubmitButton>
       <FormAlert state={state} />
-      <p className="w-full text-xs text-zinc-500">Yapılmış yatırımlar yatırdıkları andaki oranla ödenir.</p>
+      <p className="w-full text-xs text-muted">Yapılmış yatırımlar yatırdıkları andaki oranla ödenir.</p>
     </ActionForm>
   );
 }

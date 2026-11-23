@@ -24,7 +24,7 @@ export function CampusTaskForm({
   const [verification, setVerification] = useState(initial?.verification ?? "qr");
 
   return (
-    <ActionForm action={action} state={state} pending={pending} className="flex max-w-xl flex-col gap-3 rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
+    <ActionForm action={action} state={state} pending={pending} className="flex max-w-xl flex-col gap-3 rounded-xl border border-line bg-panel/90 p-4">
       <h2 className="font-medium">{initial ? "Kampüs görevini düzenle" : "Yeni kampüs görevi"}</h2>
       {initial && <input type="hidden" name="id" value={initial.id} />}
       <div className="flex flex-wrap gap-3">
@@ -188,13 +188,13 @@ export function CampusQr({ taskId, initial }: { taskId: string; initial: QrView 
     return () => clearTimeout(timer);
   }, [view, taskId]);
 
-  if ("error" in view) return <p className="text-sm text-red-700">{view.error}</p>;
+  if ("error" in view) return <p className="text-sm text-danger">{view.error}</p>;
   return (
     <div className="flex flex-col items-center gap-3">
       <div className="rounded-lg bg-white p-4" dangerouslySetInnerHTML={{ __html: view.svg }} />
       <p className="font-mono text-lg tracking-widest">{view.code}</p>
       {view.rotationSeconds > 0 && (
-        <p className="text-sm text-zinc-500">Kod {view.rotationSeconds} saniyede bir değişir; bu sayfa kendiliğinden yenilenir.</p>
+        <p className="text-sm text-muted">Kod {view.rotationSeconds} saniyede bir değişir; bu sayfa kendiliğinden yenilenir.</p>
       )}
     </div>
   );

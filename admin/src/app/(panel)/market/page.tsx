@@ -36,14 +36,14 @@ export default async function MarketPage() {
     <div className="flex flex-col gap-6">
       <div>
         <h1 className="text-2xl font-semibold">Market</h1>
-        <p className="text-sm text-zinc-500">
+        <p className="text-sm text-muted">
           Yalnızca kozmetik: hiçbir ürün bahis şansını, oranı ya da ödemeyi etkilemez. SP ürünleri normal vitrinde,
           SSP ürünleri özel vitrinde görünür. Bir öğrenci her ürünü bir kez alır; aynı türden bir ürünü kuşanabilir.
         </p>
       </div>
       <ItemForm schools={allowedSchools} isSuper={isSuper} />
-      {error && <p className="text-sm text-red-700">Ürünler alınamadı: {dbErrorMessage(error)}</p>}
-      <ul className="flex flex-col divide-y divide-zinc-200 dark:divide-zinc-800">
+      {error && <p className="text-sm text-danger">Ürünler alınamadı: {dbErrorMessage(error)}</p>}
+      <ul className="flex flex-col divide-y divide-line">
         {items?.map((item) => {
           const canManage = item.school_id == null ? isSuper : isSuper || managedSchoolIds.includes(item.school_id);
           return (
@@ -60,12 +60,12 @@ export default async function MarketPage() {
                   <p className="font-medium">
                     {item.name} · {formatAmount(item.price)} {item.currency}
                   </p>
-                  <p className="text-zinc-500">
+                  <p className="text-muted">
                     {categoryLabels[item.category]}
                     {item.min_level > 1 && ` · ${item.min_level}. seviyede açılır`}
                     {item.description && ` · ${item.description}`}
                   </p>
-                  <p className="text-xs text-zinc-500">
+                  <p className="text-xs text-muted">
                     {item.school?.name ?? "Tüm okullar"}
                     {item.available_from && ` · satış başlangıcı ${formatDateTime(item.available_from)}`}
                     {item.available_until && ` · satış sonu ${formatDateTime(item.available_until)}`}

@@ -23,12 +23,21 @@ class IconBadge extends StatelessWidget {
       BadgeTone.gold => (app.sspContainer, app.onSspContainer),
       BadgeTone.neutral => (scheme.surfaceContainerHighest, scheme.onSurfaceVariant),
     };
+    // Ana ton fütüristik: mor → camgöbeği degrade, beyaz ikon, hafif ışıltı.
+    final gradient = tone == BadgeTone.primary;
     return Container(
       width: size,
       height: size,
       alignment: Alignment.center,
-      decoration: BoxDecoration(color: background, shape: BoxShape.circle),
-      child: Icon(icon, size: size * 0.5, fill: 1, color: foreground),
+      decoration: BoxDecoration(
+        color: gradient ? null : background,
+        shape: BoxShape.circle,
+        gradient: gradient
+            ? LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: app.brandGradient)
+            : null,
+        boxShadow: gradient ? [BoxShadow(color: app.glow, blurRadius: size * 0.35)] : null,
+      ),
+      child: Icon(icon, size: size * 0.5, fill: 1, color: gradient ? Colors.white : foreground),
     );
   }
 }

@@ -6,6 +6,7 @@ import { formatAmount, formatDateTime, formatOdds, isPast } from "@/lib/format";
 import { createClient } from "@/lib/supabase/server";
 import { BetActions } from "./bet-actions";
 import { OddsForm } from "./odds-form";
+import { buttonClass } from "@/components/kit";
 
 export const metadata: Metadata = { title: "Resmi bahisler · KampüsBet Yönetim" };
 
@@ -39,22 +40,22 @@ export default async function OfficialBetsPage() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold">Resmi bahisler</h1>
-          <p className="text-sm text-zinc-500">
+          <p className="text-sm text-muted">
             SSP ile oynanır, sabit oranlıdır. Kazanan yatırımı × oran kadar SSP alır.
           </p>
         </div>
         {canCreate && (
           <Link
             href="/resmi-bahisler/yeni"
-            className="rounded-md bg-zinc-900 px-3 py-1.5 text-sm font-medium text-white dark:bg-zinc-100 dark:text-zinc-900"
+            className={buttonClass("primary")}
           >
             Yeni resmi bahis
           </Link>
         )}
       </div>
 
-      {error && <p className="text-sm text-red-700">Bahisler alınamadı: {dbErrorMessage(error)}</p>}
-      {bets?.length === 0 && <p className="text-sm text-zinc-500">Henüz resmi bahis yok.</p>}
+      {error && <p className="text-sm text-danger">Bahisler alınamadı: {dbErrorMessage(error)}</p>}
+      {bets?.length === 0 && <p className="text-sm text-muted">Henüz resmi bahis yok.</p>}
 
       {bets?.map((bet) => {
         const options = [...bet.bet_options].sort((a, b) => a.position - b.position);
@@ -62,24 +63,24 @@ export default async function OfficialBetsPage() {
         const active = bet.status === "open" || bet.status === "locked";
         const canClose = active && can(staff, bet.cluster_id, "resmi_bahis_kapat");
         return (
-          <section key={bet.id} className="rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
+          <section key={bet.id} className="rounded-xl border border-line bg-panel/90 p-4">
             <div className="flex flex-wrap items-baseline justify-between gap-2">
               <h2 className="text-lg font-medium">{bet.title}</h2>
-              <span className="text-sm text-zinc-500">
+              <span className="text-sm text-muted">
                 {statusLabels[bet.status]}
                 {bet.status === "open" && lockPassed && " · kapanış zamanı geçti"}
               </span>
             </div>
-            <p className="text-sm text-zinc-500">
+            <p className="text-sm text-muted">
               {bet.school?.name} · Kapanış: {formatDateTime(bet.locks_at)}
               {bet.max_stake != null && ` · Kişi başı en fazla ${formatAmount(bet.max_stake)} SSP`}
               {bet.odds_mode === "pool" && " · havuz sistemi"}
             </p>
             {bet.description && <p className="mt-1 text-sm">{bet.description}</p>}
-            {bet.cancel_reason && <p className="mt-1 text-sm text-red-700">İptal gerekçesi: {bet.cancel_reason}</p>}
+            {bet.cancel_reason && <p className="mt-1 text-sm text-danger">İptal gerekçesi: {bet.cancel_reason}</p>}
 
             <table className="mt-3 w-full text-sm">
-              <thead className="text-left text-zinc-500">
+              <thead className="text-left text-muted">
                 <tr>
                   <th className="font-normal">Seçenek</th>
                   <th className="font-normal">Oran</th>
@@ -89,7 +90,7 @@ export default async function OfficialBetsPage() {
               </thead>
               <tbody>
                 {options.map((o) => (
-                  <tr key={o.id} className={o.is_winner ? "font-semibold text-green-700 dark:text-green-400" : ""}>
+                  <tr key={o.id} className={o.is_winner ? "font-semibold text-success" : ""}>
                     <td>
                       {o.label}
                       {o.is_winner && " ✓ kazandı"}
@@ -101,7 +102,7 @@ export default async function OfficialBetsPage() {
                 ))}
               </tbody>
             </table>
-            <p className="mt-1 text-sm text-zinc-500">Toplam yatırılan: {formatAmount(bet.pool_total)} SSP</p>
+            <p className="mt-1 text-sm text-muted">Toplam yatırılan: {formatAmount(bet.pool_total)} SSP</p>
 
             {bet.status === "open" && !lockPassed && bet.odds_mode === "fixed" && can(staff, bet.cluster_id, "resmi_bahis_ac") && (
               <OddsForm betId={bet.id} options={options.map((o) => ({ id: o.id, label: o.label, odds: o.odds }))} />

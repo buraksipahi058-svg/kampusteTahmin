@@ -28,7 +28,7 @@ export default async function EditQuestionPage({ params }: PageProps<"/trivia/[i
   return (
     <div className="flex flex-col gap-4">
       <h1 className="text-2xl font-semibold">Soruyu düzenle</h1>
-      <p className="text-sm text-zinc-500">Değişiklik yeni düellolarda geçerli olur; başlamış düellolar etkilenmez.</p>
+      <p className="text-sm text-muted">Değişiklik yeni düellolarda geçerli olur; başlamış düellolar etkilenmez.</p>
       <QuestionForm schools={allowedSchools} canGlobal={isSuper} initial={question} />
     </div>
   );

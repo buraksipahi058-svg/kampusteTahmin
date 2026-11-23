@@ -6,6 +6,7 @@ import 'package:material_symbols_icons/symbols.dart';
 import '../achievements/achievements_data.dart';
 import '../bets/bets_tab.dart';
 import '../core/account_guard.dart';
+import '../core/app_backdrop.dart';
 import '../core/app_theme.dart';
 import '../core/celebration.dart';
 import '../core/design_tokens.dart';
@@ -138,38 +139,42 @@ class HomeShell extends ConsumerWidget {
     }
 
     final tab = homeTabs[shell.currentIndex];
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(tab.label),
-        actions: [
-          // Büyük yazı ayarında zil rozeti en çok 1,3 kat büyür (üst çubukta ekran başlığına yer kalsın).
-          MediaQuery.withClampedTextScaling(
-            maxScaleFactor: 1.3,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const NotificationBell(),
-                IconButton(
-                  tooltip: 'Günlük ödül',
-                  onPressed: () => showDailyReward(context),
-                  icon: Badge(isLabelVisible: rewardReady, child: const Icon(Symbols.card_giftcard_rounded)),
-                ),
-              ],
+    return AppBackdrop(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          title: Text(tab.label),
+          actions: [
+            // Büyük yazı ayarında zil rozeti en çok 1,3 kat büyür (üst çubukta ekran başlığına yer kalsın).
+            MediaQuery.withClampedTextScaling(
+              maxScaleFactor: 1.3,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const NotificationBell(),
+                  IconButton(
+                    tooltip: 'Günlük ödül',
+                    onPressed: () => showDailyReward(context),
+                    icon: Badge(isLabelVisible: rewardReady, child: const Icon(Symbols.card_giftcard_rounded)),
+                  ),
+                ],
+              ),
             ),
-          ),
-          const BalanceBar(),
-          const SizedBox(width: 8),
-        ],
-      ),
-      body: shell,
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: shell.currentIndex,
-        onDestinationSelected: (index) => shell.goBranch(index, initialLocation: index == shell.currentIndex),
-        destinations: [
-          for (final t in homeTabs)
-            // Seçili sekmenin ikonu dolu, diğerleri çizgi.
-            NavigationDestination(icon: Icon(t.icon), selectedIcon: Icon(t.selectedIcon, fill: 1), label: t.label),
-        ],
+            const BalanceBar(),
+            const SizedBox(width: 8),
+          ],
+        ),
+        body: shell,
+        bottomNavigationBar: NavigationBar(
+          selectedIndex: shell.currentIndex,
+          onDestinationSelected: (index) => shell.goBranch(index, initialLocation: index == shell.currentIndex),
+          destinations: [
+            for (final t in homeTabs)
+              // Seçili sekmenin ikonu dolu, diğerleri çizgi.
+              NavigationDestination(icon: Icon(t.icon), selectedIcon: Icon(t.selectedIcon, fill: 1), label: t.label),
+          ],
+        ),
       ),
     );
   }

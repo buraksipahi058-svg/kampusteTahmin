@@ -12,7 +12,7 @@ export function DisputeForm({ betId, options, proposedId }: { betId: string; opt
   const others = options.filter((o) => o.id !== proposedId);
 
   return (
-    <ActionForm action={action} state={state} pending={actionPending} className="mt-3 flex flex-col gap-2 border-t border-zinc-200 pt-3 dark:border-zinc-800">
+    <ActionForm action={action} state={state} pending={actionPending} className="mt-3 flex flex-col gap-2 border-t border-line pt-3">
       <input type="hidden" name="bet_id" value={betId} />
       <div className="flex flex-wrap gap-4 text-sm">
         {[
