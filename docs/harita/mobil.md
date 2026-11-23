@@ -35,6 +35,7 @@ Ekran görüntüsü: `adb shell screencap -p /sdcard/x.png` + `adb pull`.
 | `profile/profile_data.dart` | `myProfileProvider`, `schoolsProvider`, `createProfile` (`public.create_profile`) |
 | `profile/create_profile_screen.dart`, `profile_tab.dart` | Profil oluşturma; Profil sekmesi (kuşanılmış kozmetikler: çerçeve, isim rengi, unvan, rozet; okul maili; Görevler kartı + hazır ödül sayısı; bakiye, seri; seviye kartı; İstatistiklerim; Geçmiş bahislerim; Şifreyi değiştir; Gizlilik kartı; çıkış; Hesabımı sil) |
 | `profile/student_email_data.dart` | `studentEmailProvider` (`profile_private`), `requestStudentEmailCode`, `confirmStudentEmail` |
+| `core/app_theme.dart`, `design_tokens.dart`, `state_views.dart`, `pressable.dart`, `haptics.dart` | Tasarım sistemi: tema (açık / karanlık, `AppColors`, `readableNameColor`), `Space` / `Radii` / `Motion`, `LoadingView` / `EmptyView` / `ErrorView`, `Pressable`, `Haptics` ([tasarim](tasarim.md)) |
 | `core/verify_email_card.dart` | `VerifyEmailCard`: okul maili doğrulanmamışa okul verisi gelmez (sunucu); Bahisler, Oyunlar ve Liderlik'te boş liste yerine bu kart (Liderlik `KB002` hatasında) |
 | `profile/verify_email_screen.dart` | `/okul-maili`: mail → kod; okulun alan adını ipucu gösterir (profil sorgusu `school_email_domains`'i de çeker) |
 | `wallet/wallet_data.dart` | `balanceProvider`, `loginStreakProvider`, `DailyRewardApi` (`daily_login_calendar`, `claim_daily_login`; testte sahtesi), `dailyCalendarProvider`, `dailyRewardReadyProvider`, `claimDailyReward`, `formatAmount` |
@@ -88,7 +89,7 @@ Profil yok → `/profil-olustur` (okullar `clusters where type = 'school'`). Pro
 Kabuk açılınca `claim_daily_login()` bir kez çağrılır; ödül alındıysa bildirim + bakiye/seri sunucudan yeniden okunur.
 Sağlayıcılar `currentUserIdProvider`'a bağlı: çıkış/giriş olunca kendiliğinden yeniden çalışır.
 
-## Testler (`mobile/test/`, 69)
+## Testler (`mobile/test/`, 72)
 
 `app_test.dart` `pumpApp` test ekranını telefon boyutuna (1080×2400, dpr 2.625) ayarlar; varsayılan 800×600'de
 düğmeler görünür alanın dışında kalır, ayrıca alttaki günlük ödül bildirimi düğmeleri örtebilir.

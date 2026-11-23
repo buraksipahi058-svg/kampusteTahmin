@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/async_button.dart';
 import '../core/error_messages.dart';
+import '../core/state_views.dart';
 import '../progress/progress_data.dart';
 import '../wallet/wallet_data.dart';
 import 'cosmetic_preview.dart';
@@ -56,13 +57,12 @@ class _MarketTabState extends ConsumerState<MarketTab> {
               items: value.where((i) => i.currency == (_ssp ? 'SSP' : 'SP')).toList(),
               owned: owned,
             ),
-            AsyncError(:final error) => Column(
-              children: [
-                Text('Ürünler alınamadı. ${userMessage(error)}'),
-                TextButton(onPressed: () => ref.invalidate(marketItemsProvider), child: const Text('Tekrar dene')),
-              ],
+            AsyncError(:final error) => ErrorView(
+              what: 'Ürünler alınamadı.',
+              error: error,
+              onRetry: () => ref.invalidate(marketItemsProvider),
             ),
-            _ => const Padding(padding: EdgeInsets.all(32), child: Center(child: CircularProgressIndicator())),
+            _ => const LoadingView(),
           },
         ],
       ),
@@ -79,12 +79,11 @@ class _ItemList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (items.isEmpty) {
-      return const Padding(
-        padding: EdgeInsets.symmetric(vertical: 32),
-        child: Center(child: Text('Bu vitrinde şu an ürün yok.')),
-      );
+      return const EmptyView(text: 'Bu vitrinde şu an ürün yok.', icon: Icons.storefront_outlined);
     }
-    return Column(children: [for (final item in items) MarketItemCard(item: item, owned: owned[item.id])]);
+    return Column(
+      children: [for (final item in items) MarketItemCard(item: item, owned: owned[item.id])],
+    );
   }
 }
 
@@ -126,8 +125,9 @@ class MarketItemCard extends ConsumerWidget {
             child: const Text('Kuşan'),
           ),
           // Satış tarihi geçmişse "Satış bitti", başlamamışsa ya da kapalıysa "Yakında".
-          null when !onSale =>
-            Text(item.availableUntil != null && !DateTime.now().isBefore(item.availableUntil!) ? 'Satış bitti' : 'Yakında'),
+          null when !onSale => Text(
+            item.availableUntil != null && !DateTime.now().isBefore(item.availableUntil!) ? 'Satış bitti' : 'Yakında',
+          ),
           null when locked => OutlinedButton.icon(
             onPressed: null,
             icon: const Icon(Icons.lock_outline, size: 18),

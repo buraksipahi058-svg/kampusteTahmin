@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../bets/bets_data.dart';
 import '../bets/bets_tab.dart' show formatIstanbul, wagerText;
-import '../core/error_messages.dart';
+import '../core/state_views.dart';
 import '../core/supabase.dart';
 import '../wallet/wallet_data.dart';
 
@@ -52,39 +52,32 @@ class _Wagers extends ConsumerWidget {
     final history = ref.watch(myWagerHistoryProvider);
     final limit = ref.watch(historyLimitProvider);
     return RefreshIndicator(
-        onRefresh: () async {
-          ref.invalidate(myWagerHistoryProvider);
-          await ref.read(myWagerHistoryProvider.future);
-        },
-        child: switch (history) {
-          AsyncData(:final value) when value.isEmpty => ListView(
-            children: const [
-              Padding(
-                padding: EdgeInsets.all(32),
-                child: Center(child: Text('Henüz bir bahse katılmadın.')),
+      onRefresh: () async {
+        ref.invalidate(myWagerHistoryProvider);
+        await ref.read(myWagerHistoryProvider.future);
+      },
+      child: switch (history) {
+        AsyncData(:final value) when value.isEmpty => ListView(
+          children: const [EmptyView(text: 'Henüz bir bahse katılmadın.', icon: Icons.history)],
+        ),
+        AsyncData(:final value) => ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            for (final entry in value.take(limit)) _EntryCard(entry: entry),
+            if (value.length > limit)
+              TextButton(
+                onPressed: () => ref.read(historyLimitProvider.notifier).more(),
+                child: const Text('Daha fazla göster'),
               ),
-            ],
-          ),
-          AsyncData(:final value) => ListView(
-            padding: const EdgeInsets.all(16),
-            children: [
-              for (final entry in value.take(limit)) _EntryCard(entry: entry),
-              if (value.length > limit)
-                TextButton(
-                  onPressed: () => ref.read(historyLimitProvider.notifier).more(),
-                  child: const Text('Daha fazla göster'),
-                ),
-            ],
-          ),
-          AsyncError(:final error) => ListView(
-            padding: const EdgeInsets.all(32),
-            children: [
-              Text('Geçmiş alınamadı. ${userMessage(error)}', textAlign: TextAlign.center),
-              TextButton(onPressed: () => ref.invalidate(myWagerHistoryProvider), child: const Text('Tekrar dene')),
-            ],
-          ),
-          _ => const Center(child: CircularProgressIndicator()),
-        },
+          ],
+        ),
+        AsyncError(:final error) => ListView(
+          children: [
+            ErrorView(what: 'Geçmiş alınamadı.', error: error, onRetry: () => ref.invalidate(myWagerHistoryProvider)),
+          ],
+        ),
+        _ => const Center(child: CircularProgressIndicator()),
+      },
     );
   }
 }
@@ -103,10 +96,7 @@ class _OwnBets extends ConsumerWidget {
       child: switch (ref.watch(myOwnSocialBetsProvider)) {
         AsyncData(:final value) when value.isEmpty => ListView(
           children: const [
-            Padding(
-              padding: EdgeInsets.all(32),
-              child: Center(child: Text('Açtığın ya da hakemi olduğun sosyal bahis yok.')),
-            ),
+            EmptyView(text: 'Açtığın ya da hakemi olduğun sosyal bahis yok.', icon: Icons.groups_outlined),
           ],
         ),
         AsyncData(:final value) => ListView(
@@ -114,10 +104,12 @@ class _OwnBets extends ConsumerWidget {
           children: [for (final bet in value) _OwnBetCard(bet: bet, userId: userId)],
         ),
         AsyncError(:final error) => ListView(
-          padding: const EdgeInsets.all(32),
           children: [
-            Text('Bahisler alınamadı. ${userMessage(error)}', textAlign: TextAlign.center),
-            TextButton(onPressed: () => ref.invalidate(myOwnSocialBetsProvider), child: const Text('Tekrar dene')),
+            ErrorView(
+              what: 'Bahisler alınamadı.',
+              error: error,
+              onRetry: () => ref.invalidate(myOwnSocialBetsProvider),
+            ),
           ],
         ),
         _ => const Center(child: CircularProgressIndicator()),

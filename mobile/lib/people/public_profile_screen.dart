@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../achievements/achievements_data.dart';
+import '../core/app_theme.dart';
 import '../core/error_messages.dart';
 import '../core/routes.dart';
 import '../leaderboard/leaderboard_data.dart';
@@ -33,7 +34,7 @@ class PersonLabel extends StatelessWidget {
           Flexible(
             child: Text(
               [name, ?cosmetics?.badge?.icon].join(' '),
-              style: base?.copyWith(color: cosmetics?.nameColor?.colorValue),
+              style: base?.copyWith(color: readableNameColor(context, cosmetics?.nameColor?.colorValue)),
               overflow: TextOverflow.ellipsis,
             ),
           ),
@@ -59,12 +60,16 @@ class PublicProfileScreen extends ConsumerWidget {
         AsyncData(value: final p?) => ListView(
           padding: const EdgeInsets.all(24),
           children: [
-            Center(child: ProfileAvatar(initials: p.initials, frame: p.cosmetics.frame, radius: 40)),
+            Center(
+              child: ProfileAvatar(initials: p.initials, frame: p.cosmetics.frame, radius: 40),
+            ),
             const SizedBox(height: 12),
             Text(
               [p.fullName, ?p.cosmetics.badge?.icon].join(' '),
               textAlign: TextAlign.center,
-              style: theme.textTheme.headlineSmall?.copyWith(color: p.cosmetics.nameColor?.colorValue),
+              style: theme.textTheme.headlineSmall?.copyWith(
+                color: readableNameColor(context, p.cosmetics.nameColor?.colorValue),
+              ),
             ),
             if (p.cosmetics.title != null)
               Text(

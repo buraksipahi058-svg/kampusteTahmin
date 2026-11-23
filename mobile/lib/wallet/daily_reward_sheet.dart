@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/async_button.dart';
 import '../core/error_messages.dart';
+import '../core/state_views.dart';
 import '../core/supabase.dart';
 import '../progress/progress_data.dart';
 import 'wallet_data.dart';
@@ -75,7 +76,11 @@ class _DailyRewardSheetState extends ConsumerState<_DailyRewardSheet> {
                 runSpacing: 8,
                 children: [for (final d in value) _DayTile(day: d)],
               ),
-              AsyncError(:final error) => Text('Takvim alınamadı. ${userMessage(error)}', textAlign: TextAlign.center),
+              AsyncError(:final error) => ErrorView(
+                what: 'Takvim alınamadı.',
+                error: error,
+                onRetry: () => ref.invalidate(dailyCalendarProvider),
+              ),
               _ => const Center(child: CircularProgressIndicator()),
             },
             const SizedBox(height: 16),
@@ -88,7 +93,11 @@ class _DailyRewardSheetState extends ConsumerState<_DailyRewardSheet> {
                 textAlign: TextAlign.center,
               )
             else if (_error != null)
-              Text(_error!, style: TextStyle(color: theme.colorScheme.error), textAlign: TextAlign.center)
+              Text(
+                _error!,
+                style: TextStyle(color: theme.colorScheme.error),
+                textAlign: TextAlign.center,
+              )
             else if (today != null && !today.claimed)
               AsyncButton(
                 onPressed: _claim,
@@ -137,7 +146,10 @@ class _DayTile extends StatelessWidget {
           const SizedBox(height: 4),
           Text('+${formatAmount(day.amount)}', style: theme.textTheme.labelLarge),
           if (day.bonus > 0)
-            Text('+${formatAmount(day.bonus)} bonus', style: theme.textTheme.labelSmall?.copyWith(color: scheme.primary)),
+            Text(
+              '+${formatAmount(day.bonus)} bonus',
+              style: theme.textTheme.labelSmall?.copyWith(color: scheme.primary),
+            ),
         ],
       ),
     );

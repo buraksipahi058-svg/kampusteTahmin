@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../core/app_theme.dart';
 import '../core/error_messages.dart';
 import 'wallet_data.dart';
 
@@ -20,7 +21,7 @@ class BalanceBar extends ConsumerWidget {
         children: [
           _Amount(icon: Icons.toll, amount: value.sp, unit: 'SP'),
           const SizedBox(width: 12),
-          _Amount(icon: Icons.workspace_premium, amount: value.ssp, unit: 'SSP'),
+          _Amount(icon: Icons.workspace_premium, amount: value.ssp, unit: 'SSP', color: context.appColors.ssp),
         ],
       );
     } else if (balance.hasError) {
@@ -41,11 +42,14 @@ class BalanceBar extends ConsumerWidget {
 }
 
 class _Amount extends StatelessWidget {
-  const _Amount({required this.icon, required this.amount, required this.unit});
+  const _Amount({required this.icon, required this.amount, required this.unit, this.color});
 
   final IconData icon;
   final int amount;
   final String unit;
+
+  /// Simge rengi (SSP: altın vurgu).
+  final Color? color;
 
   @override
   Widget build(BuildContext context) {
@@ -55,9 +59,13 @@ class _Amount extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 18),
+          Icon(icon, size: 18, color: color),
           const SizedBox(width: 4),
-          Text(formatAmount(amount), style: const TextStyle(fontWeight: FontWeight.w600)),
+          // Sabit genişlikli rakam: bakiye değişince yanındakiler kaymaz.
+          Text(
+            formatAmount(amount),
+            style: const TextStyle(fontWeight: FontWeight.w600, fontFeatures: [FontFeature.tabularFigures()]),
+          ),
           const SizedBox(width: 2),
           Text(unit, style: Theme.of(context).textTheme.labelSmall),
         ],

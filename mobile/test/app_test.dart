@@ -16,6 +16,8 @@ import 'package:kampusbet/campus/photo_submit_screen.dart';
 import 'package:kampusbet/campus/qr_scan_screen.dart';
 import 'package:kampusbet/games/games_tab.dart';
 import 'package:kampusbet/core/app_info.dart';
+import 'package:kampusbet/core/app_theme.dart';
+import 'package:kampusbet/core/state_views.dart';
 import 'package:kampusbet/core/supabase.dart';
 import 'package:kampusbet/games/trivia_data.dart';
 import 'package:kampusbet/home/home_shell.dart';
@@ -1621,5 +1623,49 @@ void main() {
     expect(formatAmount(1050), '1.050');
     expect(formatAmount(1234567), '1.234.567');
     expect(formatAmount(-1500), '-1.500');
+  });
+
+  test('tema: açık ve karanlık kurulur, uygulama renkleri (SSP altını) her ikisinde var', () {
+    final light = buildAppTheme(Brightness.light);
+    final dark = buildAppTheme(Brightness.dark);
+    expect(light.colorScheme.brightness, Brightness.light);
+    expect(dark.colorScheme.brightness, Brightness.dark);
+    expect(light.extension<AppColors>(), AppColors.light);
+    expect(dark.extension<AppColors>(), AppColors.dark);
+  });
+
+  test('kozmetik isim rengi zeminde okunmuyorsa açılır / koyulaşır (en az 3:1)', () {
+    double ratio(Color a, Color b) {
+      final la = a.computeLuminance(), lb = b.computeLuminance();
+      return (la > lb ? la + 0.05 : lb + 0.05) / (la > lb ? lb + 0.05 : la + 0.05);
+    }
+
+    const darkBg = Color(0xFF121212), lightBg = Color(0xFFFAFAFA);
+    const navy = Color(0xFF101830), yellow = Color(0xFFFFF59D), purple = Color(0xFF7B1FA2);
+    expect(ratio(readableOn(navy, darkBg), darkBg), greaterThanOrEqualTo(3));
+    expect(ratio(readableOn(yellow, lightBg), lightBg), greaterThanOrEqualTo(3));
+    // Zaten okunuyorsa dokunulmaz.
+    expect(readableOn(purple, lightBg), purple);
+  });
+
+  testWidgets('hata görünümü anlaşılır sebebi ve "Tekrar dene"yi gösterir; boş görünüm metni gösterir', (tester) async {
+    var retried = 0;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: Column(
+            children: [
+              ErrorView(what: 'Bahisler alınamadı.', error: Exception('x'), onRetry: () => retried++),
+              const EmptyView(text: 'Şu an resmi bahis yok.'),
+            ],
+          ),
+        ),
+      ),
+    );
+    expect(find.textContaining('Bahisler alınamadı. '), findsOneWidget);
+    expect(find.textContaining('Exception'), findsNothing);
+    await tester.tap(find.text('Tekrar dene'));
+    expect(retried, 1);
+    expect(find.text('Şu an resmi bahis yok.'), findsOneWidget);
   });
 }

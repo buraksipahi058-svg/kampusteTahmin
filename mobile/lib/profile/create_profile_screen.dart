@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/error_messages.dart';
+import '../core/state_views.dart';
 import '../core/supabase.dart';
 import 'profile_data.dart';
 
@@ -113,31 +114,21 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
                     initialValue: _schoolId,
                     decoration: const InputDecoration(labelText: 'Okul', border: OutlineInputBorder()),
                     isExpanded: true,
-                    items: [
-                      for (final s in value) DropdownMenuItem(value: s.id, child: Text(s.name)),
-                    ],
+                    items: [for (final s in value) DropdownMenuItem(value: s.id, child: Text(s.name))],
                     onChanged: _busy ? null : (id) => setState(() => _schoolId = id),
                     validator: (id) => id == null ? 'Okulunu seç.' : null,
                   ),
-                  AsyncError(:final error) => Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Text('Okul listesi alınamadı. ${userMessage(error)}'),
-                      TextButton(
-                        onPressed: () => ref.invalidate(schoolsProvider),
-                        child: const Text('Tekrar dene'),
-                      ),
-                    ],
+                  AsyncError(:final error) => ErrorView(
+                    what: 'Okul listesi alınamadı.',
+                    error: error,
+                    onRetry: () => ref.invalidate(schoolsProvider),
                   ),
                   _ => const Center(child: CircularProgressIndicator()),
                 },
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _department,
-                  decoration: const InputDecoration(
-                    labelText: 'Bölüm (isteğe bağlı)',
-                    border: OutlineInputBorder(),
-                  ),
+                  decoration: const InputDecoration(labelText: 'Bölüm (isteğe bağlı)', border: OutlineInputBorder()),
                   textCapitalization: TextCapitalization.sentences,
                   textInputAction: TextInputAction.done,
                   validator: _text('Bölüm', max: 100, required: false),

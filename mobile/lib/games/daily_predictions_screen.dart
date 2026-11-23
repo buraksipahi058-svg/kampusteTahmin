@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../bets/bets_data.dart';
-import '../core/error_messages.dart';
+import '../core/state_views.dart';
 import '../core/verify_email_card.dart';
 import '../profile/student_email_data.dart';
 import '../wallet/balance_bar.dart';
@@ -22,10 +22,7 @@ class DailyPredictionsScreen extends ConsumerWidget {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Günün tahmini'),
-        actions: const [BalanceBar(), SizedBox(width: 8)],
-      ),
+      appBar: AppBar(title: const Text('Günün tahmini'), actions: const [BalanceBar(), SizedBox(width: 8)]),
       body: RefreshIndicator(
         onRefresh: () async {
           ref.invalidate(dailyPredictionsProvider);
@@ -48,22 +45,22 @@ class DailyPredictionsScreen extends ConsumerWidget {
             const SizedBox(height: 12),
             switch (predictions) {
               AsyncData(value: final list) when list.isEmpty && verified == false => const SizedBox.shrink(),
-              AsyncData(value: final list) when list.isEmpty => const Padding(
-                padding: EdgeInsets.symmetric(vertical: 32),
-                child: Center(child: Text('Şu an tahmin sorusu yok.')),
+              AsyncData(value: final list) when list.isEmpty => const EmptyView(
+                text: 'Şu an tahmin sorusu yok.',
+                icon: Icons.lightbulb_outline,
               ),
               AsyncData(value: final list) => Column(
                 children: [
-                  for (final bet in list) DailyPredictionCard(bet: bet, wager: wagers[bet.id], canBet: verified == true),
+                  for (final bet in list)
+                    DailyPredictionCard(bet: bet, wager: wagers[bet.id], canBet: verified == true),
                 ],
               ),
-              AsyncError(:final error) => Column(
-                children: [
-                  Text('Tahminler alınamadı. ${userMessage(error)}'),
-                  TextButton(onPressed: () => ref.invalidate(dailyPredictionsProvider), child: const Text('Tekrar dene')),
-                ],
+              AsyncError(:final error) => ErrorView(
+                what: 'Tahminler alınamadı.',
+                error: error,
+                onRetry: () => ref.invalidate(dailyPredictionsProvider),
               ),
-              _ => const Padding(padding: EdgeInsets.all(32), child: Center(child: CircularProgressIndicator())),
+              _ => const LoadingView(),
             },
           ],
         ),

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../core/state_views.dart';
 import '../core/error_messages.dart';
 import '../core/routes.dart';
 import '../core/supabase.dart';
@@ -118,8 +119,7 @@ class NotificationsScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('Bildirimler'),
         actions: [
-          if (hasUnread)
-            TextButton(onPressed: () => _markAll(context, ref), child: const Text('Tümünü okundu say')),
+          if (hasUnread) TextButton(onPressed: () => _markAll(context, ref), child: const Text('Tümünü okundu say')),
         ],
       ),
       body: RefreshIndicator(
@@ -130,9 +130,7 @@ class NotificationsScreen extends ConsumerWidget {
         },
         child: switch (list) {
           AsyncData(:final value) when value.isEmpty => ListView(
-            children: const [
-              Padding(padding: EdgeInsets.all(32), child: Center(child: Text('Henüz bildirimin yok.'))),
-            ],
+            children: const [EmptyView(text: 'Henüz bildirimin yok.', icon: Icons.notifications_none)],
           ),
           AsyncData(:final value) => ListView.separated(
             itemCount: value.length,
@@ -150,10 +148,12 @@ class NotificationsScreen extends ConsumerWidget {
             },
           ),
           AsyncError(:final error) => ListView(
-            padding: const EdgeInsets.all(32),
             children: [
-              Text('Bildirimler alınamadı. ${userMessage(error)}', textAlign: TextAlign.center),
-              TextButton(onPressed: () => ref.invalidate(notificationsProvider), child: const Text('Tekrar dene')),
+              ErrorView(
+                what: 'Bildirimler alınamadı.',
+                error: error,
+                onRetry: () => ref.invalidate(notificationsProvider),
+              ),
             ],
           ),
           _ => const Center(child: CircularProgressIndicator()),

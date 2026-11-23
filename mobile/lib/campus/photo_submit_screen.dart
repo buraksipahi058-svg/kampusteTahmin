@@ -5,16 +5,19 @@ import 'package:image_picker/image_picker.dart';
 
 import '../core/async_button.dart';
 import '../core/error_messages.dart';
+import '../core/state_views.dart';
 import '../core/supabase.dart';
 import '../wallet/wallet_data.dart';
 import 'campus_data.dart';
 import 'photo_proof.dart';
 
 /// Kameradan fotoğraf çeker (galeri yok). Testte sahtesiyle değiştirilir. Vazgeçilirse null.
-final photoCaptureProvider = Provider<Future<Uint8List?> Function()>((ref) => () async {
-  final file = await ImagePicker().pickImage(source: ImageSource.camera, maxWidth: 2560, imageQuality: 92);
-  return file?.readAsBytes();
-});
+final photoCaptureProvider = Provider<Future<Uint8List?> Function()>(
+  (ref) => () async {
+    final file = await ImagePicker().pickImage(source: ImageSource.camera, maxWidth: 2560, imageQuality: 92);
+    return file?.readAsBytes();
+  },
+);
 
 /// `/kampus-gorevleri/:id/foto`: kanıt fotoğrafını çek, önizle, gönder. Fotoğraf göndermeden önce küçültülür ve
 /// konum / cihaz bilgisi silinir; yalnızca sen ve okulunun yetkilisi görür, karardan 30 gün sonra silinir.
@@ -100,9 +103,12 @@ class _PhotoSubmitScreenState extends ConsumerState<PhotoSubmitScreen> {
           ),
           const SizedBox(height: 16),
           if (_preparing)
-            const Padding(padding: EdgeInsets.all(32), child: Center(child: CircularProgressIndicator()))
+            const LoadingView()
           else if (photo != null)
-            ClipRRect(borderRadius: BorderRadius.circular(12), child: Image.memory(photo, fit: BoxFit.contain)),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Image.memory(photo, fit: BoxFit.contain),
+            ),
           if (_error != null) ...[
             const SizedBox(height: 12),
             Text(_error!, style: TextStyle(color: theme.colorScheme.error)),

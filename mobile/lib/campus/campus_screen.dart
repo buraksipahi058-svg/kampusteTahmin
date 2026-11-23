@@ -3,8 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../bets/bets_tab.dart' show formatIstanbul;
-import '../core/error_messages.dart';
 import '../core/routes.dart';
+import '../core/state_views.dart';
 import '../core/verify_email_card.dart';
 import '../profile/student_email_data.dart';
 import '../wallet/balance_bar.dart';
@@ -21,10 +21,7 @@ class CampusTasksScreen extends ConsumerWidget {
     final theme = Theme.of(context);
     final verified = ref.watch(studentEmailProvider).value?.verified;
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Kampüs görevleri'),
-        actions: const [BalanceBar(), SizedBox(width: 8)],
-      ),
+      appBar: AppBar(title: const Text('Kampüs görevleri'), actions: const [BalanceBar(), SizedBox(width: 8)]),
       body: RefreshIndicator(
         onRefresh: () async {
           ref.invalidate(campusTasksProvider);
@@ -46,18 +43,17 @@ class CampusTasksScreen extends ConsumerWidget {
             const SizedBox(height: 12),
             switch (ref.watch(campusTasksProvider)) {
               AsyncData(:final value) when value.isEmpty && verified == false => const SizedBox.shrink(),
-              AsyncData(:final value) when value.isEmpty => const Padding(
-                padding: EdgeInsets.symmetric(vertical: 32),
-                child: Center(child: Text('Okulunda şu an açık kampüs görevi yok.')),
+              AsyncData(:final value) when value.isEmpty => const EmptyView(
+                text: 'Okulunda şu an açık kampüs görevi yok.',
+                icon: Icons.qr_code_2,
               ),
               AsyncData(:final value) => Column(children: [for (final t in value) CampusTaskCard(task: t)]),
-              AsyncError(:final error) => Column(
-                children: [
-                  Text('Görevler alınamadı. ${userMessage(error)}', textAlign: TextAlign.center),
-                  TextButton(onPressed: () => ref.invalidate(campusTasksProvider), child: const Text('Tekrar dene')),
-                ],
+              AsyncError(:final error) => ErrorView(
+                what: 'Görevler alınamadı.',
+                error: error,
+                onRetry: () => ref.invalidate(campusTasksProvider),
               ),
-              _ => const Padding(padding: EdgeInsets.all(32), child: Center(child: CircularProgressIndicator())),
+              _ => const LoadingView(),
             },
           ],
         ),
@@ -78,7 +74,10 @@ class CampusTaskCard extends StatelessWidget {
     final status = switch (t.myStatus) {
       'approved' => ('Yaptın, ödülü aldın', theme.colorScheme.primary),
       'pending' => ('Onay bekliyor', theme.colorScheme.tertiary),
-      'rejected' => ('Reddedildi${t.myNote == null ? '' : ': ${t.myNote}'} · yeniden deneyebilirsin', theme.colorScheme.error),
+      'rejected' => (
+        'Reddedildi${t.myNote == null ? '' : ': ${t.myNote}'} · yeniden deneyebilirsin',
+        theme.colorScheme.error,
+      ),
       'expired' => ('Onaylanmadan süresi doldu · yeniden deneyebilirsin', theme.colorScheme.error),
       _ => null,
     };
@@ -111,7 +110,11 @@ class CampusTaskCard extends StatelessWidget {
                       ),
                       Text(
                         [
-                          '${t.period == 'once' ? 'Şimdiye dek' : t.period == 'daily' ? 'Bugün' : 'Bu hafta'} '
+                          '${t.period == 'once'
+                                  ? 'Şimdiye dek'
+                                  : t.period == 'daily'
+                                  ? 'Bugün'
+                                  : 'Bu hafta'} '
                               '${t.doneThisPeriod} kişi yaptı',
                           if (t.remaining != null) 'kalan kontenjan ${t.remaining}',
                           if (t.endsAt != null) 'bitiş ${formatIstanbul(t.endsAt!)}',

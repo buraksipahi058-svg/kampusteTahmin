@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../achievements/achievements_data.dart';
+import '../core/app_theme.dart';
 import '../core/routes.dart';
 import '../core/supabase.dart';
 import '../leaderboard/leaderboard_data.dart';
@@ -11,10 +12,10 @@ import '../market/cosmetic_preview.dart';
 import '../market/market_data.dart';
 import '../progress/level_card.dart';
 import '../progress/progress_data.dart';
-import 'delete_account.dart';
-import 'privacy_card.dart';
 import '../quests/quests_data.dart';
 import '../wallet/wallet_data.dart';
+import 'delete_account.dart';
+import 'privacy_card.dart';
 import 'profile_data.dart';
 import 'student_email_data.dart';
 
@@ -61,7 +62,9 @@ class ProfileTab extends ConsumerWidget {
                   children: [
                     Text(
                       profile.fullName,
-                      style: theme.textTheme.headlineSmall?.copyWith(color: cosmetics.nameColor?.colorValue),
+                      style: theme.textTheme.headlineSmall?.copyWith(
+                        color: readableNameColor(context, cosmetics.nameColor?.colorValue),
+                      ),
                     ),
                     if (cosmetics.title != null)
                       Text(

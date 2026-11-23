@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../bets/bets_tab.dart' show formatIstanbul;
 import '../core/async_button.dart';
 import '../core/error_messages.dart';
+import '../core/state_views.dart';
 import '../wallet/wallet_data.dart';
 import 'achievements_data.dart';
 
@@ -45,10 +46,12 @@ class AchievementsScreen extends ConsumerWidget {
             ],
           ),
           AsyncError(:final error) => ListView(
-            padding: const EdgeInsets.all(32),
             children: [
-              Text('Başarımlar alınamadı. ${userMessage(error)}', textAlign: TextAlign.center),
-              TextButton(onPressed: () => ref.invalidate(achievementsProvider), child: const Text('Tekrar dene')),
+              ErrorView(
+                what: 'Başarımlar alınamadı.',
+                error: error,
+                onRetry: () => ref.invalidate(achievementsProvider),
+              ),
             ],
           ),
           _ => const Center(child: CircularProgressIndicator()),
@@ -78,8 +81,9 @@ class _Summary extends StatelessWidget {
             LinearProgressIndicator(value: list.isEmpty ? 0 : done / list.length, minHeight: 8),
             const SizedBox(height: 8),
             Text(
-              [for (final t in [3, 2, 1]) '${tierLabel(t)} ${list.where((a) => a.unlocked && a.tier == t).length}']
-                  .join(' · '),
+              [
+                for (final t in [3, 2, 1]) '${tierLabel(t)} ${list.where((a) => a.unlocked && a.tier == t).length}',
+              ].join(' · '),
               style: theme.textTheme.bodySmall,
             ),
           ],
@@ -148,7 +152,10 @@ class AchievementCard extends ConsumerWidget {
                       const SizedBox(width: 6),
                       Text(
                         tierLabel(a.tier),
-                        style: theme.textTheme.labelSmall?.copyWith(color: tierColor(a.tier), fontWeight: FontWeight.w700),
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: tierColor(a.tier),
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                     ],
                   ),

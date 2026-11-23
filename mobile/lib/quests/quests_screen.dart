@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../bets/bets_tab.dart';
 import '../core/async_button.dart';
 import '../core/error_messages.dart';
+import '../core/state_views.dart';
 import '../wallet/wallet_data.dart';
 import 'quests_data.dart';
 
@@ -33,9 +34,9 @@ class QuestsScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 12),
             switch (quests) {
-              AsyncData(value: final list) when list.isEmpty => const Padding(
-                padding: EdgeInsets.symmetric(vertical: 32),
-                child: Center(child: Text('Şu an görev yok.')),
+              AsyncData(value: final list) when list.isEmpty => const EmptyView(
+                text: 'Şu an görev yok.',
+                icon: Icons.flag_outlined,
               ),
               AsyncData(value: final list) => Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -50,13 +51,12 @@ class QuestsScreen extends ConsumerWidget {
                     ],
                 ],
               ),
-              AsyncError(:final error) => Column(
-                children: [
-                  Text('Görevler alınamadı. ${userMessage(error)}'),
-                  TextButton(onPressed: () => ref.invalidate(questsProvider), child: const Text('Tekrar dene')),
-                ],
+              AsyncError(:final error) => ErrorView(
+                what: 'Görevler alınamadı.',
+                error: error,
+                onRetry: () => ref.invalidate(questsProvider),
               ),
-              _ => const Padding(padding: EdgeInsets.all(32), child: Center(child: CircularProgressIndicator())),
+              _ => const LoadingView(),
             },
           ],
         ),

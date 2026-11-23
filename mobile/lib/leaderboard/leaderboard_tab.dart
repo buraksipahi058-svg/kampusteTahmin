@@ -4,8 +4,9 @@ import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' show PostgrestException;
 
 import '../bets/bets_tab.dart' show formatIstanbul;
-import '../core/error_messages.dart';
+import '../core/app_theme.dart';
 import '../core/routes.dart';
+import '../core/state_views.dart';
 import '../core/verify_email_card.dart';
 import '../market/cosmetic_preview.dart';
 import '../profile/privacy_data.dart';
@@ -64,18 +65,18 @@ class LeaderboardTab extends ConsumerWidget {
             ),
           const SizedBox(height: 8),
           switch (rows) {
-            AsyncData(:final value) when value.isEmpty => const Padding(
-              padding: EdgeInsets.symmetric(vertical: 32),
-              child: Center(child: Text('Bu dönemde henüz sıralamaya giren yok.')),
+            AsyncData(:final value) when value.isEmpty => const EmptyView(
+              text: 'Bu dönemde henüz sıralamaya giren yok.',
+              icon: Icons.leaderboard_outlined,
             ),
             AsyncData(:final value) => _Board(rows: value, metric: query.metric),
-            AsyncError(:final error) when error is PostgrestException && error.code == 'KB002' =>
-              const VerifyEmailCard('Okulundaki sıralamayı görmek için okul mailini doğrula'),
-            AsyncError(:final error) => Column(
-              children: [
-                Text('Sıralama alınamadı. ${userMessage(error)}'),
-                TextButton(onPressed: () => ref.invalidate(leaderboardProvider), child: const Text('Tekrar dene')),
-              ],
+            AsyncError(:final error) when error is PostgrestException && error.code == 'KB002' => const VerifyEmailCard(
+              'Okulundaki sıralamayı görmek için okul mailini doğrula',
+            ),
+            AsyncError(:final error) => ErrorView(
+              what: 'Sıralama alınamadı.',
+              error: error,
+              onRetry: () => ref.invalidate(leaderboardProvider),
             ),
             _ => const Padding(
               padding: EdgeInsets.all(32),
@@ -175,7 +176,7 @@ class _RowTile extends StatelessWidget {
         ),
         title: Text(
           [row.displayName, ?row.badge, if (row.isMe) '(sen)'].join(' '),
-          style: theme.textTheme.titleMedium?.copyWith(color: row.nameColor),
+          style: theme.textTheme.titleMedium?.copyWith(color: readableNameColor(context, row.nameColor)),
           overflow: TextOverflow.ellipsis,
         ),
         subtitle: Text(subtitle, overflow: TextOverflow.ellipsis),

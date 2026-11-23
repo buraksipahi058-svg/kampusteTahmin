@@ -7,6 +7,7 @@ import '../bets/bets_data.dart';
 import '../core/async_button.dart';
 import '../core/error_messages.dart';
 import '../core/routes.dart';
+import '../core/state_views.dart';
 import '../core/supabase.dart';
 import '../core/verify_email_card.dart';
 import '../market/market_data.dart';
@@ -29,15 +30,14 @@ class DuelsScreen extends ConsumerWidget {
     final duels = ref.watch(triviaDuelsProvider);
     final verified = ref.watch(studentEmailProvider).value?.verified;
     final userId = ref.watch(currentUserIdProvider);
-    final players = cosmeticsKey([for (final d in duels.value ?? const <TriviaDuel>[]) ...[d.challengerId, d.opponentId]]);
+    final players = cosmeticsKey([
+      for (final d in duels.value ?? const <TriviaDuel>[]) ...[d.challengerId, d.opponentId],
+    ]);
     final looks = ref.watch(cosmeticsOfProvider(players)).value ?? const <String, Cosmetics>{};
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Trivia düellosu'),
-        actions: const [BalanceBar(), SizedBox(width: 8)],
-      ),
+      appBar: AppBar(title: const Text('Trivia düellosu'), actions: const [BalanceBar(), SizedBox(width: 8)]),
       body: RefreshIndicator(
         onRefresh: () async {
           ref.invalidate(triviaDuelsProvider);
@@ -68,22 +68,22 @@ class DuelsScreen extends ConsumerWidget {
             const SizedBox(height: 12),
             switch (duels) {
               AsyncData(value: final list) when list.isEmpty && verified == false => const SizedBox.shrink(),
-              AsyncData(value: final list) when list.isEmpty => const Padding(
-                padding: EdgeInsets.symmetric(vertical: 32),
-                child: Center(child: Text('Henüz düello yok. İlk meydan okuyan sen ol.')),
+              AsyncData(value: final list) when list.isEmpty => const EmptyView(
+                text: 'Henüz düello yok. İlk meydan okuyan sen ol.',
+                icon: Icons.quiz_outlined,
               ),
               AsyncData(value: final list) => Column(
                 children: [
-                  for (final duel in list) DuelCard(duel: duel, userId: userId, canJoin: verified == true, looks: looks),
+                  for (final duel in list)
+                    DuelCard(duel: duel, userId: userId, canJoin: verified == true, looks: looks),
                 ],
               ),
-              AsyncError(:final error) => Column(
-                children: [
-                  Text('Düellolar alınamadı. ${userMessage(error)}'),
-                  TextButton(onPressed: () => ref.invalidate(triviaDuelsProvider), child: const Text('Tekrar dene')),
-                ],
+              AsyncError(:final error) => ErrorView(
+                what: 'Düellolar alınamadı.',
+                error: error,
+                onRetry: () => ref.invalidate(triviaDuelsProvider),
               ),
-              _ => const Padding(padding: EdgeInsets.all(32), child: Center(child: CircularProgressIndicator())),
+              _ => const LoadingView(),
             },
           ],
         ),
@@ -105,13 +105,7 @@ class DuelsScreen extends ConsumerWidget {
 }
 
 class DuelCard extends ConsumerWidget {
-  const DuelCard({
-    super.key,
-    required this.duel,
-    required this.userId,
-    required this.canJoin,
-    this.looks = const {},
-  });
+  const DuelCard({super.key, required this.duel, required this.userId, required this.canJoin, this.looks = const {}});
 
   final TriviaDuel duel;
   final String? userId;
@@ -141,10 +135,18 @@ class DuelCard extends ConsumerWidget {
                 crossAxisAlignment: WrapCrossAlignment.center,
                 spacing: 6,
                 children: [
-                  PersonLabel(userId: duel.challengerId, name: duel.challengerName, cosmetics: looks[duel.challengerId]),
+                  PersonLabel(
+                    userId: duel.challengerId,
+                    name: duel.challengerName,
+                    cosmetics: looks[duel.challengerId],
+                  ),
                   const Text('vs'),
                   if (duel.opponentId != null)
-                    PersonLabel(userId: duel.opponentId!, name: duel.opponentName ?? '', cosmetics: looks[duel.opponentId])
+                    PersonLabel(
+                      userId: duel.opponentId!,
+                      name: duel.opponentName ?? '',
+                      cosmetics: looks[duel.opponentId],
+                    )
                   else
                     Text(waiting),
                 ],

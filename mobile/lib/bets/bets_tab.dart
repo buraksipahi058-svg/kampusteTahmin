@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../core/error_messages.dart';
 import '../core/routes.dart';
+import '../core/state_views.dart';
 import '../core/supabase.dart';
 import '../core/verify_email_card.dart';
 import '../market/market_data.dart';
@@ -31,7 +32,9 @@ class _BetsTabState extends ConsumerState<BetsTab> {
     final wagers = ref.watch(myWagersProvider).value ?? const <String, Wager>{};
     final disputed = ref.watch(myDisputedBetIdsProvider).value ?? const <String>{};
     final people = _social
-        ? cosmeticsKey([for (final b in bets.value ?? const <Bet>[]) ...[b.creatorId, b.refereeId]])
+        ? cosmeticsKey([
+            for (final b in bets.value ?? const <Bet>[]) ...[b.creatorId, b.refereeId],
+          ])
         : '';
     final looks = ref.watch(cosmeticsOfProvider(people)).value ?? const <String, Cosmetics>{};
     final verified = ref.watch(studentEmailProvider).value?.verified;
@@ -82,9 +85,9 @@ class _BetsTabState extends ConsumerState<BetsTab> {
           switch (bets) {
             // Doğrulanmamış kişiye okulun bahisleri gelmez: "bahis yok" denmez, üstteki kart yeter.
             AsyncData(value: final list) when list.isEmpty && verified == false => const SizedBox.shrink(),
-            AsyncData(value: final list) when list.isEmpty => Padding(
-              padding: const EdgeInsets.symmetric(vertical: 32),
-              child: Center(child: Text(_social ? 'Henüz sosyal bahis yok.' : 'Şu an resmi bahis yok.')),
+            AsyncData(value: final list) when list.isEmpty => EmptyView(
+              text: _social ? 'Henüz sosyal bahis yok.' : 'Şu an resmi bahis yok.',
+              icon: _social ? Icons.groups_outlined : Icons.emoji_events_outlined,
             ),
             AsyncData(value: final list) => Column(
               children: [
@@ -101,16 +104,12 @@ class _BetsTabState extends ConsumerState<BetsTab> {
                       : BetCard(bet: bet, wager: wagers[bet.id], canBet: verified == true),
               ],
             ),
-            AsyncError(:final error) => Column(
-              children: [
-                Text('Bahisler alınamadı. ${userMessage(error)}'),
-                TextButton(
-                  onPressed: () => ref.invalidate(_social ? socialBetsProvider : officialBetsProvider),
-                  child: const Text('Tekrar dene'),
-                ),
-              ],
+            AsyncError(:final error) => ErrorView(
+              what: 'Bahisler alınamadı.',
+              error: error,
+              onRetry: () => ref.invalidate(_social ? socialBetsProvider : officialBetsProvider),
             ),
-            _ => const Padding(padding: EdgeInsets.all(32), child: Center(child: CircularProgressIndicator())),
+            _ => const LoadingView(),
           },
         ],
       ),
@@ -153,10 +152,7 @@ class BetCard extends StatelessWidget {
                 dense: true,
                 leading: option.isWinner == true ? Icon(Icons.emoji_events, color: theme.colorScheme.primary) : null,
                 title: Text(option.label),
-                trailing: Text(
-                  option.odds == null ? '' : formatOdds(option.odds!),
-                  style: theme.textTheme.titleMedium,
-                ),
+                trailing: Text(option.odds == null ? '' : formatOdds(option.odds!), style: theme.textTheme.titleMedium),
                 onTap: open && wager == null && canBet && option.odds != null
                     ? () => showWagerSheet(context, bet, option)
                     : null,
@@ -180,16 +176,19 @@ class BetCard extends StatelessWidget {
 
 String betStatusText(Bet bet, bool open) => switch (bet.status) {
   _ when open => 'Kapanış: ${formatIstanbul(bet.locksAt)}',
-  'settling' => 'Hakemin sonucu: ${bet.proposedOption?.label ?? '?'}'
-      '${bet.disputeUntil == null ? '' : ' · itiraz süresi sonu: ${formatIstanbul(bet.disputeUntil!)}'}',
-  'open' || 'locked' => bet.type == 'sp_social' ? 'Yatırımlar kapandı, hakemin sonucu bekleniyor' : 'Yatırımlar kapandı, sonuç bekleniyor',
+  'settling' =>
+    'Hakemin sonucu: ${bet.proposedOption?.label ?? '?'}'
+        '${bet.disputeUntil == null ? '' : ' · itiraz süresi sonu: ${formatIstanbul(bet.disputeUntil!)}'}',
+  'open' || 'locked' =>
+    bet.type == 'sp_social' ? 'Yatırımlar kapandı, hakemin sonucu bekleniyor' : 'Yatırımlar kapandı, sonuç bekleniyor',
   'settled' => 'Sonuçlandı',
   'cancelled' => 'İptal edildi${bet.cancelReason == null ? '' : ': ${bet.cancelReason}'}',
   _ => '',
 };
 
 String wagerText(Bet bet, Wager wager, BetOption chosen) {
-  final stake = '${formatAmount(wager.amount)} ${bet.currency} · ${chosen.label}'
+  final stake =
+      '${formatAmount(wager.amount)} ${bet.currency} · ${chosen.label}'
       '${wager.odds == null ? '' : ' @ ${formatOdds(wager.odds!)}'}';
   return switch ((bet.status, wager.payout)) {
     ('cancelled', _) => 'Yatırımın ($stake) iade edildi.',
@@ -197,7 +196,8 @@ String wagerText(Bet bet, Wager wager, BetOption chosen) {
     ('settled', final payout?) when payout > 0 && chosen.isWinner != true =>
       'Kazanan tarafa kimse yatırmadığı için yatırımın ($stake) iade edildi.',
     // Doğru taraf ama kazanç yok (karşı tarafta para yoktu ya da yuvarlama).
-    ('settled', final payout?) when payout == wager.amount => 'Doğru bildin ama kazanç çıkmadı: yatırımın ($stake) geri döndü.',
+    ('settled', final payout?) when payout == wager.amount =>
+      'Doğru bildin ama kazanç çıkmadı: yatırımın ($stake) geri döndü.',
     ('settled', final payout?) when payout > 0 =>
       'Kazandın: net +${formatAmount(payout - wager.amount)} ${bet.currency} · '
           '${formatAmount(payout)} ${bet.currency} aldın ($stake)',
@@ -242,9 +242,11 @@ class _WagerSheetState extends ConsumerState<WagerSheet> {
     final amount = _value;
     final bet = widget.bet;
     if (amount == null || amount < bet.minStake || (bet.maxStake != null && amount > bet.maxStake!)) {
-      setState(() => _error = bet.maxStake == null
-          ? 'En az ${bet.minStake} ${bet.currency} yatırabilirsin.'
-          : '${bet.minStake} ile ${formatAmount(bet.maxStake!)} ${bet.currency} arasında bir tutar gir.');
+      setState(
+        () => _error = bet.maxStake == null
+            ? 'En az ${bet.minStake} ${bet.currency} yatırabilirsin.'
+            : '${bet.minStake} ile ${formatAmount(bet.maxStake!)} ${bet.currency} arasında bir tutar gir.',
+      );
       return;
     }
     setState(() {
