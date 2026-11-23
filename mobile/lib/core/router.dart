@@ -6,6 +6,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../achievements/achievements_screen.dart';
 import '../auth/auth_screen.dart';
 import '../bets/create_social_bet_screen.dart';
+import '../campus/campus_screen.dart';
+import '../campus/qr_scan_screen.dart';
 import '../games/duel_play_screen.dart';
 import '../games/duel_review_screen.dart';
 import '../home/home_shell.dart';
@@ -72,6 +74,11 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: Routes.quests, builder: (_, _) => const QuestsScreen()),
       GoRoute(path: Routes.achievements, builder: (_, _) => const AchievementsScreen()),
       GoRoute(path: Routes.notifications, builder: (_, _) => const NotificationsScreen()),
+      GoRoute(path: Routes.campus, builder: (_, _) => const CampusTasksScreen()),
+      GoRoute(
+        path: Routes.campusScanPattern,
+        builder: (_, state) => QrScanScreen(taskId: state.pathParameters['id']!),
+      ),
       GoRoute(path: Routes.history, builder: (_, _) => const HistoryScreen()),
       GoRoute(path: Routes.privacy, builder: (_, _) => const LegalScreen(LegalDocument.privacy)),
       GoRoute(path: Routes.terms, builder: (_, _) => const LegalScreen(LegalDocument.terms)),

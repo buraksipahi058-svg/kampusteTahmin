@@ -132,6 +132,16 @@ class ProfileTab extends ConsumerWidget {
           ),
           const SizedBox(height: 8),
           Card(
+            child: ListTile(
+              leading: const Icon(Icons.qr_code_2),
+              title: const Text('Kampüs görevleri'),
+              subtitle: const Text('Yemekhane, kütüphane, etkinlik: QR okut ya da fotoğraf çek, ödül kazan'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => context.push(Routes.campus),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Card(
             child: Column(
               children: [
                 ListTile(

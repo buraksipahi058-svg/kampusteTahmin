@@ -12,6 +12,11 @@ abstract final class Routes {
   static const quests = '/gorevler';
   static const achievements = '/basarimlar';
   static const notifications = '/bildirimler';
+  static const campus = '/kampus-gorevleri';
+  static const campusScanPattern = '/kampus-gorevleri/:id/okut';
+  static String campusScan(String taskId) => '/kampus-gorevleri/$taskId/okut';
+  static const campusPhotoPattern = '/kampus-gorevleri/:id/foto';
+  static String campusPhoto(String taskId) => '/kampus-gorevleri/$taskId/foto';
 
   /// Alt sekmelerin yolları (bildirim linki bunlardan biriyse sekmeye geçilir, değilse ekran açılır).
   static const tabs = {bets, games, market, leaderboard, profile};

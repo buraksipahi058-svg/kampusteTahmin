@@ -110,6 +110,9 @@ class HomeShell extends ConsumerWidget {
         SnackBar(
           content: Text(message),
           action: SnackBarAction(label: 'Gör', onPressed: () => context.push(Routes.achievements)),
+          // Düğmeli çubuk bu Flutter sürümünde varsayılan olarak kalıcı; alttaki düğmeleri örtmesin, kendiliğinden kapansın.
+          persist: false,
+          duration: const Duration(seconds: 6),
         ),
       );
     });

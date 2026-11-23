@@ -57,4 +57,5 @@ export const permissionLabels: Record<PermissionKey, string> = {
   kullanici_yonet: "Kullanıcı yönetimi",
   analitik_gor: "Analitik görme",
   trivia_yonet: "Trivia sorularını yönetme (düello oynayamaz)",
+  kampus_gorevi_yonet: "Kampüs görevlerini yönetme (ödül alamaz)",
 };

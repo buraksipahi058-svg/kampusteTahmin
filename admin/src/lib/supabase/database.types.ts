@@ -435,6 +435,157 @@ export type Database = {
           },
         ]
       }
+      campus_task_submissions: {
+        Row: {
+          created_at: string
+          id: string
+          method: Database["public"]["Enums"]["campus_verification"]
+          period_start: string
+          photo_path: string | null
+          review_note: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          reward_amount: number
+          reward_currency: Database["public"]["Enums"]["currency"]
+          reward_xp: number
+          status: Database["public"]["Enums"]["campus_submission_status"]
+          task_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          method: Database["public"]["Enums"]["campus_verification"]
+          period_start: string
+          photo_path?: string | null
+          review_note?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          reward_amount: number
+          reward_currency: Database["public"]["Enums"]["currency"]
+          reward_xp: number
+          status: Database["public"]["Enums"]["campus_submission_status"]
+          task_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          method?: Database["public"]["Enums"]["campus_verification"]
+          period_start?: string
+          photo_path?: string | null
+          review_note?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          reward_amount?: number
+          reward_currency?: Database["public"]["Enums"]["currency"]
+          reward_xp?: number
+          status?: Database["public"]["Enums"]["campus_submission_status"]
+          task_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campus_task_submissions_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campus_task_submissions_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "campus_tasks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campus_task_submissions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      campus_tasks: {
+        Row: {
+          active: boolean
+          created_at: string
+          created_by: string
+          description: string | null
+          ends_at: string | null
+          icon: string
+          id: string
+          period: Database["public"]["Enums"]["campus_period"]
+          qr_rotation_seconds: number
+          quota: number | null
+          reward_amount: number
+          reward_currency: Database["public"]["Enums"]["currency"]
+          reward_xp: number
+          school_id: string
+          starts_at: string | null
+          title: string
+          updated_at: string
+          verification: Database["public"]["Enums"]["campus_verification"]
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          created_by: string
+          description?: string | null
+          ends_at?: string | null
+          icon?: string
+          id?: string
+          period?: Database["public"]["Enums"]["campus_period"]
+          qr_rotation_seconds?: number
+          quota?: number | null
+          reward_amount: number
+          reward_currency?: Database["public"]["Enums"]["currency"]
+          reward_xp?: number
+          school_id: string
+          starts_at?: string | null
+          title: string
+          updated_at?: string
+          verification: Database["public"]["Enums"]["campus_verification"]
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          ends_at?: string | null
+          icon?: string
+          id?: string
+          period?: Database["public"]["Enums"]["campus_period"]
+          qr_rotation_seconds?: number
+          quota?: number | null
+          reward_amount?: number
+          reward_currency?: Database["public"]["Enums"]["currency"]
+          reward_xp?: number
+          school_id?: string
+          starts_at?: string | null
+          title?: string
+          updated_at?: string
+          verification?: Database["public"]["Enums"]["campus_verification"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campus_tasks_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campus_tasks_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "clusters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clusters: {
         Row: {
           created_at: string
@@ -1480,6 +1631,15 @@ export type Database = {
         }
         Returns: number
       }
+      campus_task_qr: {
+        Args: { p_task_id: string }
+        Returns: {
+          code: string
+          payload: string
+          rotation_seconds: number
+          valid_until: string
+        }[]
+      }
       cancel_daily_prediction: {
         Args: { p_bet_id: string; p_reason: string }
         Returns: undefined
@@ -1663,6 +1823,28 @@ export type Database = {
           unlocked_at: string
         }[]
       }
+      my_campus_tasks: {
+        Args: never
+        Returns: {
+          can_submit: boolean
+          description: string
+          done_this_period: number
+          ends_at: string
+          icon: string
+          id: string
+          my_note: string
+          my_status: Database["public"]["Enums"]["campus_submission_status"]
+          period: Database["public"]["Enums"]["campus_period"]
+          quota: number
+          remaining: number
+          reward_amount: number
+          reward_currency: Database["public"]["Enums"]["currency"]
+          reward_xp: number
+          starts_at: string
+          title: string
+          verification: Database["public"]["Enums"]["campus_verification"]
+        }[]
+      }
       my_progress: {
         Args: never
         Returns: {
@@ -1735,6 +1917,7 @@ export type Database = {
           expires_at: string
         }[]
       }
+      reset_campus_task_qr: { Args: { p_task_id: string }; Returns: undefined }
       reset_referee_strikes: {
         Args: { p_note: string; p_user_id: string }
         Returns: undefined
@@ -1772,6 +1955,26 @@ export type Database = {
           p_target: number
           p_tier: number
           p_title: string
+        }
+        Returns: string
+      }
+      save_campus_task: {
+        Args: {
+          p_active: boolean
+          p_description: string
+          p_ends_at: string
+          p_icon: string
+          p_id: string
+          p_period: Database["public"]["Enums"]["campus_period"]
+          p_qr_rotation_seconds: number
+          p_quota: number
+          p_reward_amount: number
+          p_reward_currency: Database["public"]["Enums"]["currency"]
+          p_reward_xp: number
+          p_school_id: string
+          p_starts_at: string
+          p_title: string
+          p_verification: Database["public"]["Enums"]["campus_verification"]
         }
         Returns: string
       }
@@ -1879,6 +2082,15 @@ export type Database = {
           seconds_left: number
         }[]
       }
+      submit_campus_task_qr: {
+        Args: { p_code: string; p_task_id: string }
+        Returns: {
+          balance: number
+          reward_amount: number
+          reward_currency: Database["public"]["Enums"]["currency"]
+          reward_xp: number
+        }[]
+      }
       submit_social_result: {
         Args: { p_bet_id: string; p_option_id: string }
         Returns: string
@@ -1918,6 +2130,9 @@ export type Database = {
       bet_scope: "private" | "school" | "cross_school" | "global"
       bet_status: "open" | "locked" | "settling" | "settled" | "cancelled"
       bet_type: "ssp_official" | "sp_minigame" | "sp_social"
+      campus_period: "once" | "daily" | "weekly"
+      campus_submission_status: "pending" | "approved" | "rejected" | "expired"
+      campus_verification: "qr" | "photo"
       cluster_type: "school" | "department" | "club" | "group"
       currency: "SP" | "SSP"
       dispute_decision: "confirmed" | "changed" | "cancelled"
@@ -1939,12 +2154,14 @@ export type Database = {
         | "admin_grant"
         | "admin_adjust"
         | "achievement_reward"
+        | "campus_task_reward"
       ledger_ref_type:
         | "bet"
         | "wager"
         | "quest"
         | "market_item"
         | "achievement"
+        | "campus_task"
       market_category: "title" | "badge" | "frame" | "name_color"
       membership_role: "member" | "owner"
       odds_mode: "pool" | "fixed"
@@ -1957,6 +2174,7 @@ export type Database = {
         | "kullanici_yonet"
         | "analitik_gor"
         | "trivia_yonet"
+        | "kampus_gorevi_yonet"
       quest_action: "wager" | "prediction" | "duel" | "social_bet" | "win"
       quest_period: "daily" | "weekly" | "seasonal"
       settlement_mode: "auto" | "admin" | "referee"
@@ -1966,6 +2184,7 @@ export type Database = {
         | "quest"
         | "correct_pick"
         | "achievement"
+        | "campus_task"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -2108,6 +2327,9 @@ export const Constants = {
       bet_scope: ["private", "school", "cross_school", "global"],
       bet_status: ["open", "locked", "settling", "settled", "cancelled"],
       bet_type: ["ssp_official", "sp_minigame", "sp_social"],
+      campus_period: ["once", "daily", "weekly"],
+      campus_submission_status: ["pending", "approved", "rejected", "expired"],
+      campus_verification: ["qr", "photo"],
       cluster_type: ["school", "department", "club", "group"],
       currency: ["SP", "SSP"],
       dispute_decision: ["confirmed", "changed", "cancelled"],
@@ -2130,6 +2352,7 @@ export const Constants = {
         "admin_grant",
         "admin_adjust",
         "achievement_reward",
+        "campus_task_reward",
       ],
       ledger_ref_type: [
         "bet",
@@ -2137,6 +2360,7 @@ export const Constants = {
         "quest",
         "market_item",
         "achievement",
+        "campus_task",
       ],
       market_category: ["title", "badge", "frame", "name_color"],
       membership_role: ["member", "owner"],
@@ -2150,6 +2374,7 @@ export const Constants = {
         "kullanici_yonet",
         "analitik_gor",
         "trivia_yonet",
+        "kampus_gorevi_yonet",
       ],
       quest_action: ["wager", "prediction", "duel", "social_bet", "win"],
       quest_period: ["daily", "weekly", "seasonal"],
@@ -2160,6 +2385,7 @@ export const Constants = {
         "quest",
         "correct_pick",
         "achievement",
+        "campus_task",
       ],
     },
   },

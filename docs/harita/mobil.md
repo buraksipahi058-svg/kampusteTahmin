@@ -4,7 +4,7 @@
 
 Kod: `mobile/`. Uygulama kimliği `com.kampusbet.kampusbet` (yayından önce değiştirilebilir).
 Platformlar: android, ios, web (web yalnızca hızlı önizleme için). iOS derlemesi Mac ister; v1 Android öncelikli (öneri, onay bekliyor).
-Paketler: `supabase_flutter` 2.18, `flutter_riverpod` 3.4, `go_router` 18, `http` (yalnızca ağ hatasını tanımak için), `share_plus` 13 (veri dosyasını paylaşma; release'te denendi).
+Paketler: `supabase_flutter` 2.18, `flutter_riverpod` 3.4, `go_router` 18, `http` (yalnızca ağ hatasını tanımak için), `share_plus` 13 (veri dosyasını paylaşma; release'te denendi), `mobile_scanner` 7.5 (QR; release'te denendi, APK ~16 MB büyüdü).
 
 ## Çalıştırma (`mobile/` klasöründe)
 
@@ -39,6 +39,7 @@ Ekran görüntüsü: `adb shell screencap -p /sdcard/x.png` + `adb pull`.
 | `wallet/wallet_data.dart` | `balanceProvider`, `loginStreakProvider`, `DailyRewardApi` (`daily_login_calendar`, `claim_daily_login`; testte sahtesi), `dailyCalendarProvider`, `dailyRewardReadyProvider`, `claimDailyReward`, `formatAmount` |
 | `wallet/daily_reward_sheet.dart` | `showDailyReward`: 7 günlük takvim (alınanlar, bugün, bonus günleri), "Ödülü al (+SP · +XP)" |
 | `notifications/notifications_data.dart`, `notifications_screen.dart` | `NotificationsApi` (testte sahtesi), `notificationsProvider`, `unreadNotificationsProvider`, `markNotificationsRead`, `timeAgo`; `NotificationBell` (üst çubuk, dakikada bir + uygulamaya dönünce), `/bildirimler` |
+| `campus/campus_data.dart`, `campus_screen.dart`, `qr_scan_screen.dart` | `CampusApi` (testte sahtesi), `campusTasksProvider` (`my_campus_tasks`), `parseCampusQr`; `/kampus-gorevleri` (Profil'den), `/kampus-gorevleri/:id/okut` (`mobile_scanner`, `scannerViewProvider` testte sahte; "Kodu elle gir") |
 | `achievements/achievements_data.dart` | `Achievement`, `achievementsProvider` (`my_achievements`), `claimAchievement`, kademe adı / rengi, kategori başlıkları |
 | `achievements/achievements_screen.dart` | `/basarimlar`: özet (kazanılan / toplam, kademe sayıları), "Ödülün hazır", kategoriler; kartta kademe çerçevesi, ilerleme, ödül, okulda kazanan oranı, gizli başarım "???" |
 | `wallet/balance_bar.dart` | Üst çubukta SP / SSP; dokununca yenilenir |
@@ -83,7 +84,7 @@ Profil yok → `/profil-olustur` (okullar `clusters where type = 'school'`). Pro
 Kabuk açılınca `claim_daily_login()` bir kez çağrılır; ödül alındıysa bildirim + bakiye/seri sunucudan yeniden okunur.
 Sağlayıcılar `currentUserIdProvider`'a bağlı: çıkış/giriş olunca kendiliğinden yeniden çalışır.
 
-## Testler (`mobile/test/`, 60)
+## Testler (`mobile/test/`, 64)
 
 `app_test.dart` `pumpApp` test ekranını telefon boyutuna (1080×2400, dpr 2.625) ayarlar; varsayılan 800×600'de
 düğmeler görünür alanın dışında kalır, ayrıca alttaki günlük ödül bildirimi düğmeleri örtebilir.

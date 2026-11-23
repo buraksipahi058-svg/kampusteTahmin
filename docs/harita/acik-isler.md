@@ -28,6 +28,7 @@ parantez ortaya çıktığı adım.
 - [16] Canlıda yalnızca "Kampüslü" başarımının ödülü alındı ve 2. günün günlük ödülü takvimden alındı. Gizli başarım ("Ters Köşe"), çok kişili "okulda kazanan" oranı ve 7 / 14 / 30. gün bonuslarının takvimde alınması canlıda görülmedi (pgTAP ve widget testinde). Test hesabında 5 başarımın ödülü hazır bekliyor.
 - [16] Admin'in **Başarımlar** ekranı (liste, ekle, düzenle, aç / kapat) tarayıcıda giriş yapılarak denenmedi (süperadmin girişi gerekir); girişsiz istek giriş ekranına yönleniyor, `save_achievement` pgTAP'te.
 - [17] Bildirimlerin gerçek olaylardan (bahis sonucu, itiraz, düello daveti) canlıda üretildiği görülmedi; canlıda elle eklenen deneme bildirimiyle zil, liste, okundu ve bağlantı denendi. Üreticiler pgTAP'te.
+- [17a] Admin'in **Kampüs görevleri** sayfaları (ekle, düzenle, QR sayfası, dönen QR'ın kendiliğinden yenilenmesi, yazdırma) tarayıcıda giriş yapılarak denenmedi. Kamerayla **gerçek QR okutma** denenmedi (emülatör kamerası); kamera izni, kamera görüntüsü ve elle kodla gönderi release APK'da canlı denendi. Kamera izni reddedilince ne olduğu denenmedi.
 - [12-QA] Admin formlarının yeni davranışı (`ActionForm`: hata alınca girilenler kalır) tarayıcıda denenmedi (giriş gerekir); tip kontrolü ve derleme geçti.
 - [5] **Okul maili kodunun gerçek mail olarak gitmesi** (Brevo yolu). Yalnızca isteğin pg_net kuyruğuna girdiği test edildi; gerçek gönderim yok.
 - [4] **iOS derlemesi** hiç denenmedi (Mac ya da bulut CI gerekir).
@@ -50,7 +51,7 @@ parantez ortaya çıktığı adım.
 - [14] Sıralamada gizli olmak yalnızca liderliği kapsar: profil (ad, soyad, okul, bölüm, seviye) okul arkadaşlarına açık kalır; sosyal bahiste açan / hakem adı görünür.
 - [11] Admin'den **kullanıcı silme** yok (yasaklama Adım 13'te eklendi); süperadmin hesabı uygulamadan silinemez (önce rolü SQL ile alınır).
 - [10] Canlı güncelleme (Supabase Realtime) yok; sıralama 10 dakikada bir hesaplanır.
-- [16] Başarım haberi yalnızca uygulama açıkken (alt çubukta); kapalıyken telefona bildirim yok (Adım 17).
+- [16-17] **Telefon bildirimi (push) yok**: bildirimler ve başarım haberi yalnızca uygulama açıkken görünür (Firebase projesi gerekir). Uygulama okunmamış sayısını dakikada bir okur (Realtime yok).
 - [10] Admin okul özeti yalnızca bu hafta; geçmiş haftalar ve grafik yok.
 - [9] Market'te tema, banner, emote ve bahis "flair"i türleri yok (v1: unvan, rozet, çerçeve, isim rengi); stoklu / sınırlı sayıda ürün yok.
 - [9] Admin'de ürünün kaç kez satıldığı ve görevin kaç kişi tarafından tamamlandığı görünmüyor (analitik).
@@ -73,6 +74,8 @@ parantez ortaya çıktığı adım.
 - [12-QA] Oturum anahtarları cihazda şifresiz (SharedPreferences) duruyor; yedeğe girmiyor ama köklü cihazda okunabilir. Gerekirse şifreli depolama (flutter_secure_storage) ile değiştirilebilir.
 - [14] İstek sınırı yalnızca **başarılı yazma** isteklerini sayar: başarısız istek transaction'la geri alındığı için sayaca girmez (hatalı isteklerle boğma sınırlanmaz); okuma istekleri ve IP başına sınır yok. Tam koruma için API'nin önüne ağ geçidi (ör. Cloudflare) gerekir.
 - [16] Başarım ilerlemesi her istekte kişinin bütün kayıtlarından hesaplanıyor (`achievement_metrics`); kayıt sayısı çok büyürse Profil / Başarımlar açılışı yavaşlayabilir (gerekirse önbellek ya da sayaç). Mevcut kullanıcılar geçmiş kayıtlarından kazandıkları başarımları ilk açılışta birden görür (test hesabında 6).
+- [17a] QR okuyucu eklentisi (`mobile_scanner`, ML Kit modeli içinde) APK'yı 56 MB'tan 71,6 MB'a büyüttü. Küçültmek için Google Play hizmetlerindeki model kullanılabilir (`dev.steenbakker.mobile_scanner.useUnbundled=true`, ilk açılışta model indirilir); denenmedi.
+- [17a] Basılı QR'ın fotoğrafı paylaşılırsa başkası mekâna gitmeden yapabilir (bilinen; ödülü küçük tut, "QR'ı yenile" ya da ekran QR'ı kullan).
 - [15] Kişi aramada Türkçe büyük / küçük harf (İ / i, I / ı) eşleşmesi veritabanının yerel ayarına bağlı; denenmedi ("VEL" → "Veli" testte geçti).
 - [15] Davetli düelloda davet edilen kişiye bildirim gitmiyor; düelloyu Oyunlar sekmesinde görür (bildirimler Adım 16).
 - [14] Sıralamadan çıkan kişinin donmuş geçmiş haftalardaki satırları da silinir, açınca o haftalara geri dönmez (o haftanın sıra numaralarında boşluk kalır).

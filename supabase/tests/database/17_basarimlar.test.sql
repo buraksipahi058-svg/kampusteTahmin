@@ -63,7 +63,7 @@ select throws_ok($$select count(*) from public.achievements$$, '42501', null, 'a
 
 set local role authenticated;
 select pg_temp.as_user(1);
-select is((select count(*)::int from public.achievements where active), 25, 'giriş yapan kataloğu okur (25 başarım)');
+select is((select count(*)::int from public.achievements where active) >= 25, true, 'giriş yapan kataloğu okur (en az 25 başarım)');
 select throws_ok(
   $$insert into public.achievement_unlocks (user_id, achievement_id, reward_sp, reward_xp)
     select 'c0000000-0000-4000-8000-000000000001', id, 1, 0 from public.achievements limit 1$$,

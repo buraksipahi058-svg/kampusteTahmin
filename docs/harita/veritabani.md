@@ -32,6 +32,8 @@ Konu bölgeleri: [kimlik.md](kimlik.md), [para.md](para.md), [bahis.md](bahis.md
 | `20261122210724_basarimlar_gunluk_odul.sql` | 16 | `achievements` (katalog, 25 başarım) + `achievement_unlocks` (yalnızca eklenir) + RLS, `private.achievement_metrics`, `my_achievements`, `claim_achievement`, `daily_login_calendar`; `xp_on_ledger_entry` ve tetikleyicisi, `xp_events_source` ve `ledger_sp_only_rewards` kısıtları yeniden ([para](para.md)) |
 | `20261122212408_basarim_yonetimi.sql` | 16 | `save_achievement` (yalnızca süperadmin; anahtar değişmez, denetim kaydı `achievement_save`) |
 | `20261122214819_bildirimler.sql` | 17 | `notifications` + RLS, bildirim tetikleyicileri (bahis, itiraz, düello, profil, yönetici para), `process_notifications` + 5 dakikalık iş, `mark_notifications_read` ([kampus](kampus.md)) |
+| `20261122215319_kampus_gorevi_degerleri.sql` | 17a | enum: `kampus_gorevi_yonet`, `campus_task_reward`, `ledger_ref_type.campus_task`, `xp_reason.campus_task` |
+| `20261122215322_kampus_gorevleri.sql` | 17a | `campus_tasks`, `private.campus_task_secrets`, `campus_task_submissions` + RLS, QR kodu (HMAC), `save_campus_task`, `reset_campus_task_qr`, `campus_task_qr`, `my_campus_tasks`, `submit_campus_task_qr`; `xp_on_ledger_entry` ve `achievement_metrics` yeniden, `campus_tasks` başarımları ([kampus](kampus.md)) |
 | `20261122105335_gunun_tahmini.sql` | 8 | günün tahmini ayarları, `bets_settlement_by_type` (mini oyunda `admin` de olur), `place_wager` (yalnızca `auto` mini oyuna kapalı; admin sonuçlandırmalıda açan / kapatan yatıramaz), `create/settle/cancel_daily_prediction`, saatlik pg_cron işi |
 
 ## Koda inmek gerekirse
@@ -74,7 +76,7 @@ Buluttaki gerçek durumu görmek daha ucuzsa: `npx supabase db query --linked "s
 - **RLS:** her tabloda açık. Politikalarda `(select auth.uid())`, `(select private.is_superadmin())` gibi alt sorgu biçimi (her satırda tekrar çalışmasın). Kümeye göre görünürlük: `cluster_id in (select private.my_cluster_ids())`.
 - **Varsayılan yetkiler (Adım 11):** postgres'in oluşturduğu yeni tablo, dizi ve fonksiyon istemcilere ve PUBLIC'e kapalı başlar. Tablo için `grant select`, RPC için `grant execute ... to authenticated` açıkça yazılır; RLS politikasında kullanılan yeni `private` yardımcısı da `authenticated`'a açılmalı ve `12_guvenlik` testindeki listeye eklenmeli.
 - **Fonksiyonlar:** hepsi `set search_path = ''` ve tam nitelikli adlar (`public.x`, `private.y`). İstemci RPC'leri `security definer`; başta oturum (`auth.uid()`), sonra yetki, sonra girdi kontrolü. Her fonksiyonda `revoke execute ... from public, anon;` + gerekiyorsa `grant execute ... to authenticated;`. İç fonksiyonlarda yalnızca `revoke ... from public`.
-- **Yalnızca eklenen tablolar:** `private.forbid_change()` tetikleyicisi (update/delete/truncate → `55000`). Şu an: `ledger_entries`, `admin_audit_log`, `quest_claims`, `xp_events`, `achievement_unlocks`.
+- **Yalnızca eklenen tablolar:** `private.forbid_change()` tetikleyicisi (update/delete/truncate → `55000`). Şu an: `ledger_entries`, `admin_audit_log`, `quest_claims`, `xp_events`, `achievement_unlocks`. Bildirimler yalnızca eklenir + okundu işareti (`read_at`, RPC ile).
 - **Metin kolonları:** `char_length` aralığı + `= btrim(...)` + kontrol karakteri yasağı (`!~ '[[:cntrl:]]'`).
 - **Görünmeyen kayıt:** yetkisi olmayana "bulunamadı" (`P0002`) dönülür, "yetkin yok" değil (varlığı sızdırmamak için).
 - **Kilit sırası:** bahis satırı → bakiyeler (`user_id` sırasıyla) → profil satırları (XP, `user_id` sırasıyla). Profil satırı **`FOR NO KEY UPDATE`** ile kilitlenir, asla `FOR UPDATE` değil: profile yabancı anahtarla bağlı her ekleme (ledger, yatırım, görev ödülü) profilde `FOR KEY SHARE` tutar, `FOR UPDATE` onunla çakışıp kilitlenme yapar (QA'da görüldü). XP tetikleyicileri bakiye kilitlerinden sonra çalışır.
@@ -119,6 +121,10 @@ Buluttaki gerçek durumu görmek daha ucuzsa: `npx supabase db query --linked "s
 | `KB025` | Hesap silinmiş ya da yasaklı: istek bekçisi (`guard.check_request`) her API isteğini reddeder |
 | `KB027` | Başarım henüz kazanılmadı (ilerleme hedefe ulaşmadı) |
 | `KB028` | Başarımın ödülü zaten alındı |
+| `KB029` | Kampüs görevi: QR kodu geçersiz ya da süresi geçti |
+| `KB030` | Kampüs görevi bu dönem zaten yapıldı (onaylı ya da bekleyen gönderi var) |
+| `KB031` | Kampüs görevinin kontenjanı doldu |
+| `KB032` | Kampüs görevi şu an açık değil (kapalı, başlamadı, bitti ya da doğrulama yöntemi farklı) |
 | `KB026` | İstek sınırı: kişinin son bir dakikadaki yazma isteği `economy_settings.api_write_limit_per_minute`'a ulaştı (bekçi) |
 | `42501` | Yetki yok / giriş gerekli |
 | `23514` | Geçersiz değer (kısıt) |

@@ -165,6 +165,9 @@ alter table public.quest_claims enable trigger quest_claims_append_only;
 alter table public.achievement_unlocks disable trigger achievement_unlocks_append_only;
 delete from public.achievement_unlocks where user_id in (${w.idList});
 alter table public.achievement_unlocks enable trigger achievement_unlocks_append_only;
+delete from public.campus_task_submissions where user_id in (${w.idList})
+  or task_id in (select id from public.campus_tasks where school_id = '${w.school}');
+delete from public.campus_tasks where school_id = '${w.school}';
 delete from public.quests where school_id = '${w.school}';
 delete from public.user_inventory where user_id in (${w.idList})
   or item_id in (select id from public.market_items where school_id = '${w.school}');

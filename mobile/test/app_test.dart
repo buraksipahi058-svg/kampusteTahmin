@@ -9,6 +9,8 @@ import 'package:kampusbet/achievements/achievements_data.dart';
 import 'package:kampusbet/app.dart';
 import 'package:kampusbet/bets/bets_data.dart';
 import 'package:kampusbet/bets/bets_tab.dart';
+import 'package:kampusbet/campus/campus_data.dart';
+import 'package:kampusbet/campus/qr_scan_screen.dart';
 import 'package:kampusbet/core/app_info.dart';
 import 'package:kampusbet/core/supabase.dart';
 import 'package:kampusbet/games/trivia_data.dart';
@@ -66,9 +68,12 @@ Future<void> pumpApp(
   List<Achievement> achievements = const [],
   List<Achievement> Function()? achievementsNow,
   FakeNotificationsApi? notifications,
+  FakeCampusApi? campus,
+  String scannedQr = '',
 }) async {
   final dailyApi = daily ?? FakeDailyRewardApi(claimedToday: true);
   final notificationsApi = notifications ?? FakeNotificationsApi();
+  final campusApi = campus ?? FakeCampusApi();
   final privacyApi = privacy ?? FakePrivacyApi();
   // Gerçek telefon boyutu (Pixel 7); varsayılan 800×600 test ekranında düğmeler görünür alanın dışında kalıyor.
   tester.view.physicalSize = const Size(1080, 2400);
@@ -119,12 +124,36 @@ Future<void> pumpApp(
         loginStreakProvider.overrideWith((ref) async => const LoginStreak(current: 1, longest: 3)),
         dailyRewardApiProvider.overrideWithValue(dailyApi),
         notificationsApiProvider.overrideWithValue(notificationsApi),
+        campusApiProvider.overrideWithValue(campusApi),
+        scannerViewProvider.overrideWithValue(
+          (onCode) => Center(
+            child: TextButton(onPressed: () => onCode(scannedQr), child: const Text('Sahte QR okut')),
+          ),
+        ),
         achievementsProvider.overrideWith((ref) async => achievementsNow?.call() ?? achievements),
       ],
       child: const KampusBetApp(),
     ),
   );
   await tester.pumpAndSettle();
+}
+
+/// Kampüs görevlerinin sahtesi: doğru kod "ABC123ABC123"; gönderiler kaydedilir.
+class FakeCampusApi implements CampusApi {
+  FakeCampusApi([this.items = const []]);
+
+  List<CampusTask> items;
+  final submitted = <(String, String)>[];
+
+  @override
+  Future<List<CampusTask>> tasks() async => items;
+
+  @override
+  Future<({String currency, int amount, int xp})> submitQr(String taskId, String code) async {
+    submitted.add((taskId, code));
+    if (code != 'ABC123ABC123') throw const PostgrestException(message: 'x', code: 'KB029');
+    return (currency: 'SP', amount: 30, xp: 15);
+  }
 }
 
 /// Bildirimlerin sahtesi: bellekte liste, okundu işareti kaydedilir.
@@ -812,6 +841,8 @@ void main() {
     );
     await tester.tap(find.text('Profil'));
     await tester.pumpAndSettle();
+    final levelList = find.descendant(of: find.byType(ProfileTab), matching: find.byType(Scrollable)).first;
+    await tester.scrollUntilVisible(find.text('Seviye 2'), 200, scrollable: levelList);
     expect(find.text('Seviye 2'), findsOneWidget);
     expect(find.text('150 XP'), findsOneWidget);
     expect(find.text('Sonraki seviyeye 150 XP'), findsOneWidget);
@@ -877,8 +908,9 @@ void main() {
     await tester.tap(find.text('Profil'));
     await tester.pumpAndSettle();
     final profileList = find.descendant(of: find.byType(ProfileTab), matching: find.byType(Scrollable)).first;
-    // En alta kaydır; günlük ödül bildirimi en alttaki düğmeyi örtmesin.
-    await tester.drag(profileList, const Offset(0, -3000));
+    // En alta kaydır; alttaki bildirim çubuğu en alttaki düğmeyi örtmesin.
+    await tester.scrollUntilVisible(find.text('Hesabımı sil'), 300, scrollable: profileList);
+    await tester.drag(profileList, const Offset(0, -300));
     tester.state<ScaffoldMessengerState>(find.byType(ScaffoldMessenger)).clearSnackBars();
     await tester.pumpAndSettle();
     expect(find.text('Gizlilik ve KVKK'), findsOneWidget);
@@ -1312,6 +1344,84 @@ void main() {
     expect(timeAgo(now.subtract(const Duration(seconds: 20)), now), 'şimdi');
     expect(timeAgo(now.subtract(const Duration(hours: 30)), now), 'dün');
     expect(timeAgo(now.subtract(const Duration(days: 4)), now), '4 gün önce');
+  });
+
+  testWidgets('kampüs görevi: listede ödül ve durum, QR okutunca ödül; yanlış ya da başka QR uyarı', (tester) async {
+    final api = FakeCampusApi([
+      const CampusTask(
+        id: 't1',
+        title: 'Yemekhanede ye',
+        description: 'QR kasanın yanında.',
+        icon: '🍽️',
+        verification: 'qr',
+        period: 'daily',
+        rewardCurrency: 'SP',
+        rewardAmount: 30,
+        rewardXp: 15,
+        quota: 100,
+        remaining: 63,
+        doneThisPeriod: 37,
+        canSubmit: true,
+      ),
+      const CampusTask(
+        id: 't2',
+        title: 'Kütüphaneye uğra',
+        icon: '📚',
+        verification: 'qr',
+        period: 'once',
+        rewardCurrency: 'SSP',
+        rewardAmount: 10,
+        rewardXp: 0,
+        myStatus: 'approved',
+      ),
+    ]);
+    await pumpApp(
+      tester,
+      userId: 'u1',
+      profile: _profile,
+      campus: api,
+      scannedQr: 'com.kampusbet.kampusbet://kampus-gorev?t=t1&c=ABC123ABC123',
+    );
+    await tester.tap(find.text('Profil'));
+    await tester.pumpAndSettle();
+    final profileList = find.descendant(of: find.byType(ProfileTab), matching: find.byType(Scrollable)).first;
+    await tester.scrollUntilVisible(find.text('Kampüs görevleri'), 200, scrollable: profileList);
+    await tester.ensureVisible(find.text('Kampüs görevleri'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Kampüs görevleri'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('+30 SP · +15 XP · Her gün · QR'), findsOneWidget);
+    expect(find.text('Bugün 37 kişi yaptı · kalan kontenjan 63'), findsOneWidget);
+    expect(find.text('Yaptın, ödülü aldın'), findsOneWidget);
+    expect(find.text('QR okut'), findsOneWidget);
+
+    await tester.tap(find.text('QR okut'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Sahte QR okut'));
+    await tester.pumpAndSettle();
+    expect(api.submitted.single, ('t1', 'ABC123ABC123'));
+    expect(find.text('+30 SP · +15 XP kazandın.'), findsOneWidget);
+    await tester.tap(find.text('Harika'));
+    await tester.pumpAndSettle();
+    expect(find.text('Kampüs görevleri'), findsOneWidget);
+
+    // Elle yanlış kod: sunucunun hatası gösterilir.
+    await tester.tap(find.text('QR okut'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Kodu elle gir'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), 'YANLIS');
+    await tester.tap(find.text('Gönder'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('QR kodu geçersiz'), findsOneWidget);
+  });
+
+  test('kampüs QR içeriği çözülür', () {
+    expect(parseCampusQr('com.kampusbet.kampusbet://kampus-gorev?t=abc&c=DEF'), (taskId: 'abc', code: 'DEF'));
+    expect(parseCampusQr('https://ornek.com/kampus-gorev?t=abc&c=DEF'), isNull);
+    expect(parseCampusQr('com.kampusbet.kampusbet://kampus-gorev?t=abc'), isNull);
+    expect(parseCampusQr('rastgele metin'), isNull);
   });
 
   test('yardımcılar: hesap engeli, kozmetik anahtarı, İstanbul haftası', () {
