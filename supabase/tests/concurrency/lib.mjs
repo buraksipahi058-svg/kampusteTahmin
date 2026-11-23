@@ -162,6 +162,9 @@ alter table public.quest_claims disable trigger quest_claims_append_only;
 delete from public.quest_claims where user_id in (${w.idList})
   or quest_id in (select id from public.quests where school_id = '${w.school}');
 alter table public.quest_claims enable trigger quest_claims_append_only;
+alter table public.achievement_unlocks disable trigger achievement_unlocks_append_only;
+delete from public.achievement_unlocks where user_id in (${w.idList});
+alter table public.achievement_unlocks enable trigger achievement_unlocks_append_only;
 delete from public.quests where school_id = '${w.school}';
 delete from public.user_inventory where user_id in (${w.idList})
   or item_id in (select id from public.market_items where school_id = '${w.school}');

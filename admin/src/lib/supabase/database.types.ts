@@ -39,6 +39,99 @@ export type Database = {
   }
   public: {
     Tables: {
+      achievement_unlocks: {
+        Row: {
+          achievement_id: string
+          reward_sp: number
+          reward_xp: number
+          unlocked_at: string
+          user_id: string
+        }
+        Insert: {
+          achievement_id: string
+          reward_sp: number
+          reward_xp: number
+          unlocked_at?: string
+          user_id: string
+        }
+        Update: {
+          achievement_id?: string
+          reward_sp?: number
+          reward_xp?: number
+          unlocked_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "achievement_unlocks_achievement_id_fkey"
+            columns: ["achievement_id"]
+            isOneToOne: false
+            referencedRelation: "achievements"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "achievement_unlocks_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      achievements: {
+        Row: {
+          active: boolean
+          category: Database["public"]["Enums"]["achievement_category"]
+          created_at: string
+          description: string
+          hidden: boolean
+          icon: string
+          id: string
+          key: string
+          metric: string
+          reward_sp: number
+          reward_xp: number
+          sort: number
+          target: number
+          tier: number
+          title: string
+        }
+        Insert: {
+          active?: boolean
+          category: Database["public"]["Enums"]["achievement_category"]
+          created_at?: string
+          description: string
+          hidden?: boolean
+          icon: string
+          id?: string
+          key: string
+          metric: string
+          reward_sp: number
+          reward_xp?: number
+          sort?: number
+          target: number
+          tier?: number
+          title: string
+        }
+        Update: {
+          active?: boolean
+          category?: Database["public"]["Enums"]["achievement_category"]
+          created_at?: string
+          description?: string
+          hidden?: boolean
+          icon?: string
+          id?: string
+          key?: string
+          metric?: string
+          reward_sp?: number
+          reward_xp?: number
+          sort?: number
+          target?: number
+          tier?: number
+          title?: string
+        }
+        Relationships: []
+      }
       admin_audit_log: {
         Row: {
           action: string
@@ -1355,6 +1448,14 @@ export type Database = {
         Args: { p_bet_id: string; p_reason: string }
         Returns: undefined
       }
+      claim_achievement: {
+        Args: { p_key: string }
+        Returns: {
+          balance: number
+          reward_sp: number
+          reward_xp: number
+        }[]
+      }
       claim_daily_login: {
         Args: never
         Returns: {
@@ -1445,6 +1546,16 @@ export type Database = {
         Args: { p_invited_id?: string; p_stake: number }
         Returns: string
       }
+      daily_login_calendar: {
+        Args: never
+        Returns: {
+          amount: number
+          bonus: number
+          claimed: boolean
+          day: number
+          is_today: boolean
+        }[]
+      }
       delete_my_account: { Args: never; Returns: undefined }
       dispute_social_result: {
         Args: { p_bet_id: string; p_reason: string }
@@ -1487,6 +1598,26 @@ export type Database = {
         Returns: undefined
       }
       lock_official_bet: { Args: { p_bet_id: string }; Returns: undefined }
+      my_achievements: {
+        Args: never
+        Returns: {
+          category: Database["public"]["Enums"]["achievement_category"]
+          claimable: boolean
+          description: string
+          hidden: boolean
+          icon: string
+          key: string
+          metric: string
+          progress: number
+          reward_sp: number
+          reward_xp: number
+          school_rate: number
+          target: number
+          tier: number
+          title: string
+          unlocked_at: string
+        }[]
+      }
       my_progress: {
         Args: never
         Returns: {
@@ -1579,6 +1710,25 @@ export type Database = {
           p_user_id: string
         }
         Returns: undefined
+      }
+      save_achievement: {
+        Args: {
+          p_active: boolean
+          p_category: Database["public"]["Enums"]["achievement_category"]
+          p_description: string
+          p_hidden: boolean
+          p_icon: string
+          p_id: string
+          p_key: string
+          p_metric: string
+          p_reward_sp: number
+          p_reward_xp: number
+          p_sort: number
+          p_target: number
+          p_tier: number
+          p_title: string
+        }
+        Returns: string
       }
       save_market_item: {
         Args: {
@@ -1712,6 +1862,14 @@ export type Database = {
       }
     }
     Enums: {
+      achievement_category:
+        | "prediction"
+        | "streak"
+        | "duel"
+        | "social"
+        | "loyalty"
+        | "progress"
+        | "secret"
       bet_scope: "private" | "school" | "cross_school" | "global"
       bet_status: "open" | "locked" | "settling" | "settled" | "cancelled"
       bet_type: "ssp_official" | "sp_minigame" | "sp_social"
@@ -1735,7 +1893,13 @@ export type Database = {
         | "market_purchase"
         | "admin_grant"
         | "admin_adjust"
-      ledger_ref_type: "bet" | "wager" | "quest" | "market_item"
+        | "achievement_reward"
+      ledger_ref_type:
+        | "bet"
+        | "wager"
+        | "quest"
+        | "market_item"
+        | "achievement"
       market_category: "title" | "badge" | "frame" | "name_color"
       membership_role: "member" | "owner"
       odds_mode: "pool" | "fixed"
@@ -1752,7 +1916,11 @@ export type Database = {
       quest_period: "daily" | "weekly" | "seasonal"
       settlement_mode: "auto" | "admin" | "referee"
       user_role: "student" | "yetkili" | "superadmin"
-      xp_reason: "daily_login" | "quest" | "correct_pick"
+      xp_reason:
+        | "daily_login"
+        | "quest"
+        | "correct_pick"
+        | "achievement"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1883,6 +2051,15 @@ export const Constants = {
   },
   public: {
     Enums: {
+      achievement_category: [
+        "prediction",
+        "streak",
+        "duel",
+        "social",
+        "loyalty",
+        "progress",
+        "secret",
+      ],
       bet_scope: ["private", "school", "cross_school", "global"],
       bet_status: ["open", "locked", "settling", "settled", "cancelled"],
       bet_type: ["ssp_official", "sp_minigame", "sp_social"],
@@ -1907,8 +2084,15 @@ export const Constants = {
         "market_purchase",
         "admin_grant",
         "admin_adjust",
+        "achievement_reward",
       ],
-      ledger_ref_type: ["bet", "wager", "quest", "market_item"],
+      ledger_ref_type: [
+        "bet",
+        "wager",
+        "quest",
+        "market_item",
+        "achievement",
+      ],
       market_category: ["title", "badge", "frame", "name_color"],
       membership_role: ["member", "owner"],
       odds_mode: ["pool", "fixed"],
@@ -1926,7 +2110,12 @@ export const Constants = {
       quest_period: ["daily", "weekly", "seasonal"],
       settlement_mode: ["auto", "admin", "referee"],
       user_role: ["student", "yetkili", "superadmin"],
-      xp_reason: ["daily_login", "quest", "correct_pick"],
+      xp_reason: [
+        "daily_login",
+        "quest",
+        "correct_pick",
+        "achievement",
+      ],
     },
   },
 } as const

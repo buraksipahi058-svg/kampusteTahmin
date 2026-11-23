@@ -105,6 +105,22 @@ select (now() < ${at}) as on_time, balance from public.claim_quest_reward('${que
     showUnexpected(res);
   }
 
+  // 4c) Kazanılmış başarımın ("Kampüslü": okul maili doğrulandı) ödülü aynı anda 10 kez istenir: bir kez verilir,
+  // XP de bir kez yazılır (Adım 16).
+  {
+    const res = await parallel(10, (at) => `${asUser(users.gorev)}
+select (now() < ${at}) as on_time, balance from public.claim_achievement('kampuslu');`);
+    const passed = res.filter((r) => r.ok).length;
+    const already = res.filter((r) => !r.ok && r.code === "KB028").length;
+    const [{ n, events }] = await mustRun(`select
+      (select count(*)::int from public.ledger_entries where user_id = '${users.gorev}' and reason = 'achievement_reward') as n,
+      (select count(*)::int from public.xp_events where user_id = '${users.gorev}' and reason = 'achievement') as events`);
+    check("aynı başarımın 10 eşzamanlı ödül isteğinden yalnızca biri geçer, SP ve XP bir kez yazılır",
+      passed === 1 && already === 9 && n === 1 && events === 1,
+      `geçen: ${passed}, zaten alındı: ${already}, ledger kaydı: ${n}, XP olayı: ${events}, ${onTime(res)}`);
+    showUnexpected(res, ["KB028"]);
+  }
+
   // 5) Aynı ürün aynı anda 10 kez satın alınır: bir kez alınır, para bir kez düşer.
   {
     const item = randomUUID();

@@ -5,12 +5,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' show PostgrestException;
+import 'package:kampusbet/achievements/achievements_data.dart';
 import 'package:kampusbet/app.dart';
 import 'package:kampusbet/bets/bets_data.dart';
 import 'package:kampusbet/bets/bets_tab.dart';
 import 'package:kampusbet/core/app_info.dart';
 import 'package:kampusbet/core/supabase.dart';
 import 'package:kampusbet/games/trivia_data.dart';
+import 'package:kampusbet/home/home_shell.dart';
 import 'package:kampusbet/leaderboard/leaderboard_data.dart';
 import 'package:kampusbet/market/market_data.dart';
 import 'package:kampusbet/core/account_guard.dart';
@@ -59,7 +61,11 @@ Future<void> pumpApp(
   Map<String, PublicProfile> publicProfiles = const {},
   List<Bet> ownBets = const [],
   Progress Function()? progressNow,
+  FakeDailyRewardApi? daily,
+  List<Achievement> achievements = const [],
+  List<Achievement> Function()? achievementsNow,
 }) async {
+  final dailyApi = daily ?? FakeDailyRewardApi(claimedToday: true);
   final privacyApi = privacy ?? FakePrivacyApi();
   // Gerçek telefon boyutu (Pixel 7); varsayılan 800×600 test ekranında düğmeler görünür alanın dışında kalıyor.
   tester.view.physicalSize = const Size(1080, 2400);
@@ -108,14 +114,35 @@ Future<void> pumpApp(
         schoolsProvider.overrideWith((ref) async => const [School(id: 's1', name: 'Örnek Üniversitesi')]),
         balanceProvider.overrideWith((ref) async => const Balance(sp: 1050, ssp: 0)),
         loginStreakProvider.overrideWith((ref) async => const LoginStreak(current: 1, longest: 3)),
-        dailyRewardProvider.overrideWith(
-          (ref) async => const DailyReward(claimed: true, amount: 50, streak: 1),
-        ),
+        dailyRewardApiProvider.overrideWithValue(dailyApi),
+        achievementsProvider.overrideWith((ref) async => achievementsNow?.call() ?? achievements),
       ],
       child: const KampusBetApp(),
     ),
   );
   await tester.pumpAndSettle();
+}
+
+/// Günlük ödülün sahtesi: 7 günlük takvim (bugün 1. gün), ödül alınınca bugün işaretlenir.
+class FakeDailyRewardApi implements DailyRewardApi {
+  FakeDailyRewardApi({this.claimedToday = false});
+
+  bool claimedToday;
+  var claims = 0;
+
+  @override
+  Future<List<CalendarDay>> calendar() async => [
+    for (var d = 1; d <= 7; d++)
+      CalendarDay(day: d, amount: 40 + d * 10, bonus: d == 7 ? 200 : 0, claimed: d == 1 && claimedToday, isToday: d == 1),
+  ];
+
+  @override
+  Future<DailyReward> claim() async {
+    claims++;
+    final first = !claimedToday;
+    claimedToday = true;
+    return DailyReward(claimed: first, amount: first ? 50 : 0, streak: 1);
+  }
 }
 
 /// Gizlilik işlemlerinin sahtesi: tercih bellekte tutulur, dışa aktarma sabit veri döner, paylaşım kaydedilir.
@@ -210,13 +237,32 @@ void main() {
   });
 
   testWidgets('profili olan kullanıcı sekmeleri, bakiyeyi ve günlük ödülü görür', (tester) async {
-    await pumpApp(tester, userId: 'u1', profile: _profile);
+    final daily = FakeDailyRewardApi();
+    await pumpApp(tester, userId: 'u1', profile: _profile, daily: daily);
+
+    // Bugünün ödülü alınmadığı için takvim kendiliğinden açılır.
+    expect(find.text('🎁 Günlük ödül'), findsOneWidget);
+    expect(find.text('7. gün'), findsOneWidget);
+    expect(find.text('+200 bonus'), findsOneWidget);
+    await tester.tap(find.text('Ödülü al (+50 SP · +10 XP)'));
+    await tester.pumpAndSettle();
+    expect(daily.claims, 1);
+    expect(find.text('+50 SP · +10 XP aldın! Seri: 1 gün. Yarın yine gel.'), findsOneWidget);
+    await tester.tap(find.text('Kapat'));
+    await tester.pumpAndSettle();
+    expect(find.text('🎁 Günlük ödül'), findsNothing);
 
     for (final label in ['Bahisler', 'Oyunlar', 'Market', 'Liderlik', 'Profil']) {
       expect(find.descendant(of: find.byType(NavigationBar), matching: find.text(label)), findsOneWidget);
     }
     expect(find.text('1.050'), findsOneWidget);
-    expect(find.text('Günlük giriş ödülü: +50 SP · Seri: 1 gün'), findsOneWidget);
+
+    // Hediye simgesiyle yeniden açılır; ödül alındığı için düğme yok.
+    await tester.tap(find.byTooltip('Günlük ödül'));
+    await tester.pumpAndSettle();
+    expect(find.text('Bugünün ödülü alındı. Yarın yine gel.'), findsOneWidget);
+    await tester.tap(find.text('Kapat'));
+    await tester.pumpAndSettle();
 
     await tester.tap(find.text('Profil'));
     await tester.pumpAndSettle();
@@ -736,6 +782,8 @@ void main() {
     final bar = tester.widget<LinearProgressIndicator>(find.byType(LinearProgressIndicator));
     expect(bar.value, 0.25);
 
+    await tester.ensureVisible(find.text('Seviye 2'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Seviye 2'));
     await tester.pumpAndSettle();
     expect(find.text('XP nasıl kazanılır'), findsOneWidget);
@@ -770,13 +818,15 @@ void main() {
     await tester.tap(find.text('Profil'));
     await tester.pumpAndSettle();
     final profileList = find.descendant(of: find.byType(ProfileTab), matching: find.byType(Scrollable)).first;
-    // Alttaki düğmeye kadar kaydır: üstündeki "Geçmiş bahislerim" alt menünün arkasında kalmasın.
-    await tester.scrollUntilVisible(find.text('Çıkış yap'), 200, scrollable: profileList);
+    await tester.scrollUntilVisible(find.text('2 oyun · 1 galibiyet'), 200, scrollable: profileList);
     expect(find.text('Bu hafta isabette 1.'), findsOneWidget);
     expect(find.text('%80 · 4/5'), findsOneWidget);
     expect(find.text('En iyi: 3'), findsOneWidget);
     expect(find.text('+120 SP'), findsOneWidget);
-    expect(find.text('2 oyun · 1 galibiyet'), findsOneWidget);
+    // Alttaki düğmeye kadar kaydır: üstündeki "Geçmiş bahislerim" alt menünün arkasında kalmasın.
+    await tester.scrollUntilVisible(find.text('Çıkış yap'), 200, scrollable: profileList);
+    await tester.ensureVisible(find.text('Geçmiş bahislerim'));
+    await tester.pumpAndSettle();
 
     await tester.tap(find.text('Geçmiş bahislerim'));
     await tester.pumpAndSettle();
@@ -1055,6 +1105,133 @@ void main() {
     await tester.tap(find.text('Tamam'));
     await tester.pumpAndSettle();
     expect(find.text('Seviye 3!'), findsNothing);
+  });
+
+  testWidgets('başarımlar: profilde sayı, ekranda hazır ödül, kademe, gizli başarım ve nadirlik', (tester) async {
+    await pumpApp(
+      tester,
+      userId: 'u1',
+      profile: _profile,
+      achievements: [
+        Achievement(
+          key: 'kampuslu',
+          category: 'progress',
+          title: 'Kampüslü',
+          description: 'Okul mailini doğrula.',
+          icon: '🎓',
+          tier: 1,
+          target: 1,
+          progress: 1,
+          rewardSp: 20,
+          rewardXp: 10,
+          unlockedAt: DateTime.utc(2026, 11, 22, 9),
+          schoolRate: 0.25,
+        ),
+        const Achievement(
+          key: 'ilk_tahmin',
+          category: 'prediction',
+          title: 'İlk Adım',
+          description: 'İlk tahminin sonuçlansın.',
+          icon: '🎯',
+          tier: 1,
+          target: 1,
+          progress: 1,
+          rewardSp: 20,
+          rewardXp: 10,
+          claimable: true,
+        ),
+        const Achievement(
+          key: 'muneccim',
+          category: 'prediction',
+          title: 'Müneccim',
+          description: '150 tahmini doğru bil.',
+          icon: '🔮',
+          tier: 3,
+          target: 150,
+          progress: 12,
+          rewardSp: 300,
+          rewardXp: 120,
+        ),
+        const Achievement(
+          key: 'ters_kose',
+          category: 'secret',
+          title: 'Gizli başarım',
+          description: 'Kazanınca ne olduğu açılır.',
+          icon: '❓',
+          tier: 2,
+          target: 1,
+          progress: 0,
+          rewardSp: 100,
+          rewardXp: 50,
+          hidden: true,
+        ),
+      ],
+    );
+    await tester.tap(find.text('Profil'));
+    await tester.pumpAndSettle();
+    final profileList = find.descendant(of: find.byType(ProfileTab), matching: find.byType(Scrollable)).first;
+    await tester.scrollUntilVisible(find.text('Başarımlar'), 200, scrollable: profileList);
+    expect(find.text('1 / 4 kazanıldı · 1 ödül hazır'), findsOneWidget);
+    await tester.ensureVisible(find.text('Başarımlar'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Başarımlar'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('1 / 4 başarım'), findsOneWidget);
+    expect(find.text('Ödülün hazır'), findsOneWidget);
+    expect(find.text('İlk Adım'), findsOneWidget);
+    expect(find.widgetWithText(FilledButton, 'Ödülü al'), findsOneWidget);
+    expect(find.text('Altın'), findsOneWidget);
+    expect(find.textContaining('12 / 150'), findsOneWidget);
+    expect(find.textContaining('okulda kazanan %25'), findsOneWidget);
+    await tester.scrollUntilVisible(find.text('Gizli başarım'), 200);
+    expect(find.text('Kazanınca ne olduğu açılır.'), findsOneWidget);
+    expect(find.textContaining('0 / 1'), findsNothing);
+  });
+
+  testWidgets('yeni başarım haberi: açılışta bekleyen ödül, sonra yeni kazanılan', (tester) async {
+    Achievement ach(String key, String title, {bool claimable = false}) => Achievement(
+      key: key,
+      category: 'prediction',
+      title: title,
+      description: 'Açıklama.',
+      icon: '🎯',
+      tier: 1,
+      target: 1,
+      progress: claimable ? 1 : 0,
+      rewardSp: 20,
+      rewardXp: 10,
+      claimable: claimable,
+    );
+    var list = [ach('ilk_tahmin', 'İlk Adım', claimable: true), ach('keskin_goz', 'Keskin Göz')];
+    await pumpApp(tester, userId: 'u1', profile: _profile, achievementsNow: () => list);
+    expect(find.text('🏆 Yeni başarım: 🎯 İlk Adım. Ödülünü al!'), findsOneWidget);
+    tester.state<ScaffoldMessengerState>(find.byType(ScaffoldMessenger)).clearSnackBars();
+    await tester.pumpAndSettle();
+
+    // İlerleme yeniden okununca yalnızca yeni kazanılan duyurulur.
+    list = [ach('ilk_tahmin', 'İlk Adım', claimable: true), ach('keskin_goz', 'Keskin Göz', claimable: true)];
+    ProviderScope.containerOf(tester.element(find.byType(NavigationBar))).invalidate(achievementsProvider);
+    await tester.pumpAndSettle();
+    expect(find.text('🏆 Yeni başarım: 🎯 Keskin Göz. Ödülünü al!'), findsOneWidget);
+
+    await tester.tap(find.text('Gör'));
+    await tester.pumpAndSettle();
+    expect(find.text('Ödülün hazır'), findsOneWidget);
+  });
+
+  test('başarım haberi metni', () {
+    const a = Achievement(
+      key: 'a', category: 'duel', title: 'A', description: 'd', icon: '⚔️', tier: 1, target: 1, progress: 1,
+      rewardSp: 1, rewardXp: 0, claimable: true,
+    );
+    const b = Achievement(
+      key: 'b', category: 'duel', title: 'B', description: 'd', icon: '🤺', tier: 1, target: 1, progress: 1,
+      rewardSp: 1, rewardXp: 0, claimable: true,
+    );
+    expect(newAchievementMessage(null, [a, b], firstLoadAnnounced: false), '🏆 2 başarımın ödülü hazır!');
+    expect(newAchievementMessage(null, [a, b], firstLoadAnnounced: true), isNull);
+    expect(newAchievementMessage([a, b], [a, b], firstLoadAnnounced: true), isNull);
   });
 
   test('yardımcılar: hesap engeli, kozmetik anahtarı, İstanbul haftası', () {

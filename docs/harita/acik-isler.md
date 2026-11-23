@@ -25,6 +25,8 @@ parantez ortaya çıktığı adım.
 - [15] Canlıda **davetli düello ve başka hakemli sosyal bahis açılmadı** (test hesabının SP'sini bağlamamak ve bulutta yeni deneme kaydı bırakmamak için): kişi seçme penceresi gerçek aramayla, seçim sonrası form görüldü; sunucu kuralları Adım 7-8 pgTAP'inde, istemci widget testinde.
 - [15] **Şifre sıfırlama linkiyle şifre ekranının açılması** gerçek mailin linkiyle denenmedi (Redirect URLs ayarı ve mail gerekir); yalnızca kod yolu yazıldı (`passwordRecovery` olayı → `HomeShell`).
 - [15] **Yasaklı / silinmiş hesabın otomatik çıkışı** canlıda denenmedi (gerçek yasaklı hesap yok); `KB025` tanıma birim testinde. **Seviye kutlaması** canlıda görülmedi (widget testinde). **Süperadmin okul süzgeci** süperadmin hesabıyla denenmedi.
+- [16] Canlıda yalnızca "Kampüslü" başarımının ödülü alındı ve 2. günün günlük ödülü takvimden alındı. Gizli başarım ("Ters Köşe"), çok kişili "okulda kazanan" oranı ve 7 / 14 / 30. gün bonuslarının takvimde alınması canlıda görülmedi (pgTAP ve widget testinde). Test hesabında 5 başarımın ödülü hazır bekliyor.
+- [16] Admin'in **Başarımlar** ekranı (liste, ekle, düzenle, aç / kapat) tarayıcıda giriş yapılarak denenmedi (süperadmin girişi gerekir); girişsiz istek giriş ekranına yönleniyor, `save_achievement` pgTAP'te.
 - [12-QA] Admin formlarının yeni davranışı (`ActionForm`: hata alınca girilenler kalır) tarayıcıda denenmedi (giriş gerekir); tip kontrolü ve derleme geçti.
 - [5] **Okul maili kodunun gerçek mail olarak gitmesi** (Brevo yolu). Yalnızca isteğin pg_net kuyruğuna girdiği test edildi; gerçek gönderim yok.
 - [4] **iOS derlemesi** hiç denenmedi (Mac ya da bulut CI gerekir).
@@ -37,7 +39,6 @@ parantez ortaya çıktığı adım.
 - [2-7] Aynı kişilerin sık eşleşmesini (SP aktarma şüphesi) izleme yok (KARARLAR öneri 1'deki kalan risk).
 - [10] Eski kayıtlar için **geriye dönük XP** verilmedi: XP yalnızca bu sürümden sonraki giriş, görev ve sonuçlanan bahislerden gelir (bulutta herkes 0 XP'den başladı).
 - [10] Seviye yalnızca **market ürünü** açıyor; seviyeyle özellik açma (ör. sosyal bahis açmak için en az seviye) yok.
-- [10] Günlük ödül bildirimi XP'yi yazmıyor (seviye atlama kutlaması Adım 15'te eklendi).
 - [10] Okul maili doğrulama, hakemlik ve itirazsız kesinleşen hakem kararı **XP vermiyor**.
 - [10] Admin'den **XP düzeltme** yok; `xp_level_step` değişirse mevcut seviyeler yeniden hesaplanmaz (elle: `update public.profiles set level = private.level_for_xp(xp);`).
 - [12] **Bildirimler** yok (push için Firebase projesi gerekir; uygulama içi bildirim kutusu da yok).
@@ -48,7 +49,7 @@ parantez ortaya çıktığı adım.
 - [14] Sıralamada gizli olmak yalnızca liderliği kapsar: profil (ad, soyad, okul, bölüm, seviye) okul arkadaşlarına açık kalır; sosyal bahiste açan / hakem adı görünür.
 - [11] Admin'den **kullanıcı silme** yok (yasaklama Adım 13'te eklendi); süperadmin hesabı uygulamadan silinemez (önce rolü SQL ile alınır).
 - [10] Canlı güncelleme (Supabase Realtime) yok; sıralama 10 dakikada bir hesaplanır.
-- [10] Başarım / rozet koleksiyonu (MIMARI §11) yok.
+- [16] Başarım haberi yalnızca uygulama açıkken (alt çubukta); kapalıyken telefona bildirim yok (Adım 17).
 - [10] Admin okul özeti yalnızca bu hafta; geçmiş haftalar ve grafik yok.
 - [9] Market'te tema, banner, emote ve bahis "flair"i türleri yok (v1: unvan, rozet, çerçeve, isim rengi); stoklu / sınırlı sayıda ürün yok.
 - [9] Admin'de ürünün kaç kez satıldığı ve görevin kaç kişi tarafından tamamlandığı görünmüyor (analitik).
@@ -70,6 +71,7 @@ parantez ortaya çıktığı adım.
 - [12-QA] Zamanlanmış işler (sosyal bahis, düello) birden çok bahsi tek transaction'da sonuçlandırır; aynı anda istemciden sonuçlandırılan ortak kişili bir bahisle nadiren kilitlenebilir (iş tarafı yakalar, istemci 40P01 alabilir).
 - [12-QA] Oturum anahtarları cihazda şifresiz (SharedPreferences) duruyor; yedeğe girmiyor ama köklü cihazda okunabilir. Gerekirse şifreli depolama (flutter_secure_storage) ile değiştirilebilir.
 - [14] İstek sınırı yalnızca **başarılı yazma** isteklerini sayar: başarısız istek transaction'la geri alındığı için sayaca girmez (hatalı isteklerle boğma sınırlanmaz); okuma istekleri ve IP başına sınır yok. Tam koruma için API'nin önüne ağ geçidi (ör. Cloudflare) gerekir.
+- [16] Başarım ilerlemesi her istekte kişinin bütün kayıtlarından hesaplanıyor (`achievement_metrics`); kayıt sayısı çok büyürse Profil / Başarımlar açılışı yavaşlayabilir (gerekirse önbellek ya da sayaç). Mevcut kullanıcılar geçmiş kayıtlarından kazandıkları başarımları ilk açılışta birden görür (test hesabında 6).
 - [15] Kişi aramada Türkçe büyük / küçük harf (İ / i, I / ı) eşleşmesi veritabanının yerel ayarına bağlı; denenmedi ("VEL" → "Veli" testte geçti).
 - [15] Davetli düelloda davet edilen kişiye bildirim gitmiyor; düelloyu Oyunlar sekmesinde görür (bildirimler Adım 16).
 - [14] Sıralamadan çıkan kişinin donmuş geçmiş haftalardaki satırları da silinir, açınca o haftalara geri dönmez (o haftanın sıra numaralarında boşluk kalır).
@@ -87,6 +89,7 @@ parantez ortaya çıktığı adım.
 - Admin panelini denemek için hesabının yetkili / süperadmin yapılması (süperadmin resmi bahse yatıramaz).
 - `KARARLAR.md` açık öneriler: 6 ("bahis" adı riski), 7 (mağaza zorunlulukları), 8 (Android öncelik).
 - Supabase Auth'ta sızdırılmış şifre koruması (HaveIBeenPwned) kapalı; advisors uyarıyor. Açmak panelden kullanıcının işi (Authentication ayarları; ücretsiz planda olmayabilir).
+- **Başarım listesi ve ödülleri taslak** (25 başarım, 20–300 SP, 0–120 XP; KARARLAR "Başarımlar ve günlük ödül takvimi"); XP / ekonomi rakamlarıyla birlikte gözden geçirilecek. Değişiklik yalnızca `achievements` güncellemesidir.
 - Resmi bahiste sabit oran mı havuz mu ("sonra tekrar bakarız").
 - Ekonomi rakamları taslak: başlangıç SP, günlük ödül, sosyal / düello / tahmin sınırları, itiraz süresi, ihtar sınırı, **görev ödülleri (20–150 SP) ve market fiyatları (SP 250–600, SSP 80–150)**, **liderlik isabet eşiği (5 tahmin / hafta, 20 tüm zamanlar)**, **XP (giriş 10, doğru tahmin 15, günde en fazla 60; görev günlük 20 / haftalık 50; seviye adımı 100; Altın çerçeve 3. seviye, Kehanet Ustası 5. seviye)**. Adım 9-10 kuralları (KARARLAR "Görevler", "Market", "Liderlik ve istatistik", "XP ve seviye") varsayılan olarak uygulandı.
 - **Yapılacak (kullanıcı, 2026-11-22): XP rakamları ve seviye kuralları birlikte yeniden ele alınacak.** Şu an varsayılan

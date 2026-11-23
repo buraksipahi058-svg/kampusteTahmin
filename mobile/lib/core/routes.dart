@@ -10,6 +10,7 @@ abstract final class Routes {
   static const verifyEmail = '/okul-maili';
   static const createSocialBet = '/sosyal-bahis-ac';
   static const quests = '/gorevler';
+  static const achievements = '/basarimlar';
   static const history = '/gecmis';
   static const privacy = '/kvkk';
   static const terms = '/kosullar';

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../achievements/achievements_screen.dart';
 import '../auth/auth_screen.dart';
 import '../bets/create_social_bet_screen.dart';
 import '../games/duel_play_screen.dart';
@@ -68,6 +69,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: Routes.verifyEmail, builder: (_, _) => const VerifyEmailScreen()),
       GoRoute(path: Routes.createSocialBet, builder: (_, _) => const CreateSocialBetScreen()),
       GoRoute(path: Routes.quests, builder: (_, _) => const QuestsScreen()),
+      GoRoute(path: Routes.achievements, builder: (_, _) => const AchievementsScreen()),
       GoRoute(path: Routes.history, builder: (_, _) => const HistoryScreen()),
       GoRoute(path: Routes.privacy, builder: (_, _) => const LegalScreen(LegalDocument.privacy)),
       GoRoute(path: Routes.terms, builder: (_, _) => const LegalScreen(LegalDocument.terms)),

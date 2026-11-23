@@ -75,6 +75,19 @@ süperadmin hepsini görür. `profiles.xp` / `level` önbellektir.
   `min_level`; yetmeyen satın alma `KB023`. `my_quests` görevin `reward_xp`'sini döner; `save_quest` (`p_reward_xp`) ve
   `save_market_item` (`p_min_level`) yeni parametreleri sonda, varsayılanlı.
 
+## Başarımlar ve günlük ödül takvimi (Adım 16)
+
+Kod: `20261122210722_basarim_degerleri.sql` (enum), `20261122210724_basarimlar_gunluk_odul.sql`. Test: `17_basarimlar.test.sql` (32), `para.mjs` 4c. Kurallar: KARARLAR "Başarımlar ve günlük ödül takvimi".
+
+- `achievements`: anahtar, kategori (`achievement_category`), ad, açıklama, simge, ölçüt, hedef, kademe (1 bronz, 2 gümüş, 3 altın), `reward_sp` (≥ 1), `reward_xp`, `hidden`, `sort`, `active`. Herkes (giriş yapan) okur; katalog migration'da (25 başarım), admin'den düzenleme yok.
+- `achievement_unlocks` (yalnızca eklenir): kişi + başarım, o anki ödül, `unlocked_at`. Görür: kendisi, okul arkadaşları (profilde rozet), süperadmin.
+- Ölçütler (`private.achievement_metrics(kişi)`, tüm zamanlar): predictions, correct, best_streak (sonuçlanmış tahminler, `settled_wagers`), duels_played, duels_won, perfect_duels (tüm sorular doğru), social_created (açtığı sonuçlanmış sosyal), fair_referee (hakemliğinde itirazla değişmeyen sonuçlanmış sosyal), login_streak (en uzun), sp_profit (net SP), level, items_owned, quests_claimed, verified, official_wins (SSP kazancı), underdog_wins (havuzlu bahiste kazanan taraf havuzun %20'sinden azken kazanmak).
+- `my_achievements()` → anahtar, kategori, ad, açıklama, simge, kademe, ölçüt, hedef, ilerleme (hedefle sınırlı), ödül, gizli, `unlocked_at`, `claimable`, `school_rate` (okulunda açanların oranı). Gizli ve kazanılmamışta ad / açıklama / simge / ölçüt gizlenir. Silinmiş: `P0002`.
+- `claim_achievement(anahtar)` → (SP, XP, bakiye): hedefe ulaşılmadıysa `KB027`, ikinci kez `KB028` (eşzamanlı istekte birincil anahtar bekletir), yok / kapalı `P0002`. SP `achievement_reward` / `achievement` ref ile ledger'a; XP `xp_on_ledger_entry` tetikleyicisiyle (`xp_reason.achievement`).
+- `daily_login_calendar()` → 7 satır (gün, ödül, bonus, alındı, bugün): serinin içinde bulunulan 7 günlük dilim; bugün alınmadıysa "bugün" dün alındıysa seri + 1, değilse 1. Tutar `claim_daily_login` formülüyle aynı.
+- Mobil: `lib/achievements/` (`/basarimlar`, Profil'de kart + hazır ödül rozeti), `lib/wallet/daily_reward_sheet.dart` (açılışta kişi başına bir kez, üst çubukta hediye simgesi; SP ve XP yazar). Başarıma yeni ulaşılınca ya da açılışta bekleyen ödül varsa alt çubukta haber + "Gör" (`newAchievementMessage`, `home_shell.dart`). [mobil](mobil.md)
+- Yönetim: `save_achievement(id?, anahtar, kategori, ad, açıklama, simge, ölçüt, hedef, kademe, SP, XP, gizli, sıra, açık)` yalnızca süperadmin (`42501`); anahtar değişmez (`23514`), bilinmeyen ölçüt / kademe `23514`, tekrar anahtar `23505`, olmayan `P0002`; denetim kaydı `achievement_save`. Admin `/basarimlar` (liste, kazanan sayısı, ekle, `[id]` düzenle, aç / kapat). Test: `18_basarim_yonetimi.test.sql` (15).
+
 ## Sıradaki işler
 
 - Seviyeyle özellik açma (ör. sosyal bahis açmak) yok; yalnızca market ürünü açılır. Geriye dönük XP verilmedi.

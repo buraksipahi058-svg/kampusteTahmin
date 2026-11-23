@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../achievements/achievements_data.dart';
 import '../core/routes.dart';
 import '../core/supabase.dart';
 import '../leaderboard/leaderboard_data.dart';
@@ -28,6 +29,8 @@ class ProfileTab extends ConsumerWidget {
     final studentEmail = ref.watch(studentEmailProvider).value;
     final cosmetics = ref.watch(myCosmeticsProvider);
     final readyRewards = (ref.watch(questsProvider).value ?? const <Quest>[]).where((q) => q.claimable).length;
+    final achievements = ref.watch(achievementsProvider).value ?? const <Achievement>[];
+    final readyAchievements = achievements.where((a) => a.claimable).length;
     final theme = Theme.of(context);
 
     if (profile == null) return const Center(child: CircularProgressIndicator());
@@ -108,6 +111,23 @@ class ProfileTab extends ConsumerWidget {
                   ? Badge(label: Text('$readyRewards'), child: const Icon(Icons.chevron_right))
                   : const Icon(Icons.chevron_right),
               onTap: () => context.push(Routes.quests),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.emoji_events_outlined),
+              title: const Text('Başarımlar'),
+              subtitle: Text(
+                achievements.isEmpty
+                    ? 'Tahmin, seri, düello ve daha fazlası'
+                    : '${achievements.where((a) => a.unlocked).length} / ${achievements.length} kazanıldı'
+                          '${readyAchievements > 0 ? ' · $readyAchievements ödül hazır' : ''}',
+              ),
+              trailing: readyAchievements > 0
+                  ? Badge(label: Text('$readyAchievements'), child: const Icon(Icons.chevron_right))
+                  : const Icon(Icons.chevron_right),
+              onTap: () => context.push(Routes.achievements),
             ),
           ),
           const SizedBox(height: 8),

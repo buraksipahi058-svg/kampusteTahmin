@@ -39,6 +39,7 @@ Yapılandırma: `admin/.env.local` (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUP
 | `app/(panel)/istatistik/` | `analitik_gor` / süperadmin: okul seçimi, bu haftanın okul özeti (`school_stats`), liderlik tablosu (seviye sütunlu; dönem ve ölçüt bağlantıları `?okul=&olcut=&donem=`, `get_leaderboard` ilk 50). Menüde ilk sırada |
 | `app/(panel)/kullanicilar/` | Süperadmin ve moderatör: kişi arama; yasakla / yasağı kaldır (süperadmin, `set_user_ban`), hakem ihtarını sıfırla (`reset_referee_strikes`) |
 | `app/(panel)/sosyal-bahisler/` | Moderatör: kapanışı geçmiş ve sonucu girilmemiş, ayrıca açık sosyal bahisler; gerekçeyle iptal (`cancel_social_bet`) |
+| `app/(panel)/basarimlar/` | Süperadmin: başarım listesi (kademe, ölçüt ≥ hedef, ödül, gizli, kazanan sayısı), ekleme, `[id]` düzenleme (anahtar salt okunur), aç / kapat (`save_achievement`); ölçüt adları `labels.ts` (veritabanı kısıtıyla aynı) |
 | `app/(panel)/yetkiler/` | Süperadmin: izin ver / geri al (`grant/revoke_permission`) |
 | `app/(panel)/bakiye/` | Süperadmin: `admin_grant` / `admin_adjust`, son yönetim işlemleri |
 

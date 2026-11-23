@@ -48,6 +48,7 @@ export default async function PanelLayout({ children }: LayoutProps<"/">) {
       : []),
     ...(staff.role === "superadmin"
       ? [
+          { href: "/basarimlar", label: "Başarımlar" },
           { href: "/yetkiler", label: "Yetkiler" },
           { href: "/bakiye", label: "SSP ver / bakiye düzelt" },
         ]

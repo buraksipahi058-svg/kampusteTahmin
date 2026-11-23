@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../achievements/achievements_data.dart';
 import '../core/supabase.dart';
 import '../profile/profile_data.dart';
 import '../wallet/wallet_data.dart';
@@ -152,6 +153,7 @@ Future<int> purchaseItem(WidgetRef ref, String itemId) async {
   final balance = await c.read(supabaseProvider).rpc('purchase_market_item', params: {'p_item_id': itemId});
   c.invalidate(myInventoryProvider);
   c.invalidate(balanceProvider);
+  c.invalidate(achievementsProvider);
   return balance as int;
 }
 

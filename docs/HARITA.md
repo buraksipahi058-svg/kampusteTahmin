@@ -5,10 +5,10 @@ gerektirdiği bölgeleri aç. Kod dosyalarını baştan sona okuma; bölge dosya
 
 ## Şu an
 
-- **Commit:** yalnızca kullanıcı onay verince, yalnızca yerel (push yok). Adım 7-9 `f45f3dc`'de; Adım 10 + XP / seviye `0ca9789`'da, Adım 11 `2fa4c08`'de, Adım 12 `ae29d5e`'de, Adım 13 `c205879`'da, Adım 14 `e62ac52`'de; Adım 15 çalışma ağacında, commit edilmedi.
-- **Son tamamlanan:** Adım 15 — mobil eksikler: belirli birine meydan okuma ve sosyal bahiste hakem seçme (kişi arama), düello bitince cevaplar, bahis / düello kartlarında kozmetikli ve dokunulabilir isimler, başkasının profili (liderlikten, kartlardan), geçmişte sayfalama + "Açtıklarım", seviye kutlaması, çift dokunma koruması, şifre linkiyle şifre ekranı, yasaklı / silinmiş hesapta otomatik çıkış, süperadmin için okul süzgeci. 670 pgTAP, 57 Flutter testi; release APK'da kişi arama, cevaplar, profil, kartlar ve geçmiş gerçek veriyle denendi. Önceki: Adım 14 (`e62ac52`).
+- **Commit:** yalnızca kullanıcı onay verince, yalnızca yerel (push yok). Adım 7-9 `f45f3dc`'de; Adım 10 + XP / seviye `0ca9789`'da, Adım 11 `2fa4c08`'de, Adım 12 `ae29d5e`'de, Adım 13 `c205879`'da, Adım 14 `e62ac52`'de; Adım 15 ve 16 çalışma ağacında, commit edilmedi.
+- **Son tamamlanan:** Adım 16 + eksikleri — başarımlar (25 başarım, bronz / gümüş / altın, ilerleme, nadirlik, gizli başarım, SP + XP ödülü; Profil > Başarımlar, başkasının profilinde rozetler, yeni başarım haberi), admin `/basarimlar` (süperadmin ekler / düzenler / kapatır) ve günlük ödül takvimi (açılışta 7 günlük takvim, "Ödülü al" SP + XP, hediye simgesi). 717 pgTAP, 60 Flutter, eşzamanlılık para 9/9, bahis 6/6; release APK'da takvim, ödül alma, başarım ödülü ve haber gerçek veriyle denendi. Adım 15 de bu çalışma ağacında (commit yok). Önceki: Adım 14 (`e62ac52`).
 - **Bulutta deneme verisi:** giriş yapamayan "Test Yetkili" profili (`e2e00000-...0001`), sonuçlanmış resmi ve sosyal deneme bahisleri, bir trivia düellosu, bir günün tahmini; kullanıcının test hesabı `deneme@ogr.ornek.edu.tr` ile doğrulanmış (820 SP, 20 XP, "Mor isim" kuşanılı). Seed'de 5 genel görev, 8 genel ürün.
-- **Sıradaki (öneri, açık işlerden):** Adım 16 uygulama içi bildirimler; Adım 17 gruplar; Adım 18 izleme / analitik. Ayrıca kullanıcının canlıya geçiş adımları ([yayin](harita/yayin.md) "Canlıya geçiş sırası"); uygulama tarafında kalanlar [acik-isler](harita/acik-isler.md)'de (bildirimler, ikon, admin panelinin girişle denenmesi, eksik özellikler).
+- **Sıradaki (öneri, açık işlerden):** Adım 17 uygulama içi bildirimler; Adım 18 gruplar; Adım 19 izleme / analitik. Ayrıca kullanıcının canlıya geçiş adımları ([yayin](harita/yayin.md) "Canlıya geçiş sırası"); uygulama tarafında kalanlar [acik-isler](harita/acik-isler.md)'de (bildirimler, ikon, admin panelinin girişle denenmesi, eksik özellikler).
 - **Açık işler** (denenmemiş, eksik, çözülmemiş, kullanıcıdan beklenen): [harita/acik-isler.md](harita/acik-isler.md).
 
 | # | Adım | Durum | Commit |
@@ -29,6 +29,7 @@ gerektirdiği bölgeleri aç. Kod dosyalarını baştan sona okuma; bölge dosya
 | 13 | Yönetim ve güvenlik eksikleri (istek bekçisi, yasaklama, ihtar, oran, admin ekranları) | Bitti | `c205879` |
 | 14 | Gizlilik (sıralamadan çıkma, veri dışa aktarma, istek sınırı, kullanım koşulları) | Bitti | `e62ac52` |
 | 15 | Mobil eksikler (kişi seçme, düello cevapları, kozmetikli isimler, başkasının profili, geçmiş, kutlama) | Bitti (commit yok) | |
+| 16 | Başarımlar (+ admin yönetimi, haber) + günlük ödül takvimi | Bitti (commit yok) | |
 
 ## Görev → ne okunur
 
@@ -38,7 +39,7 @@ gerektirdiği bölgeleri aç. Kod dosyalarını baştan sona okuma; bölge dosya
 | Admin ekranı (Adım 6) | [admin](harita/admin.md) + ilgili konu bölgesi | migration'lar |
 | Yeni SQL tablo / fonksiyon / RLS | [veritabani](harita/veritabani.md) + konu bölgesi + [testler](harita/testler.md) | eski test dosyalarının tamamı |
 | Okul, profil, yetki, okul maili (Adım 5) | [kimlik](harita/kimlik.md) | |
-| Bakiye, ödül, market, görev (Adım 9), XP / seviye | [para](harita/para.md) | |
+| Bakiye, ödül, market, görev (Adım 9), XP / seviye, başarımlar ve günlük ödül takvimi (Adım 16) | [para](harita/para.md) | |
 | Resmi / sosyal / mini oyun bahisleri (Adım 6-8) | [bahis](harita/bahis.md) | |
 | Liderlik, kişisel istatistik, admin okul özeti (Adım 10) | [liderlik](harita/liderlik.md) | |
 | Güvenlik kuralları, hesap silme, KVKK metni (Adım 11), istek bekçisi / sınırı, gizlilik, kullanım koşulları (Adım 13-14) | [guvenlik](harita/guvenlik.md) | |

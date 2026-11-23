@@ -103,6 +103,7 @@ class PublicProfile {
     required this.standings,
     this.department,
     this.schoolName,
+    this.badges = const [],
   });
 
   final String id;
@@ -114,6 +115,9 @@ class PublicProfile {
   final bool deleted;
   final Cosmetics cosmetics;
   final List<Standing> standings;
+
+  /// Kazandığı başarımlar (simge, ad, kademe), altından bronza.
+  final List<({String icon, String title, int tier})> badges;
 
   String get fullName => '$firstName $lastName';
 
@@ -144,6 +148,16 @@ final publicProfileProvider = FutureProvider.autoDispose.family<PublicProfile?, 
       .eq('user_id', userId)
       .or('period.eq.all_time,period_start.eq.$weekDay');
   final cosmetics = await ref.watch(cosmeticsOfProvider(userId).future);
+  // RLS: okul arkadaşının kazandığı başarımlar görünür.
+  final unlocks = await client
+      .from('achievement_unlocks')
+      .select('achievement:achievements(icon, title, tier)')
+      .eq('user_id', userId);
+  final badges = [
+    for (final u in unlocks)
+      if (u['achievement'] case final Map<String, dynamic> a)
+        (icon: a['icon'] as String, title: a['title'] as String, tier: a['tier'] as int),
+  ]..sort((a, b) => b.tier - a.tier);
   final standings = [
     for (final s in snapshots)
       for (final metric in LeaderboardMetric.values)
@@ -166,5 +180,6 @@ final publicProfileProvider = FutureProvider.autoDispose.family<PublicProfile?, 
     deleted: row['deleted_at'] != null,
     cosmetics: cosmetics[userId] ?? const Cosmetics(),
     standings: standings,
+    badges: badges,
   );
 });

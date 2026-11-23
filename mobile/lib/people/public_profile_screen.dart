@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../achievements/achievements_data.dart';
 import '../core/error_messages.dart';
 import '../core/routes.dart';
 import '../leaderboard/leaderboard_data.dart';
@@ -77,6 +78,31 @@ class PublicProfileScreen extends ConsumerWidget {
               textAlign: TextAlign.center,
               style: theme.textTheme.bodyMedium,
             ),
+            if (p.badges.isNotEmpty) ...[
+              const SizedBox(height: 24),
+              Text('Başarımlar (${p.badges.length})', style: theme.textTheme.titleMedium),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  for (final b in p.badges)
+                    Tooltip(
+                      message: '${b.title} (${tierLabel(b.tier)})',
+                      child: Container(
+                        width: 40,
+                        height: 40,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: tierColor(b.tier), width: 2),
+                        ),
+                        child: Text(b.icon, style: const TextStyle(fontSize: 18)),
+                      ),
+                    ),
+                ],
+              ),
+            ],
             const SizedBox(height: 24),
             Text('Sıralamalar', style: theme.textTheme.titleMedium),
             const SizedBox(height: 8),

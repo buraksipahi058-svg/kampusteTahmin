@@ -28,6 +28,9 @@ Konu bölgeleri: [kimlik.md](kimlik.md), [para.md](para.md), [bahis.md](bahis.md
 | `20261122182256_yasak_gerekcesi.sql` | 13 | yasak gerekçesi profilden kaldırıldı (okula açıktı), yalnızca denetim kaydında; `set_user_ban` yeniden |
 | `20261122200659_gizlilik.sql` | 14 | `profile_private.leaderboard_hidden` + `set_leaderboard_hidden`, `store_leaderboard` / `get_leaderboard` (gizliyi saymaz), `export_my_data`, `economy_settings.api_write_limit_per_minute`, `private.request_log` (unlogged) + `guard.check_request` (istek sınırı, `KB026`), 10 dakikalık `kampusbet_istek_sayaci` temizliği ([guvenlik](guvenlik.md)) |
 | `20261122203439_mobil_eksikler.sql` | 15 | `search_schoolmates` (meydan okuma / hakem için doğrulanmış okul arkadaşı arama), `trivia_duel_review` (bitmiş düellonun cevapları, yalnızca oynamış oyuncuya) ([bahis](bahis.md)) |
+| `20261122210722_basarim_degerleri.sql` | 16 | enum değerleri: `ledger_reason.achievement_reward`, `ledger_ref_type.achievement`, `xp_reason.achievement` (ayrı migration: yeni enum değeri aynı transaction'da kullanılamaz) |
+| `20261122210724_basarimlar_gunluk_odul.sql` | 16 | `achievements` (katalog, 25 başarım) + `achievement_unlocks` (yalnızca eklenir) + RLS, `private.achievement_metrics`, `my_achievements`, `claim_achievement`, `daily_login_calendar`; `xp_on_ledger_entry` ve tetikleyicisi, `xp_events_source` ve `ledger_sp_only_rewards` kısıtları yeniden ([para](para.md)) |
+| `20261122212408_basarim_yonetimi.sql` | 16 | `save_achievement` (yalnızca süperadmin; anahtar değişmez, denetim kaydı `achievement_save`) |
 | `20261122105335_gunun_tahmini.sql` | 8 | günün tahmini ayarları, `bets_settlement_by_type` (mini oyunda `admin` de olur), `place_wager` (yalnızca `auto` mini oyuna kapalı; admin sonuçlandırmalıda açan / kapatan yatıramaz), `create/settle/cancel_daily_prediction`, saatlik pg_cron işi |
 
 ## Koda inmek gerekirse
@@ -70,7 +73,7 @@ Buluttaki gerçek durumu görmek daha ucuzsa: `npx supabase db query --linked "s
 - **RLS:** her tabloda açık. Politikalarda `(select auth.uid())`, `(select private.is_superadmin())` gibi alt sorgu biçimi (her satırda tekrar çalışmasın). Kümeye göre görünürlük: `cluster_id in (select private.my_cluster_ids())`.
 - **Varsayılan yetkiler (Adım 11):** postgres'in oluşturduğu yeni tablo, dizi ve fonksiyon istemcilere ve PUBLIC'e kapalı başlar. Tablo için `grant select`, RPC için `grant execute ... to authenticated` açıkça yazılır; RLS politikasında kullanılan yeni `private` yardımcısı da `authenticated`'a açılmalı ve `12_guvenlik` testindeki listeye eklenmeli.
 - **Fonksiyonlar:** hepsi `set search_path = ''` ve tam nitelikli adlar (`public.x`, `private.y`). İstemci RPC'leri `security definer`; başta oturum (`auth.uid()`), sonra yetki, sonra girdi kontrolü. Her fonksiyonda `revoke execute ... from public, anon;` + gerekiyorsa `grant execute ... to authenticated;`. İç fonksiyonlarda yalnızca `revoke ... from public`.
-- **Yalnızca eklenen tablolar:** `private.forbid_change()` tetikleyicisi (update/delete/truncate → `55000`). Şu an: `ledger_entries`, `admin_audit_log`, `quest_claims`, `xp_events`.
+- **Yalnızca eklenen tablolar:** `private.forbid_change()` tetikleyicisi (update/delete/truncate → `55000`). Şu an: `ledger_entries`, `admin_audit_log`, `quest_claims`, `xp_events`, `achievement_unlocks`.
 - **Metin kolonları:** `char_length` aralığı + `= btrim(...)` + kontrol karakteri yasağı (`!~ '[[:cntrl:]]'`).
 - **Görünmeyen kayıt:** yetkisi olmayana "bulunamadı" (`P0002`) dönülür, "yetkin yok" değil (varlığı sızdırmamak için).
 - **Kilit sırası:** bahis satırı → bakiyeler (`user_id` sırasıyla) → profil satırları (XP, `user_id` sırasıyla). Profil satırı **`FOR NO KEY UPDATE`** ile kilitlenir, asla `FOR UPDATE` değil: profile yabancı anahtarla bağlı her ekleme (ledger, yatırım, görev ödülü) profilde `FOR KEY SHARE` tutar, `FOR UPDATE` onunla çakışıp kilitlenme yapar (QA'da görüldü). XP tetikleyicileri bakiye kilitlerinden sonra çalışır.
@@ -113,6 +116,8 @@ Buluttaki gerçek durumu görmek daha ucuzsa: `npx supabase db query --linked "s
 | `KB023` | Kişinin seviyesi ürünün en az seviyesine yetmiyor |
 | `KB024` | Sonuçlanmamış bahis / düello / hakemlik varken hesap silinemez |
 | `KB025` | Hesap silinmiş ya da yasaklı: istek bekçisi (`guard.check_request`) her API isteğini reddeder |
+| `KB027` | Başarım henüz kazanılmadı (ilerleme hedefe ulaşmadı) |
+| `KB028` | Başarımın ödülü zaten alındı |
 | `KB026` | İstek sınırı: kişinin son bir dakikadaki yazma isteği `economy_settings.api_write_limit_per_minute`'a ulaştı (bekçi) |
 | `42501` | Yetki yok / giriş gerekli |
 | `23514` | Geçersiz değer (kısıt) |
@@ -128,9 +133,9 @@ Buluttaki gerçek durumu görmek daha ucuzsa: `npx supabase db query --linked "s
 `membership_role` (member, owner) · `permission_key` (resmi_bahis_ac, resmi_bahis_kapat,
 kullanici_bahsi_denetle, market_yonet, gorev_yonet, kullanici_yonet, analitik_gor) ·
 `currency` (SP, SSP) · `ledger_reason` (signup_bonus, daily_login, quest_reward, bet_stake, bet_payout,
-bet_refund, market_purchase, admin_grant, admin_adjust) · `ledger_ref_type` (bet, wager, quest, market_item) ·
+bet_refund, market_purchase, admin_grant, admin_adjust, achievement_reward) · `ledger_ref_type` (bet, wager, quest, market_item, achievement) ·
 `bet_type` (ssp_official, sp_minigame, sp_social) · `bet_scope` (private, school, cross_school, global) ·
 `bet_status` (open, locked, settling, settled, cancelled) · `settlement_mode` (auto, admin, referee) ·
 `quest_period` (daily, weekly, seasonal) · `quest_action` (wager, prediction, duel, social_bet, win) ·
 `market_category` (title, badge, frame, name_color) · `leaderboard_period` (week, all_time) ·
-`leaderboard_metric` (hit_rate, sp_profit, ssp_profit, best_streak) · `xp_reason` (daily_login, quest, correct_pick).
+`leaderboard_metric` (hit_rate, sp_profit, ssp_profit, best_streak) · `xp_reason` (daily_login, quest, correct_pick, achievement) · `achievement_category` (prediction, streak, duel, social, loyalty, progress, secret).

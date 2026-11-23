@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../achievements/achievements_data.dart';
 import '../core/supabase.dart';
 
 // XP ve seviye sunucuda verilir ve hesaplanır (günlük giriş, görev, doğru tahmin; `my_progress`).
@@ -101,4 +102,6 @@ final xpEventsProvider = FutureProvider<List<XpEvent>>((ref) async {
 void refreshProgress(ProviderContainer c) {
   c.invalidate(myProgressProvider);
   c.invalidate(xpEventsProvider);
+  // Başarım ilerlemesi de aynı olaylardan (giriş, görev, bahis, satın alma) değişir.
+  c.invalidate(achievementsProvider);
 }

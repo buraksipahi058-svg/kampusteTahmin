@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../achievements/achievements_data.dart';
 import '../bets/bets_tab.dart';
 import '../core/account_guard.dart';
-import '../core/error_messages.dart';
 import '../core/routes.dart';
 import '../core/supabase.dart';
 import '../games/games_tab.dart';
@@ -13,6 +13,7 @@ import '../market/market_tab.dart';
 import '../profile/profile_tab.dart';
 import '../progress/progress_data.dart';
 import '../wallet/balance_bar.dart';
+import '../wallet/daily_reward_sheet.dart';
 import '../wallet/wallet_data.dart';
 import 'placeholder_tab.dart';
 
@@ -80,19 +81,36 @@ class HomeShell extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Açılışta günlük ödül bir kez istenir; alındıysa kullanıcıya söylenir.
-    ref.listen(dailyRewardProvider, (_, next) {
-      final messenger = ScaffoldMessenger.of(context);
-      switch (next) {
-        case AsyncData(value: DailyReward(claimed: true, :final amount, :final streak)):
-          refreshProgress(containerOf(ref));
-          messenger.showSnackBar(
-            SnackBar(content: Text('Günlük giriş ödülü: +${formatAmount(amount)} SP · Seri: $streak gün')),
-          );
-        case AsyncError(:final error):
-          messenger.showSnackBar(SnackBar(content: Text(userMessage(error))));
-        default:
-      }
+    // Açılışta bugünün ödülü alınmadıysa günlük ödül takvimi kişi başına bir kez kendiliğinden açılır.
+    ref.listen(dailyRewardReadyProvider, (_, ready) {
+      final userId = ref.read(currentUserIdProvider);
+      if (!ready || userId == null || ref.read(dailyRewardPromptedProvider) == userId) return;
+      ref.read(dailyRewardPromptedProvider.notifier).mark(userId);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (context.mounted) showDailyReward(context);
+      });
+    });
+    final rewardReady = ref.watch(dailyRewardReadyProvider);
+
+    // Yeni başarım haberi: hedefe yeni ulaşılan başarım (ilerleme yeniden okununca) ya da açılışta bekleyen ödüller
+    // (kişi başına bir kez). "Gör" başarımlar ekranını açar.
+    ref.listen(achievementsProvider, (previous, next) {
+      final now = next.value;
+      final userId = ref.read(currentUserIdProvider);
+      if (now == null || userId == null) return;
+      final message = newAchievementMessage(
+        previous?.value,
+        now,
+        firstLoadAnnounced: ref.read(achievementsAnnouncedProvider) == userId,
+      );
+      ref.read(achievementsAnnouncedProvider.notifier).mark(userId);
+      if (message == null) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message),
+          action: SnackBarAction(label: 'Gör', onPressed: () => context.push(Routes.achievements)),
+        ),
+      );
     });
 
     // Seviye atlayınca kutlama (ilerleme sunucudan yeniden okununca seviye büyüdüyse).
@@ -113,7 +131,18 @@ class HomeShell extends ConsumerWidget {
 
     final tab = homeTabs[shell.currentIndex];
     return Scaffold(
-      appBar: AppBar(title: Text(tab.label), actions: const [BalanceBar(), SizedBox(width: 8)]),
+      appBar: AppBar(
+        title: Text(tab.label),
+        actions: [
+          IconButton(
+            tooltip: 'Günlük ödül',
+            onPressed: () => showDailyReward(context),
+            icon: Badge(isLabelVisible: rewardReady, child: const Icon(Icons.card_giftcard)),
+          ),
+          const BalanceBar(),
+          const SizedBox(width: 8),
+        ],
+      ),
       body: shell,
       bottomNavigationBar: NavigationBar(
         selectedIndex: shell.currentIndex,
@@ -149,4 +178,40 @@ Future<void> showLevelUp(BuildContext context, int level) {
       ],
     ),
   );
+}
+
+/// Günlük ödül penceresinin kendiliğinden açıldığı kişi (oturum başına bir kez; çıkış / girişte yeni kişi için yine).
+class DailyRewardPrompted extends Notifier<String?> {
+  @override
+  String? build() => null;
+
+  void mark(String userId) => state = userId;
+}
+
+final dailyRewardPromptedProvider = NotifierProvider<DailyRewardPrompted, String?>(DailyRewardPrompted.new);
+
+/// Açılışta bekleyen başarım ödüllerinin duyurulduğu kişi (oturum başına bir kez).
+class AchievementsAnnounced extends Notifier<String?> {
+  @override
+  String? build() => null;
+
+  void mark(String userId) => state = userId;
+}
+
+final achievementsAnnouncedProvider = NotifierProvider<AchievementsAnnounced, String?>(AchievementsAnnounced.new);
+
+/// Başarım haberi metni: önceki listede kazanılmamış olup şimdi ödülü hazır olanlar; ilk yüklemede (önceki yok)
+/// henüz duyurulmadıysa bekleyen bütün hazır ödüller. Haber yoksa null.
+String? newAchievementMessage(List<Achievement>? before, List<Achievement> now, {required bool firstLoadAnnounced}) {
+  final List<Achievement> fresh;
+  if (before == null) {
+    if (firstLoadAnnounced) return null;
+    fresh = now.where((a) => a.claimable).toList();
+  } else {
+    final known = {for (final a in before) if (a.claimable || a.unlocked) a.key};
+    fresh = now.where((a) => a.claimable && !known.contains(a.key)).toList();
+  }
+  if (fresh.isEmpty) return null;
+  if (fresh.length == 1) return '🏆 Yeni başarım: ${fresh.first.icon} ${fresh.first.title}. Ödülünü al!';
+  return '🏆 ${fresh.length} başarımın ödülü hazır!';
 }

@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../achievements/achievements_data.dart';
 import '../core/supabase.dart';
 
 /// Okul maili durumu (`profile_private`; yalnızca kişinin kendisi görür).
@@ -49,6 +50,9 @@ Future<ConfirmResult> confirmStudentEmail(WidgetRef ref, String code) async {
   final rows = await c.read(supabaseProvider).rpc('confirm_student_email', params: {'p_code': code}) as List;
   final row = rows.first as Map<String, dynamic>;
   final result = ConfirmResult(verified: row['verified'] as bool, attemptsLeft: row['attempts_left'] as int);
-  if (result.verified) c.invalidate(studentEmailProvider);
+  if (result.verified) {
+    c.invalidate(studentEmailProvider);
+    c.invalidate(achievementsProvider);
+  }
   return result;
 }
