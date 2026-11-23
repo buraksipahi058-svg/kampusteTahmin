@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
 import '../core/error_messages.dart';
 import '../market/cosmetic_preview.dart';
@@ -74,7 +75,7 @@ class _PersonPickerSheetState extends ConsumerState<_PersonPickerSheet> {
                     textInputAction: TextInputAction.search,
                     decoration: const InputDecoration(
                       labelText: 'Ad ya da soyad',
-                      prefixIcon: Icon(Icons.search),
+                      prefixIcon: Icon(Symbols.search_rounded),
                       border: OutlineInputBorder(),
                     ),
                   ),

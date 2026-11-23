@@ -9,7 +9,14 @@ import '../quests/quests_data.dart';
 import '../wallet/wallet_data.dart';
 
 class BetOption {
-  const BetOption({required this.id, required this.label, required this.position, this.odds, this.poolAmount = 0, this.isWinner});
+  const BetOption({
+    required this.id,
+    required this.label,
+    required this.position,
+    this.odds,
+    this.poolAmount = 0,
+    this.isWinner,
+  });
 
   final String id;
   final String label;
@@ -167,9 +174,7 @@ Future<List<Bet>> _fetchBets(Ref ref, String type) async {
   final schoolId = await mySchoolId(ref);
   var query = ref.watch(supabaseProvider).from('bets').select(_betColumns).eq('type', type);
   if (schoolId != null) query = query.eq('cluster_id', schoolId);
-  final rows = await query
-      .order('created_at', ascending: false)
-      .limit(30);
+  final rows = await query.order('created_at', ascending: false).limit(30);
   return rows.map(Bet.fromJson).toList();
 }
 
@@ -189,9 +194,7 @@ final dailyPredictionsProvider = FutureProvider<List<Bet>>((ref) async {
       .eq('type', 'sp_minigame')
       .eq('settlement_mode', 'admin');
   if (schoolId != null) query = query.eq('cluster_id', schoolId);
-  final rows = await query
-      .order('locks_at', ascending: false)
-      .limit(10);
+  final rows = await query.order('locks_at', ascending: false).limit(10);
   return rows.map(Bet.fromJson).toList();
 });
 
@@ -283,10 +286,9 @@ void refreshAfterBet(ProviderContainer c) {
 /// `public.place_wager`: bakiye, sınırlar ve kurallar sunucuda denetlenir.
 Future<void> placeWager(WidgetRef ref, {required String betId, required String optionId, required int amount}) async {
   final c = containerOf(ref);
-  await c.read(supabaseProvider).rpc(
-    'place_wager',
-    params: {'p_bet_id': betId, 'p_option_id': optionId, 'p_amount': amount},
-  );
+  await c
+      .read(supabaseProvider)
+      .rpc('place_wager', params: {'p_bet_id': betId, 'p_option_id': optionId, 'p_amount': amount});
   refreshAfterBet(c);
 }
 
@@ -302,28 +304,29 @@ Future<void> createSocialBet(
   String? refereeId,
 }) async {
   final c = containerOf(ref);
-  await c.read(supabaseProvider).rpc(
-    'create_social_bet',
-    params: {
-      'p_cluster_id': clusterId,
-      'p_title': title,
-      'p_description': description,
-      'p_options': options,
-      'p_locks_at': locksAt.toUtc().toIso8601String(),
-      'p_max_stake': ?maxStake,
-      'p_referee_id': ?refereeId,
-    },
-  );
+  await c
+      .read(supabaseProvider)
+      .rpc(
+        'create_social_bet',
+        params: {
+          'p_cluster_id': clusterId,
+          'p_title': title,
+          'p_description': description,
+          'p_options': options,
+          'p_locks_at': locksAt.toUtc().toIso8601String(),
+          'p_max_stake': ?maxStake,
+          'p_referee_id': ?refereeId,
+        },
+      );
   refreshAfterBet(c);
 }
 
 /// `public.submit_social_result`: yalnızca hakem; itiraz süresinin bitişini döner.
 Future<DateTime> submitSocialResult(WidgetRef ref, {required String betId, required String optionId}) async {
   final c = containerOf(ref);
-  final until = await c.read(supabaseProvider).rpc(
-    'submit_social_result',
-    params: {'p_bet_id': betId, 'p_option_id': optionId},
-  );
+  final until = await c
+      .read(supabaseProvider)
+      .rpc('submit_social_result', params: {'p_bet_id': betId, 'p_option_id': optionId});
   refreshAfterBet(c);
   return DateTime.parse(until as String);
 }

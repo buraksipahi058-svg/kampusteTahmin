@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
 import '../core/async_button.dart';
 import '../core/error_messages.dart';
@@ -38,8 +39,8 @@ class _MarketTabState extends ConsumerState<MarketTab> {
         children: [
           SegmentedButton<bool>(
             segments: const [
-              ButtonSegment(value: false, label: Text('SP vitrini'), icon: Icon(Icons.storefront_outlined)),
-              ButtonSegment(value: true, label: Text('SSP özel'), icon: Icon(Icons.workspace_premium_outlined)),
+              ButtonSegment(value: false, label: Text('SP vitrini'), icon: Icon(Symbols.storefront_rounded)),
+              ButtonSegment(value: true, label: Text('SSP özel'), icon: Icon(Symbols.workspace_premium_rounded)),
             ],
             selected: {_ssp},
             onSelectionChanged: (s) => setState(() => _ssp = s.first),
@@ -79,7 +80,7 @@ class _ItemList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (items.isEmpty) {
-      return const EmptyView(text: 'Bu vitrinde şu an ürün yok.', icon: Icons.storefront_outlined);
+      return const EmptyView(text: 'Bu vitrinde şu an ürün yok.', icon: Symbols.storefront_rounded);
     }
     return Column(
       children: [for (final item in items) MarketItemCard(item: item, owned: owned[item.id])],
@@ -130,7 +131,7 @@ class MarketItemCard extends ConsumerWidget {
           ),
           null when locked => OutlinedButton.icon(
             onPressed: null,
-            icon: const Icon(Icons.lock_outline, size: 18),
+            icon: const Icon(Symbols.lock_rounded, size: 18),
             label: Text('Seviye ${item.minLevel}'),
           ),
           null => AsyncButton(

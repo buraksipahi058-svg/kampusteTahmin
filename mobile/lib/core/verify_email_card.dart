@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
 import 'routes.dart';
 
@@ -13,9 +14,9 @@ class VerifyEmailCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Card(
     child: ListTile(
-      leading: const Icon(Icons.mark_email_unread_outlined),
+      leading: const Icon(Symbols.mark_email_unread_rounded),
       title: Text(text),
-      trailing: const Icon(Icons.chevron_right),
+      trailing: const Icon(Symbols.chevron_right_rounded),
       onTap: () => context.push(Routes.verifyEmail),
     ),
   );

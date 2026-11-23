@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
+import '../core/app_theme.dart';
 import '../core/async_button.dart';
 import '../core/error_messages.dart';
+import '../core/haptics.dart';
+import '../core/icon_badge.dart';
 import '../core/state_views.dart';
 import '../core/supabase.dart';
 import '../progress/progress_data.dart';
@@ -36,6 +40,7 @@ class _DailyRewardSheetState extends ConsumerState<_DailyRewardSheet> {
     final c = containerOf(ref);
     try {
       final reward = await claimDailyReward(c);
+      Haptics.success();
       refreshProgress(c);
       if (mounted) setState(() => _result = reward);
     } catch (e) {
@@ -58,7 +63,11 @@ class _DailyRewardSheetState extends ConsumerState<_DailyRewardSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text('🎁 Günlük ödül', style: theme.textTheme.titleLarge, textAlign: TextAlign.center),
+            const Center(
+              child: IconBadge(icon: Symbols.redeem_rounded, tone: BadgeTone.gold, size: 56),
+            ),
+            const SizedBox(height: 12),
+            Text('Günlük ödül', style: theme.textTheme.titleLarge, textAlign: TextAlign.center),
             const SizedBox(height: 4),
             Text(
               today == null
@@ -141,8 +150,13 @@ class _DayTile extends StatelessWidget {
           Text('${day.day}. gün', style: theme.textTheme.labelSmall),
           const SizedBox(height: 4),
           day.claimed
-              ? Icon(Icons.check_circle, color: scheme.primary, size: 24)
-              : Text(day.bonus > 0 ? '🎉' : '🪙', style: const TextStyle(fontSize: 20)),
+              ? Icon(Symbols.check_circle_rounded, fill: 1, color: scheme.primary, size: 24)
+              : Icon(
+                  day.bonus > 0 ? Symbols.featured_seasonal_and_gifts_rounded : Symbols.toll_rounded,
+                  size: 24,
+                  fill: day.bonus > 0 ? 1 : 0,
+                  color: day.bonus > 0 ? context.appColors.ssp : scheme.onSurfaceVariant,
+                ),
           const SizedBox(height: 4),
           Text('+${formatAmount(day.amount)}', style: theme.textTheme.labelLarge),
           if (day.bonus > 0)

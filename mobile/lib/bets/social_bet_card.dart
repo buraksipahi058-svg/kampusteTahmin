@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../core/design_tokens.dart';
 import '../core/error_messages.dart';
 import '../market/market_data.dart';
 import '../people/public_profile_screen.dart';
 import '../wallet/wallet_data.dart';
+import 'bet_option_button.dart';
 import 'bets_data.dart';
 import 'bets_tab.dart';
 
@@ -62,13 +64,21 @@ class SocialBetCard extends ConsumerWidget {
                     children: [
                       if (bet.creatorId != null && bet.creatorId != bet.refereeId) ...[
                         const Text('Açan:'),
-                        PersonLabel(userId: bet.creatorId!, name: bet.creatorName ?? '?', cosmetics: looks[bet.creatorId]),
+                        PersonLabel(
+                          userId: bet.creatorId!,
+                          name: bet.creatorName ?? '?',
+                          cosmetics: looks[bet.creatorId],
+                        ),
                       ],
                       if (isReferee || bet.refereeId == null)
                         Text('Hakem: ${isReferee ? 'sen' : '?'}')
                       else ...[
                         const Text('Hakem:'),
-                        PersonLabel(userId: bet.refereeId!, name: bet.refereeName ?? '?', cosmetics: looks[bet.refereeId]),
+                        PersonLabel(
+                          userId: bet.refereeId!,
+                          name: bet.refereeName ?? '?',
+                          cosmetics: looks[bet.refereeId],
+                        ),
                       ],
                       Text('· Havuz: ${formatAmount(bet.poolTotal)} SP'),
                     ],
@@ -81,22 +91,31 @@ class SocialBetCard extends ConsumerWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Text(bet.description!, style: theme.textTheme.bodySmall),
               ),
-            for (final option in bet.options)
-              ListTile(
-                dense: true,
-                leading: option.isWinner == true
-                    ? Icon(Icons.emoji_events, color: theme.colorScheme.primary)
-                    : bet.status == 'settling' && option.id == bet.proposedOptionId
-                    ? const Icon(Icons.gavel)
-                    : null,
-                title: Text(option.label),
-                trailing: Text('${formatAmount(option.poolAmount)} SP'),
-                onTap: open && wager == null && canBet && !isReferee ? () => showWagerSheet(context, bet, option) : null,
+            const SizedBox(height: Space.sm),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: Space.lg),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  for (final option in bet.options)
+                    BetOptionButton(
+                      label: option.label,
+                      value: '${formatAmount(option.poolAmount)} SP',
+                      share: bet.poolTotal > 0 ? option.poolAmount / bet.poolTotal : null,
+                      winner: option.isWinner == true,
+                      proposed: bet.status == 'settling' && option.id == bet.proposedOptionId,
+                      chosen: chosen?.id == option.id,
+                      onTap: open && wager == null && canBet && !isReferee
+                          ? () => showWagerSheet(context, bet, option)
+                          : null,
+                    ),
+                ],
               ),
+            ),
             if (wager != null && chosen != null)
               Padding(
-                padding: const EdgeInsets.fromLTRB(16, 4, 16, 4),
-                child: Text(wagerText(bet, wager, chosen)),
+                padding: const EdgeInsets.symmetric(horizontal: Space.lg),
+                child: BetResultText(text: wagerText(bet, wager, chosen), won: (wager.payout ?? 0) > wager.amount),
               )
             else if (open && canBet && !isReferee)
               Padding(

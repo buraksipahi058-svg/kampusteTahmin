@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
 import '../core/app_theme.dart';
+import '../core/design_tokens.dart';
 import '../core/error_messages.dart';
 import 'wallet_data.dart';
 
@@ -19,23 +21,32 @@ class BalanceBar extends ConsumerWidget {
       content = Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          _Amount(icon: Icons.toll, amount: value.sp, unit: 'SP'),
+          _Amount(icon: Symbols.toll_rounded, amount: value.sp, unit: 'SP'),
           const SizedBox(width: 12),
-          _Amount(icon: Icons.workspace_premium, amount: value.ssp, unit: 'SSP', color: context.appColors.ssp),
+          _Amount(
+            icon: Symbols.workspace_premium_rounded,
+            amount: value.ssp,
+            unit: 'SSP',
+            color: context.appColors.ssp,
+          ),
         ],
       );
     } else if (balance.hasError) {
-      content = const Icon(Icons.sync_problem);
+      content = const Icon(Symbols.sync_problem_rounded);
     } else {
       content = const SizedBox.square(dimension: 18, child: CircularProgressIndicator(strokeWidth: 2));
     }
 
-    return Tooltip(
-      message: balance.hasError ? userMessage(balance.error!) : 'Bakiyeyi yenile',
-      child: InkWell(
-        borderRadius: BorderRadius.circular(20),
-        onTap: () => ref.invalidate(balanceProvider),
-        child: Padding(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6), child: content),
+    // Üst çubukta yer dar: büyük yazı ayarında bakiye en çok 1,3 kat büyür (yoksa ekran başlığını iter).
+    return MediaQuery.withClampedTextScaling(
+      maxScaleFactor: 1.3,
+      child: Tooltip(
+        message: balance.hasError ? userMessage(balance.error!) : 'Bakiyeyi yenile',
+        child: InkWell(
+          borderRadius: BorderRadius.circular(20),
+          onTap: () => ref.invalidate(balanceProvider),
+          child: Padding(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6), child: content),
+        ),
       ),
     );
   }
@@ -61,10 +72,16 @@ class _Amount extends StatelessWidget {
         children: [
           Icon(icon, size: 18, color: color),
           const SizedBox(width: 4),
-          // Sabit genişlikli rakam: bakiye değişince yanındakiler kaymaz.
-          Text(
-            formatAmount(amount),
-            style: const TextStyle(fontWeight: FontWeight.w600, fontFeatures: [FontFeature.tabularFigures()]),
+          // Bakiye değişince eski sayıdan yenisine kısa sayım (yalnızca değişince; ilk çizimde ve "animasyonları
+          // azalt" açıkken yok). Sabit genişlikli rakam: sayarken yanındakiler kaymaz.
+          TweenAnimationBuilder<double>(
+            tween: Tween(end: amount.toDouble()),
+            duration: Motion.reduced(context) ? Duration.zero : const Duration(milliseconds: 400),
+            curve: Motion.easeOut,
+            builder: (_, value, _) => Text(
+              formatAmount(value.round()),
+              style: const TextStyle(fontWeight: FontWeight.w600, fontFeatures: [FontFeature.tabularFigures()]),
+            ),
           ),
           const SizedBox(width: 2),
           Text(unit, style: Theme.of(context).textTheme.labelSmall),

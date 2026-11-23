@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
 import '../bets/bets_data.dart';
 import '../campus/campus_data.dart';
+import '../core/icon_badge.dart';
 import '../core/routes.dart';
 import '../core/supabase.dart';
 import '../core/verify_email_card.dart';
@@ -31,7 +33,9 @@ class GamesTab extends ConsumerWidget {
               .length
         : 0;
     final doableTasks = ready
-        ? (ref.watch(campusTasksProvider).value ?? const <CampusTask>[]).where((t) => t.canSubmit && !t.notStarted).length
+        ? (ref.watch(campusTasksProvider).value ?? const <CampusTask>[])
+              .where((t) => t.canSubmit && !t.notStarted)
+              .length
         : 0;
     final myDuels = ready
         ? (ref.watch(triviaDuelsProvider).value ?? const <TriviaDuel>[])
@@ -58,7 +62,7 @@ class GamesTab extends ConsumerWidget {
             const SizedBox(height: 16),
           ],
           _GameCard(
-            icon: Icons.lightbulb_outline,
+            icon: Symbols.lightbulb_rounded,
             title: 'Günün tahmini',
             subtitle: "Evet ya da Hayır'a SP yatır, doğru bilenler havuzu paylaşır",
             count: openPredictions,
@@ -66,7 +70,7 @@ class GamesTab extends ConsumerWidget {
             route: Routes.dailyPredictions,
           ),
           _GameCard(
-            icon: Icons.qr_code_2,
+            icon: Symbols.qr_code_2_rounded,
             title: 'Kampüs görevleri',
             subtitle: 'Yemekhane, kütüphane, etkinlik: QR okut ya da fotoğraf çek, ödül kazan',
             count: doableTasks,
@@ -74,7 +78,7 @@ class GamesTab extends ConsumerWidget {
             route: Routes.campus,
           ),
           _GameCard(
-            icon: Icons.quiz_outlined,
+            icon: Symbols.quiz_rounded,
             title: 'Trivia düellosu',
             subtitle: 'Okulundan biriyle aynı soruları çöz, kazanan havuzu alır',
             count: myDuels,
@@ -111,11 +115,7 @@ class _GameCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        leading: CircleAvatar(
-          backgroundColor: theme.colorScheme.primaryContainer,
-          foregroundColor: theme.colorScheme.onPrimaryContainer,
-          child: Icon(icon),
-        ),
+        leading: IconBadge(icon: icon, size: 44),
         title: Text(title, style: theme.textTheme.titleMedium),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -125,9 +125,13 @@ class _GameCard extends StatelessWidget {
               Text(countText, style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.primary)),
           ],
         ),
+        // Rozet büyük yazı ayarında en çok 1,3 kat büyür (kart kenarından taşmasın).
         trailing: count > 0
-            ? Badge(label: Text('$count'), child: const Icon(Icons.chevron_right))
-            : const Icon(Icons.chevron_right),
+            ? MediaQuery.withClampedTextScaling(
+                maxScaleFactor: 1.3,
+                child: Badge(label: Text('$count'), child: const Icon(Symbols.chevron_right_rounded)),
+              )
+            : const Icon(Symbols.chevron_right_rounded),
         onTap: () => context.push(route),
       ),
     );

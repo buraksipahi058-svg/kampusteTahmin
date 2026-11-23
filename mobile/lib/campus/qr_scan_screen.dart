@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
+import '../core/celebration.dart';
 import '../core/error_messages.dart';
 import '../core/supabase.dart';
 import '../wallet/wallet_data.dart';
@@ -11,14 +13,15 @@ import 'campus_data.dart';
 typedef ScannerViewBuilder = Widget Function(void Function(String raw) onCode);
 
 final scannerViewProvider = Provider<ScannerViewBuilder>(
-  (ref) => (onCode) => MobileScanner(
-    onDetect: (capture) {
-      for (final b in capture.barcodes) {
-        final raw = b.rawValue;
-        if (raw != null) onCode(raw);
-      }
-    },
-  ),
+  (ref) =>
+      (onCode) => MobileScanner(
+        onDetect: (capture) {
+          for (final b in capture.barcodes) {
+            final raw = b.rawValue;
+            if (raw != null) onCode(raw);
+          }
+        },
+      ),
 );
 
 /// `/kampus-gorevleri/:id/okut`: görevin QR'ını okut. Kod doğruysa ödül hemen gelir. Kamera açılmazsa kod
@@ -66,14 +69,14 @@ class _QrScanScreenState extends ConsumerState<QrScanScreen> {
       refreshAfterCampusTask(c);
       if (!mounted) return;
       setState(() => _requesting = false);
-      await showDialog<void>(
-        context: context,
-        builder: (dialogContext) => AlertDialog(
-          icon: const Text('🎉', style: TextStyle(fontSize: 40)),
-          title: const Text('Görev tamam!'),
-          content: Text('+${formatAmount(r.amount)} ${r.currency}${r.xp > 0 ? ' · +${r.xp} XP' : ''} kazandın.'),
-          actions: [FilledButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('Harika'))],
-        ),
+      await showCelebration(
+        context,
+        icon: Symbols.task_alt_rounded,
+        title: 'Görev tamam!',
+        message: '+${formatAmount(r.amount)} ${r.currency}${r.xp > 0 ? ' · +${r.xp} XP' : ''} kazandın.',
+        actions: (dialogContext) => [
+          FilledButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('Harika')),
+        ],
       );
       navigator.pop();
     } catch (e) {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
 import '../core/error_messages.dart';
 import 'trivia_data.dart';
@@ -60,7 +61,8 @@ class _QuestionCard extends StatelessWidget {
                 child: Row(
                   children: [
                     Icon(
-                      i == item.correctIndex ? Icons.check_circle : Icons.circle_outlined,
+                      i == item.correctIndex ? Symbols.check_circle_rounded : Symbols.circle_rounded,
+                      fill: i == item.correctIndex ? 1 : 0,
                       size: 18,
                       color: i == item.correctIndex ? scheme.primary : scheme.outline,
                     ),

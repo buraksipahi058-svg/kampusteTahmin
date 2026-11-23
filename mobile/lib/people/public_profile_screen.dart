@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../achievements/achievement_badge.dart';
 import '../achievements/achievements_data.dart';
 import '../core/app_theme.dart';
 import '../core/error_messages.dart';
@@ -94,16 +95,7 @@ class PublicProfileScreen extends ConsumerWidget {
                   for (final b in p.badges)
                     Tooltip(
                       message: '${b.title} (${tierLabel(b.tier)})',
-                      child: Container(
-                        width: 40,
-                        height: 40,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(color: tierColor(b.tier), width: 2),
-                        ),
-                        child: Text(b.icon, style: const TextStyle(fontSize: 18)),
-                      ),
+                      child: AchievementBadge(tier: b.tier, achievementKey: b.key, category: b.category, size: 40),
                     ),
                 ],
               ),

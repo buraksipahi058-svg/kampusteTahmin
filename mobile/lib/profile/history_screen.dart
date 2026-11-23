@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
 import '../bets/bets_data.dart';
 import '../bets/bets_tab.dart' show formatIstanbul, wagerText;
@@ -58,7 +59,7 @@ class _Wagers extends ConsumerWidget {
       },
       child: switch (history) {
         AsyncData(:final value) when value.isEmpty => ListView(
-          children: const [EmptyView(text: 'Henüz bir bahse katılmadın.', icon: Icons.history)],
+          children: const [EmptyView(text: 'Henüz bir bahse katılmadın.', icon: Symbols.history_rounded)],
         ),
         AsyncData(:final value) => ListView(
           padding: const EdgeInsets.all(16),
@@ -96,7 +97,7 @@ class _OwnBets extends ConsumerWidget {
       child: switch (ref.watch(myOwnSocialBetsProvider)) {
         AsyncData(:final value) when value.isEmpty => ListView(
           children: const [
-            EmptyView(text: 'Açtığın ya da hakemi olduğun sosyal bahis yok.', icon: Icons.groups_outlined),
+            EmptyView(text: 'Açtığın ya da hakemi olduğun sosyal bahis yok.', icon: Symbols.groups_rounded),
           ],
         ),
         AsyncData(:final value) => ListView(
@@ -191,8 +192,8 @@ class _EntryCard extends StatelessWidget {
         ),
         isThreeLine: chosen != null,
         trailing: switch ((bet.status, chosen?.isWinner)) {
-          ('settled', true) => Icon(Icons.check_circle, color: theme.colorScheme.primary),
-          ('settled', _) => Icon(Icons.cancel_outlined, color: theme.colorScheme.error),
+          ('settled', true) => Icon(Symbols.check_circle_rounded, fill: 1, color: theme.colorScheme.primary),
+          ('settled', _) => Icon(Symbols.cancel_rounded, color: theme.colorScheme.error),
           _ => null,
         },
       ),

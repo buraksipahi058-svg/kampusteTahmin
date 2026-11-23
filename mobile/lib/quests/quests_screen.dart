@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
 import '../bets/bets_tab.dart';
 import '../core/async_button.dart';
@@ -36,7 +37,7 @@ class QuestsScreen extends ConsumerWidget {
             switch (quests) {
               AsyncData(value: final list) when list.isEmpty => const EmptyView(
                 text: 'Şu an görev yok.',
-                icon: Icons.flag_outlined,
+                icon: Symbols.flag_rounded,
               ),
               AsyncData(value: final list) => Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -118,7 +119,7 @@ class QuestCard extends ConsumerWidget {
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.check_circle, size: 18, color: theme.colorScheme.primary),
+                      Icon(Symbols.check_circle_rounded, size: 18, fill: 1, color: theme.colorScheme.primary),
                       const SizedBox(width: 4),
                       const Text('Alındı'),
                     ],

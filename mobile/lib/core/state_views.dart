@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
 import 'design_tokens.dart';
 import 'error_messages.dart';
+import 'icon_badge.dart';
 
 /// Liste yüklenirken: ortada dönen gösterge (içeriği kaydırmaz).
 class LoadingView extends StatelessWidget {
@@ -18,7 +20,7 @@ class LoadingView extends StatelessWidget {
 
 /// Boş liste: simge, açıklama, istenirse bir eylem. Her liste boş durumunu böyle gösterir.
 class EmptyView extends StatelessWidget {
-  const EmptyView({super.key, required this.text, this.icon = Icons.inbox_outlined, this.action});
+  const EmptyView({super.key, required this.text, this.icon = Symbols.inbox_rounded, this.action});
 
   final String text;
   final IconData icon;
@@ -32,7 +34,7 @@ class EmptyView extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 40, color: theme.colorScheme.outline),
+          IconBadge(icon: icon, tone: BadgeTone.neutral, size: 64),
           const SizedBox(height: Space.md),
           Text(
             text,
@@ -63,7 +65,7 @@ class ErrorView extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.cloud_off_outlined, size: 40, color: theme.colorScheme.outline),
+          const IconBadge(icon: Symbols.cloud_off_rounded, tone: BadgeTone.neutral, size: 64),
           const SizedBox(height: Space.md),
           Text('$what ${userMessage(error)}', textAlign: TextAlign.center, style: theme.textTheme.bodyMedium),
           if (onRetry != null) ...[

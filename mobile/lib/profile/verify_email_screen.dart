@@ -86,8 +86,7 @@ class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen> {
     return null;
   }
 
-  String? _validateCode(String? v) =>
-      RegExp(r'^[0-9]{6}$').hasMatch((v ?? '').trim()) ? null : 'Kod 6 haneli olmalı.';
+  String? _validateCode(String? v) => RegExp(r'^[0-9]{6}$').hasMatch((v ?? '').trim()) ? null : 'Kod 6 haneli olmalı.';
 
   @override
   Widget build(BuildContext context) {
@@ -144,8 +143,7 @@ class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen> {
                   ),
                 ),
               const SizedBox(height: 16),
-              if (_info != null)
-                Padding(padding: const EdgeInsets.only(bottom: 16), child: Text(_info!)),
+              if (_info != null) Padding(padding: const EdgeInsets.only(bottom: 16), child: Text(_info!)),
               if (_error != null)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 16),

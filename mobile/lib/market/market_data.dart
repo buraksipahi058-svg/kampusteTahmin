@@ -114,8 +114,7 @@ final marketItemsProvider = FutureProvider<List<MarketItem>>((ref) async {
   final schoolId = await mySchoolId(ref);
   var query = ref.watch(supabaseProvider).from('market_items').select(marketItemColumns).eq('active', true);
   if (schoolId != null) query = query.or('school_id.is.null,school_id.eq.$schoolId');
-  final rows = await query
-      .order('price', ascending: true);
+  final rows = await query.order('price', ascending: true);
   return rows.map(MarketItem.fromJson).toList();
 });
 

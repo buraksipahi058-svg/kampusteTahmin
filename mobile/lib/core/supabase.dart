@@ -9,9 +9,7 @@ ProviderContainer containerOf(WidgetRef ref) => ProviderScope.containerOf(ref.co
 final supabaseProvider = Provider<SupabaseClient>((ref) => Supabase.instance.client);
 
 /// Supabase Auth olayları (giriş, çıkış, şifre sıfırlama linkiyle gelme...).
-final authChangesProvider = StreamProvider<AuthState>(
-  (ref) => ref.watch(supabaseProvider).auth.onAuthStateChange,
-);
+final authChangesProvider = StreamProvider<AuthState>((ref) => ref.watch(supabaseProvider).auth.onAuthStateChange);
 
 /// Giriş yapmış kullanıcının id'si; oturum yoksa null. Oturum açılınca / kapanınca yeniden hesaplanır.
 final currentUserIdProvider = Provider<String?>((ref) {

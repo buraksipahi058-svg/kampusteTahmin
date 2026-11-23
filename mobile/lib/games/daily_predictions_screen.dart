@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
 import '../bets/bets_data.dart';
 import '../core/state_views.dart';
@@ -47,7 +48,7 @@ class DailyPredictionsScreen extends ConsumerWidget {
               AsyncData(value: final list) when list.isEmpty && verified == false => const SizedBox.shrink(),
               AsyncData(value: final list) when list.isEmpty => const EmptyView(
                 text: 'Şu an tahmin sorusu yok.',
-                icon: Icons.lightbulb_outline,
+                icon: Symbols.lightbulb_rounded,
               ),
               AsyncData(value: final list) => Column(
                 children: [

@@ -2,9 +2,13 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
 import '../core/async_button.dart';
+import '../core/celebration.dart';
 import '../core/error_messages.dart';
+import '../core/haptics.dart';
+import '../core/icon_badge.dart';
 import '../core/state_views.dart';
 import '../core/supabase.dart';
 import '../wallet/wallet_data.dart';
@@ -62,14 +66,18 @@ class _PhotoSubmitScreenState extends ConsumerState<PhotoSubmitScreen> {
       await c.read(campusApiProvider).submitPhoto(widget.taskId, photo);
       refreshAfterCampusTask(c);
       if (!mounted) return;
-      await showDialog<void>(
-        context: context,
-        builder: (dialogContext) => AlertDialog(
-          icon: const Text('📸', style: TextStyle(fontSize: 40)),
-          title: const Text('Gönderildi'),
-          content: const Text('Okulunun yetkilisi onaylayınca ödülün hesabına geçer; sonucu bildirimlerde görürsün.'),
-          actions: [FilledButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('Tamam'))],
-        ),
+      // Henüz ödül yok (onay bekler): kutlama titreşimi yerine hafif "gönderildi" titreşimi.
+      Haptics.light();
+      await showCelebration(
+        context,
+        haptic: false,
+        icon: Symbols.photo_camera_rounded,
+        tone: BadgeTone.primary,
+        title: 'Gönderildi',
+        message: 'Okulunun yetkilisi onaylayınca ödülün hesabına geçer; sonucu bildirimlerde görürsün.',
+        actions: (dialogContext) => [
+          FilledButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('Tamam')),
+        ],
       );
       navigator.pop();
     } catch (e) {
@@ -117,7 +125,7 @@ class _PhotoSubmitScreenState extends ConsumerState<PhotoSubmitScreen> {
           if (photo == null)
             FilledButton.icon(
               onPressed: _preparing ? null : _capture,
-              icon: const Icon(Icons.photo_camera_outlined),
+              icon: const Icon(Symbols.photo_camera_rounded),
               label: const Text('Fotoğraf çek'),
             )
           else ...[

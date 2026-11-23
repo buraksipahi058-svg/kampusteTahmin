@@ -2,8 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
+import '../core/app_theme.dart';
+import '../core/design_tokens.dart';
 import '../core/error_messages.dart';
+import '../core/haptics.dart';
 import '../core/routes.dart';
 import '../core/state_views.dart';
 import '../core/supabase.dart';
@@ -12,6 +16,7 @@ import '../market/market_data.dart';
 import '../people/people_data.dart';
 import '../profile/student_email_data.dart';
 import '../wallet/wallet_data.dart';
+import 'bet_option_button.dart';
 import 'bets_data.dart';
 import 'social_bet_card.dart';
 
@@ -55,8 +60,8 @@ class _BetsTabState extends ConsumerState<BetsTab> {
         children: [
           SegmentedButton<bool>(
             segments: const [
-              ButtonSegment(value: false, label: Text('Resmi'), icon: Icon(Icons.emoji_events_outlined)),
-              ButtonSegment(value: true, label: Text('Sosyal'), icon: Icon(Icons.groups_outlined)),
+              ButtonSegment(value: false, label: Text('Resmi'), icon: Icon(Symbols.emoji_events_rounded)),
+              ButtonSegment(value: true, label: Text('Sosyal'), icon: Icon(Symbols.groups_rounded)),
             ],
             selected: {_social},
             onSelectionChanged: (s) => setState(() => _social = s.first),
@@ -77,7 +82,7 @@ class _BetsTabState extends ConsumerState<BetsTab> {
             const SizedBox(height: 12),
             FilledButton.tonalIcon(
               onPressed: () => context.push(Routes.createSocialBet),
-              icon: const Icon(Icons.add),
+              icon: const Icon(Symbols.add_rounded),
               label: const Text('Sosyal bahis aç'),
             ),
           ],
@@ -87,7 +92,7 @@ class _BetsTabState extends ConsumerState<BetsTab> {
             AsyncData(value: final list) when list.isEmpty && verified == false => const SizedBox.shrink(),
             AsyncData(value: final list) when list.isEmpty => EmptyView(
               text: _social ? 'Henüz sosyal bahis yok.' : 'Şu an resmi bahis yok.',
-              icon: _social ? Icons.groups_outlined : Icons.emoji_events_outlined,
+              icon: _social ? Symbols.groups_rounded : Symbols.emoji_events_rounded,
             ),
             AsyncData(value: final list) => Column(
               children: [
@@ -132,43 +137,101 @@ class BetCard extends StatelessWidget {
     final chosen = wager == null ? null : bet.options.where((o) => o.id == wager.optionId).firstOrNull;
 
     return Card(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: Space.md),
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8),
+        padding: const EdgeInsets.fromLTRB(Space.lg, Space.lg, Space.lg, Space.sm),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            ListTile(
-              title: Text(bet.title, style: theme.textTheme.titleMedium),
-              subtitle: Text(betStatusText(bet, open)),
-            ),
-            if (bet.description != null)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Text(bet.description!, style: theme.textTheme.bodySmall),
-              ),
+            BetCardHeader(title: bet.title, status: betStatusText(bet, open), open: open),
+            if (bet.description != null) ...[
+              const SizedBox(height: Space.sm),
+              Text(bet.description!, style: theme.textTheme.bodySmall),
+            ],
+            const SizedBox(height: Space.md),
             for (final option in bet.options)
-              ListTile(
-                dense: true,
-                leading: option.isWinner == true ? Icon(Icons.emoji_events, color: theme.colorScheme.primary) : null,
-                title: Text(option.label),
-                trailing: Text(option.odds == null ? '' : formatOdds(option.odds!), style: theme.textTheme.titleMedium),
+              BetOptionButton(
+                label: option.label,
+                value: option.odds == null ? '' : formatOdds(option.odds!),
+                winner: option.isWinner == true,
+                chosen: chosen?.id == option.id,
                 onTap: open && wager == null && canBet && option.odds != null
                     ? () => showWagerSheet(context, bet, option)
                     : null,
               ),
             if (wager != null && chosen != null)
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
-                child: Text(wagerText(bet, wager, chosen), style: theme.textTheme.bodyMedium),
-              )
+              BetResultText(text: wagerText(bet, wager, chosen), won: (wager.payout ?? 0) > wager.amount)
             else if (open && canBet)
               Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                padding: const EdgeInsets.only(bottom: Space.sm),
                 child: Text('Yatırım yapmak için bir seçeneğe dokun.', style: theme.textTheme.bodySmall),
               ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Bahis kartı başlığı: başlık, altında durum (açıkken vurgulu renkte, saat simgeli).
+class BetCardHeader extends StatelessWidget {
+  const BetCardHeader({super.key, required this.title, required this.status, required this.open, this.icon});
+
+  final String title;
+  final String status;
+  final bool open;
+  final IconData? icon;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final statusColor = open ? theme.colorScheme.primary : theme.colorScheme.onSurfaceVariant;
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (icon != null) ...[Icon(icon, color: theme.colorScheme.primary), const SizedBox(width: Space.md)],
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title, style: theme.textTheme.titleMedium),
+              if (status.isNotEmpty) ...[
+                const SizedBox(height: Space.xs),
+                Row(
+                  children: [
+                    Icon(open ? Symbols.schedule_rounded : Symbols.lock_clock_rounded, size: 14, color: statusColor),
+                    const SizedBox(width: Space.xs),
+                    Flexible(
+                      child: Text(status, style: theme.textTheme.bodySmall?.copyWith(color: statusColor)),
+                    ),
+                  ],
+                ),
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Kişinin yatırımının sonucu / durumu; kazandıysa yeşil ve kalın.
+class BetResultText extends StatelessWidget {
+  const BetResultText({super.key, required this.text, this.won = false});
+
+  final String text;
+  final bool won;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.only(top: Space.xs, bottom: Space.sm),
+      child: Text(
+        text,
+        style: won
+            ? theme.textTheme.bodyMedium?.copyWith(color: context.appColors.success, fontWeight: FontWeight.w600)
+            : theme.textTheme.bodyMedium,
       ),
     );
   }
@@ -256,6 +319,7 @@ class _WagerSheetState extends ConsumerState<WagerSheet> {
     try {
       await placeWager(ref, betId: bet.id, optionId: widget.option.id, amount: amount);
       if (!mounted) return;
+      Haptics.light();
       final messenger = ScaffoldMessenger.of(context);
       Navigator.of(context).pop();
       messenger.showSnackBar(SnackBar(content: Text('Yatırım yapıldı: ${formatAmount(amount)} ${bet.currency}')));
@@ -273,49 +337,82 @@ class _WagerSheetState extends ConsumerState<WagerSheet> {
     final odds = widget.option.odds;
     final amount = _value;
     final balance = ref.watch(balanceProvider).value;
+    final current = balance == null ? null : (bet.currency == 'SSP' ? balance.ssp : balance.sp);
+    // Hızlı tutarlar: en az / en fazla tutar ve bakiye içinde kalanlar.
+    final quick = [10, 25, 50, 100]
+        .where(
+          (v) => v >= bet.minStake && (bet.maxStake == null || v <= bet.maxStake!) && (current == null || v <= current),
+        )
+        .toList();
 
     return Padding(
-      padding: EdgeInsets.fromLTRB(24, 24, 24, 24 + MediaQuery.of(context).viewInsets.bottom),
+      // Üstte tema tutamağı var; üst boşluk ona bırakılır.
+      padding: EdgeInsets.fromLTRB(Space.xl, 0, Space.xl, Space.xl + MediaQuery.of(context).viewInsets.bottom),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(bet.title, style: theme.textTheme.titleMedium),
-          const SizedBox(height: 4),
-          Text(odds == null ? widget.option.label : '${widget.option.label} · oran ${formatOdds(odds)}'),
-          if (balance != null)
-            Text(
-              '${bet.currency} bakiyen: ${formatAmount(bet.currency == 'SSP' ? balance.ssp : balance.sp)}',
-              style: theme.textTheme.bodySmall,
+          const SizedBox(height: Space.xs),
+          Text(
+            odds == null ? widget.option.label : '${widget.option.label} · oran ${formatOdds(odds)}',
+            style: tabular(
+              theme.textTheme.bodyLarge?.copyWith(color: theme.colorScheme.primary, fontWeight: FontWeight.w600),
             ),
-          const SizedBox(height: 16),
+          ),
+          if (current != null)
+            Text('${bet.currency} bakiyen: ${formatAmount(current)}', style: tabular(theme.textTheme.bodySmall)),
+          const SizedBox(height: Space.lg),
           TextField(
             controller: _amount,
             enabled: !_busy,
             autofocus: true,
             keyboardType: TextInputType.number,
+            textInputAction: TextInputAction.done,
             inputFormatters: [FilteringTextInputFormatter.digitsOnly],
             decoration: InputDecoration(
               labelText: 'Yatırılacak ${bet.currency}',
               helperText: bet.maxStake == null ? null : 'En fazla ${formatAmount(bet.maxStake!)}',
-              border: const OutlineInputBorder(),
             ),
             onChanged: (_) => setState(() => _error = null),
             onSubmitted: (_) => _submit(),
           ),
-          const SizedBox(height: 8),
+          if (quick.isNotEmpty) ...[
+            const SizedBox(height: Space.sm),
+            Wrap(
+              spacing: Space.sm,
+              children: [
+                for (final v in quick)
+                  ActionChip(
+                    label: Text('$v ${bet.currency}'),
+                    onPressed: _busy
+                        ? null
+                        : () {
+                            Haptics.selection();
+                            _amount.text = '$v';
+                            _amount.selection = TextSelection.collapsed(offset: _amount.text.length);
+                            setState(() => _error = null);
+                          },
+                  ),
+              ],
+            ),
+          ],
+          const SizedBox(height: Space.md),
           Text(
             odds == null
                 ? 'Havuz sistemi: kazananlar toplam havuzu yatırdıkları oranda paylaşır.'
                 : amount == null || amount <= 0
                 ? ' '
                 : 'Kazanırsan: ${formatAmount(potentialPayout(amount, odds))} ${bet.currency}',
+            style: odds == null
+                ? theme.textTheme.bodySmall
+                : tabular(theme.textTheme.titleSmall?.copyWith(color: context.appColors.success)),
           ),
           if (_error != null) ...[
-            const SizedBox(height: 8),
+            const SizedBox(height: Space.sm),
             Text(_error!, style: TextStyle(color: theme.colorScheme.error)),
           ],
-          const SizedBox(height: 16),
+          const SizedBox(height: Space.lg),
           FilledButton(
             onPressed: _busy ? null : _submit,
             child: _busy

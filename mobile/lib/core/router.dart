@@ -31,11 +31,7 @@ import 'supabase.dart';
 /// Akış: oturum yok → giriş; profil sorgusu bitmedi → yükleniyor; profil yok → profil oluşturma;
 /// profil var → sekmeler. KVKK metni ve kullanım koşulları her durumda açılır (kayıttan önce de). Yönlendirme gerekmiyorsa null.
 @visibleForTesting
-String? redirectFor({
-  required String location,
-  required String? userId,
-  required AsyncValue<ProfileStatus> profile,
-}) {
+String? redirectFor({required String location, required String? userId, required AsyncValue<ProfileStatus> profile}) {
   if (location == Routes.privacy || location == Routes.terms) return null;
   if (userId == null) return location == Routes.auth ? null : Routes.auth;
 
@@ -108,7 +104,9 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (_, _, shell) => HomeShell(shell: shell),
         branches: [
           for (final tab in homeTabs)
-            StatefulShellBranch(routes: [GoRoute(path: tab.path, builder: (_, _) => tab.view)]),
+            StatefulShellBranch(
+              routes: [GoRoute(path: tab.path, builder: (_, _) => tab.view)],
+            ),
         ],
       ),
     ],

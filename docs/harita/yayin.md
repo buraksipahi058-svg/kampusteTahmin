@@ -19,7 +19,7 @@ Kurallar: KARARLAR "Yayına hazırlık". Kullanıcının yapacakları [acik-isle
 ## Canlıya geçiş sırası
 
 1. **Kararlar:** uygulama adı ve kimliği (`com.kampusbet.kampusbet` mağazaya ilk yüklemeden sonra değişmez; KARARLAR
-   öneri 6-7), ikon, gerçek okul adı + öğrenci mail alan adı, KVKK metnindeki boşluklar, ekonomi / XP rakamları.
+   öneri 6-7), ikon (18c'de çizildi, istenirse tasarımcıya yeniden yaptırılır: `mobile/tool/make_icon.py`), gerçek okul adı + öğrenci mail alan adı, KVKK metnindeki boşluklar, ekonomi / XP rakamları.
 2. **Canlı Supabase projesi** (geliştirme projesinden ayrı; bölge Frankfurt):
    - `npx supabase link --project-ref <canlı-ref>` → `npx supabase db push` (tüm migration'lar). Seed yerine gerçek okul
      ve alan adı SQL ile (seed'deki "Örnek Üniversitesi" ve deneme verisi canlıya girmez).

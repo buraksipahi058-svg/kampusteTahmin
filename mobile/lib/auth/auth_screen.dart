@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../core/app_info.dart';
+import '../core/brand_logo.dart';
 import '../core/error_messages.dart';
 import '../core/routes.dart';
 import '../core/supabase.dart';
@@ -137,6 +138,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
+                    const Center(child: BrandLogo(size: 80)),
+                    const SizedBox(height: 16),
                     Text(AppInfo.name, textAlign: TextAlign.center, style: theme.textTheme.headlineLarge),
                     const SizedBox(height: 8),
                     Text(
@@ -186,10 +189,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                       const SizedBox(height: 16),
                       TextFormField(
                         controller: _passwordAgain,
-                        decoration: const InputDecoration(
-                          labelText: 'Şifre (tekrar)',
-                          border: OutlineInputBorder(),
-                        ),
+                        decoration: const InputDecoration(labelText: 'Şifre (tekrar)', border: OutlineInputBorder()),
                         obscureText: true,
                         textInputAction: TextInputAction.done,
                         onFieldSubmitted: (_) => _submit(),
@@ -208,25 +208,19 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                           : Text(signUp ? 'Kayıt ol' : 'Giriş yap'),
                     ),
                     if (signUp) ...[
-                      TextButton(
-                        onPressed: () => context.push(Routes.terms),
-                        child: const Text('Kullanım Koşulları'),
-                      ),
+                      TextButton(onPressed: () => context.push(Routes.terms), child: const Text('Kullanım Koşulları')),
                       TextButton(
                         onPressed: () => context.push(Routes.privacy),
-                        child: const Text('Kişisel verilerin nasıl işlenir: KVKK Aydınlatma Metni', textAlign: TextAlign.center),
+                        child: const Text(
+                          'Kişisel verilerin nasıl işlenir: KVKK Aydınlatma Metni',
+                          textAlign: TextAlign.center,
+                        ),
                       ),
                     ],
                     if (!signUp)
-                      TextButton(
-                        onPressed: _busy ? null : _forgotPassword,
-                        child: const Text('Şifremi unuttum'),
-                      ),
+                      TextButton(onPressed: _busy ? null : _forgotPassword, child: const Text('Şifremi unuttum')),
                     if (_awaitingConfirmation != null && !signUp)
-                      TextButton(
-                        onPressed: _busy ? null : _resend,
-                        child: const Text('Onay mailini yeniden gönder'),
-                      ),
+                      TextButton(onPressed: _busy ? null : _resend, child: const Text('Onay mailini yeniden gönder')),
                   ],
                 ),
               ),
@@ -254,10 +248,7 @@ class _Message extends StatelessWidget {
         color: isError ? colors.errorContainer : colors.secondaryContainer,
         borderRadius: BorderRadius.circular(8),
       ),
-      child: Text(
-        text,
-        style: TextStyle(color: isError ? colors.onErrorContainer : colors.onSecondaryContainer),
-      ),
+      child: Text(text, style: TextStyle(color: isError ? colors.onErrorContainer : colors.onSecondaryContainer)),
     );
   }
 }

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
 import '../bets/bets_tab.dart' show formatIstanbul;
+import '../core/icon_badge.dart';
 import '../core/routes.dart';
 import '../core/state_views.dart';
 import '../core/verify_email_card.dart';
@@ -45,7 +47,7 @@ class CampusTasksScreen extends ConsumerWidget {
               AsyncData(:final value) when value.isEmpty && verified == false => const SizedBox.shrink(),
               AsyncData(:final value) when value.isEmpty => const EmptyView(
                 text: 'Okulunda şu an açık kampüs görevi yok.',
-                icon: Icons.qr_code_2,
+                icon: Symbols.qr_code_2_rounded,
               ),
               AsyncData(:final value) => Column(children: [for (final t in value) CampusTaskCard(task: t)]),
               AsyncError(:final error) => ErrorView(
@@ -91,7 +93,7 @@ class CampusTaskCard extends StatelessWidget {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(t.icon, style: const TextStyle(fontSize: 28)),
+                EmojiToken(emoji: t.icon, size: 48, background: theme.colorScheme.primaryContainer),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -138,13 +140,13 @@ class CampusTaskCard extends StatelessWidget {
               if (t.verification == 'qr')
                 FilledButton.icon(
                   onPressed: () => context.push(Routes.campusScan(t.id)),
-                  icon: const Icon(Icons.qr_code_scanner),
+                  icon: const Icon(Symbols.qr_code_scanner_rounded),
                   label: const Text('QR okut'),
                 )
               else
                 FilledButton.icon(
                   onPressed: () => context.push(Routes.campusPhoto(t.id)),
-                  icon: const Icon(Icons.photo_camera_outlined),
+                  icon: const Icon(Symbols.photo_camera_rounded),
                   label: const Text('Fotoğraf çek'),
                 ),
             ],

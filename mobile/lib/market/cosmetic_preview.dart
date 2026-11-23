@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
+import '../core/app_theme.dart';
 import 'market_data.dart';
 
-/// Ürünün küçük önizlemesi: unvan / rozet simgesi, çerçeve rengi ya da isim rengi.
+/// Ürünün küçük önizlemesi: unvan / rozet simgesi ve isim rengi yuvarlatılmış kare jetonda (koleksiyon parçası gibi),
+/// çerçeve ise profil resmi gibi daire içinde kendi renginde kenarla.
 class CosmeticPreview extends StatelessWidget {
   const CosmeticPreview({super.key, required this.item, this.size = 40});
 
@@ -18,14 +21,23 @@ class CosmeticPreview extends StatelessWidget {
       height: size,
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: theme.colorScheme.surfaceContainerHighest,
+        shape: item.category == 'frame' ? BoxShape.circle : BoxShape.rectangle,
+        borderRadius: item.category == 'frame' ? null : BorderRadius.circular(size * 0.3),
+        color: theme.colorScheme.surfaceContainerHigh,
         border: item.category == 'frame' && color != null ? Border.all(color: color, width: 3) : null,
       ),
       child: switch (item.category) {
-        'name_color' => Text('Aa', style: TextStyle(color: color, fontWeight: FontWeight.bold)),
-        'frame' => Icon(Icons.person, color: theme.colorScheme.onSurfaceVariant),
-        _ => Text(item.icon ?? '★', style: TextStyle(fontSize: size * 0.45)),
+        'name_color' => Text(
+          'Aa',
+          style: TextStyle(
+            color: readableNameColor(context, color),
+            fontWeight: FontWeight.w800,
+            fontSize: size * 0.38,
+          ),
+        ),
+        'frame' => Icon(Symbols.person_rounded, color: theme.colorScheme.onSurfaceVariant),
+        _ when item.icon == null => Icon(Symbols.star_rounded, fill: 1, size: size * 0.5),
+        _ => Text(item.icon!, style: TextStyle(fontSize: size * 0.5, height: 1)),
       },
     );
   }

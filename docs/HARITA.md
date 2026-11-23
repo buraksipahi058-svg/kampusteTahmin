@@ -5,8 +5,8 @@ gerektirdiği bölgeleri aç. Kod dosyalarını baştan sona okuma; bölge dosya
 
 ## Şu an
 
-- **Commit:** yalnızca kullanıcı onay verince, yalnızca yerel (push yok). Adım 7-9 `f45f3dc`'de; Adım 10 + XP / seviye `0ca9789`'da, Adım 11 `2fa4c08`'de, Adım 12 `ae29d5e`'de, Adım 13 `c205879`'da, Adım 14 `e62ac52`'de; Adım 15 `d1fbcb0`, 16 `820159b`, 17 `5a5cb8a`, 17a `5a82a51`, 17b `7111dc2`, güvenlik kontrolü 2 `d937b4f`, Oyunlar menüsü `d43c5c9` (adım başına ayrı commit; ara commit'lerde de mobil analiz, Flutter testleri ve admin tip kontrolü temiz).
-- **Son tamamlanan (commit yok):** Adım 18a, mobil tasarım sistemi ([tasarim](harita/tasarim.md)): açık + karanlık tema (telefonun ayarına göre), yazı hiyerarşisi, kart / girdi / snackbar / alt sayfa temaları, SSP altın rengi, ortak yükleniyor / boş / hata bileşenleri (14 kopya kalktı), kozmetik isim rengi okunurluğu; 72 Flutter testi. Önceki: Oyunlar menüsü (`d43c5c9`).
+- **Commit:** yalnızca kullanıcı onay verince, yalnızca yerel (push yok). Adım 7-9 `f45f3dc`'de; Adım 10 + XP / seviye `0ca9789`'da, Adım 11 `2fa4c08`'de, Adım 12 `ae29d5e`'de, Adım 13 `c205879`'da, Adım 14 `e62ac52`'de; Adım 15 `d1fbcb0`, 16 `820159b`, 17 `5a5cb8a`, 17a `5a82a51`, 17b `7111dc2`, güvenlik kontrolü 2 `d937b4f`, Oyunlar menüsü `d43c5c9`, 18a `2d5e833` (adım başına ayrı commit; ara commit'lerde de mobil analiz, Flutter testleri ve admin tip kontrolü temiz).
+- **Son tamamlanan (commit yok):** Adım 18c, ikon ve görsel uyumu: bütün ikonlar Material Symbols Rounded, arayüzde emoji yerine ikon rozetleri, başarımlar kademe halkalı ikon rozetleri, içerik emojileri tek tip jetonda, yeni uygulama ikonu (yeşil "K" + altın nokta) ve giriş / yükleniyor logosu. Ondan önce Adım 18b, mobil ekranlar ve hareket ([tasarim](harita/tasarim.md) "Ekranlar"): bahis seçenekleri dokunulabilir düğme (oran / havuz, pay çubuğu, kazanan / seçilen), yatırımda hızlı tutar çipleri, düelloda seçim vurgusu + geçiş (cevap anahtarı sızmadan), kutlama pencereleri ve titreşimler, bakiye sayımı, Profil grupları, liderlikte ilk üç ve kendi satırın, %200 yazıda üst çubuk düzeltmesi; 72 Flutter testi, telefona kuruldu. Önceki: 18a (`2d5e833`).
 - **Bulutta deneme verisi:** giriş yapamayan "Test Yetkili" profili (`e2e00000-...0001`), sonuçlanmış resmi ve sosyal deneme bahisleri, bir trivia düellosu, bir günün tahmini; kullanıcının test hesabı `deneme@ogr.ornek.edu.tr` ile doğrulanmış (820 SP, 20 XP, "Mor isim" kuşanılı); ikinci test hesabı `test1@ogr.ornek.edu.tr` **süperadmin** (2026-11-23; admin paneline bununla girilir, resmi bahse yatıramaz; giriş e-postası da okul maili de bu; Supabase uydurma alan adıyla kayda izin vermediği için panelden "Auto Confirm" ile açıldı, okul maili veritabanında doğrulandı, şifre kullanıcıda); oynamak için üçüncü hesap `test2@ogr.ornek.edu.tr` (öğrenci, kullanıcı panelden açtı, okul maili veritabanında doğrulandı). Seed'de 5 genel görev, 8 genel ürün.
 - **Sıradaki:** fotoğraf silme için Vault anahtarı (kullanıcının işi, [yayin](harita/yayin.md)). Sonrası öneri: gruplar, izleme / analitik. Ayrıca kullanıcının canlıya geçiş adımları ([yayin](harita/yayin.md) "Canlıya geçiş sırası"); uygulama tarafında kalanlar [acik-isler](harita/acik-isler.md)'de (bildirimler, ikon, admin panelinin girişle denenmesi, eksik özellikler).
 - **Açık işler** (denenmemiş, eksik, çözülmemiş, kullanıcıdan beklenen): [harita/acik-isler.md](harita/acik-isler.md).
@@ -34,8 +34,10 @@ gerektirdiği bölgeleri aç. Kod dosyalarını baştan sona okuma; bölge dosya
 | 17a | Kampüs görevleri: QR | Bitti | `5a82a51` |
 | 17b | Kampüs görevleri: fotoğraf, onay, 30 gün silme | Bitti | `7111dc2` |
 | G2 | Genel güvenlik kontrolü 2 (bağımsız inceleme, 8 düzeltme) | Bitti | `d937b4f` |
-| 18a | Tasarım: mobil tasarım sistemi (tema, karanlık mod, ortak durumlar) | Bitti (commit yok) | |
-| 18b-d | Tasarım: mobil ekranlar ve hareket, admin, kontrol | Sırada | |
+| 18a | Tasarım: mobil tasarım sistemi (tema, karanlık mod, ortak durumlar) | Bitti | `2d5e833` |
+| 18b | Tasarım: mobil ekranlar ve hareket (bahis seçenekleri, düello, kutlama, profil, liderlik) | Bitti (commit yok) | |
+| 18c | Tasarım: ikon ve görsel uyumu (Material Symbols Rounded, emojisiz arayüz, başarım rozetleri, uygulama ikonu ve logo) | Bitti (commit yok) | |
+| 18d-e | Tasarım: admin paneli, kontrol | Sırada | |
 
 ## Görev → ne okunur
 

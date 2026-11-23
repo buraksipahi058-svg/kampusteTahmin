@@ -33,12 +33,17 @@ void main() {
     expect(find.text('30 sn'), findsOneWidget);
     expect(find.text('Türkiye\'nin başkenti neresidir?'), findsOneWidget);
 
+    // Seçilen şık bir kare vurgulu çizilir (ikinci dokunuş yok sayılır), sonraki karede yeni soru gelir.
     await tester.tap(find.text('Ankara'));
+    await tester.pump();
+    await tester.tap(find.text('İstanbul'), warnIfMissed: false);
     await tester.pump();
     expect(find.text('Soru 2 / 2'), findsOneWidget);
     expect(find.text('Bir günde kaç saat vardır?'), findsOneWidget);
 
+    // Geçiş bitince eski soru kalmaz.
     await tester.pump(const Duration(seconds: 2));
+    expect(find.text('Soru 1 / 2'), findsNothing);
     expect(find.text('28 sn'), findsOneWidget);
   });
 }

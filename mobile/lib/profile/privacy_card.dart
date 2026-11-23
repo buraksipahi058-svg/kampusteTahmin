@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
 import '../core/error_messages.dart';
 import '../core/routes.dart';
@@ -58,7 +59,7 @@ class _PrivacyCardState extends ConsumerState<PrivacyCard> {
       child: Column(
         children: [
           SwitchListTile(
-            secondary: const Icon(Icons.leaderboard_outlined),
+            secondary: const Icon(Symbols.leaderboard_rounded),
             title: const Text('Liderlikte görün'),
             subtitle: Text(
               hidden == true
@@ -69,25 +70,25 @@ class _PrivacyCardState extends ConsumerState<PrivacyCard> {
             onChanged: hidden == null || _savingVisibility ? null : _setVisible,
           ),
           ListTile(
-            leading: const Icon(Icons.download_outlined),
+            leading: const Icon(Symbols.download_rounded),
             title: const Text('Verilerimi indir'),
             subtitle: const Text('Hesabındaki bütün kayıtlar, JSON dosyası olarak'),
             trailing: _exporting
                 ? const SizedBox.square(dimension: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                : const Icon(Icons.chevron_right),
+                : const Icon(Symbols.chevron_right_rounded),
             onTap: _exporting ? null : _export,
           ),
           ListTile(
-            leading: const Icon(Icons.privacy_tip_outlined),
+            leading: const Icon(Symbols.privacy_tip_rounded),
             title: const Text('Gizlilik ve KVKK'),
             subtitle: const Text('Hangi verilerin neden işlendiği, hakların'),
-            trailing: const Icon(Icons.chevron_right),
+            trailing: const Icon(Symbols.chevron_right_rounded),
             onTap: () => context.push(Routes.privacy),
           ),
           ListTile(
-            leading: const Icon(Icons.gavel_outlined),
+            leading: const Icon(Symbols.gavel_rounded),
             title: const Text('Kullanım koşulları'),
-            trailing: const Icon(Icons.chevron_right),
+            trailing: const Icon(Symbols.chevron_right_rounded),
             onTap: () => context.push(Routes.terms),
           ),
         ],

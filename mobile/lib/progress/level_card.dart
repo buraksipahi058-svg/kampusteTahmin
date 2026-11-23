@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
 import '../bets/bets_tab.dart' show formatIstanbul;
 import '../wallet/wallet_data.dart';
@@ -16,7 +17,7 @@ class LevelCard extends ConsumerWidget {
 
     return Card(
       child: ListTile(
-        leading: const Icon(Icons.military_tech_outlined),
+        leading: const Icon(Symbols.military_tech_rounded),
         title: Text(progress == null ? 'Seviye' : 'Seviye ${progress.level}'),
         subtitle: progress == null
             ? null
@@ -64,19 +65,19 @@ class XpInfoSheet extends ConsumerWidget {
             const SizedBox(height: 8),
             ListTile(
               contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.today_outlined),
+              leading: const Icon(Symbols.today_rounded),
               title: const Text('Günlük giriş'),
               trailing: Text(rules == null ? '' : '+${rules.dailyLogin} XP'),
             ),
             const ListTile(
               contentPadding: EdgeInsets.zero,
-              leading: Icon(Icons.flag_outlined),
+              leading: Icon(Symbols.flag_rounded),
               title: Text('Görev ödülü'),
               trailing: Text('görevde yazar'),
             ),
             ListTile(
               contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.check_circle_outline),
+              leading: const Icon(Symbols.check_circle_rounded),
               title: const Text('Doğru tahmin ya da kazanılan düello'),
               subtitle: rules == null
                   ? null

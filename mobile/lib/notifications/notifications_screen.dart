@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
 import '../core/state_views.dart';
 import '../core/error_messages.dart';
@@ -50,7 +51,7 @@ class _NotificationBellState extends ConsumerState<NotificationBell> {
       icon: Badge(
         isLabelVisible: unread > 0,
         label: Text(unread > 99 ? '99+' : '$unread'),
-        child: const Icon(Icons.notifications_outlined),
+        child: const Icon(Symbols.notifications_rounded),
       ),
     );
   }
@@ -58,17 +59,17 @@ class _NotificationBellState extends ConsumerState<NotificationBell> {
 
 /// Bildirim türünün simgesi.
 IconData notificationIcon(String kind) => switch (kind) {
-  'bet_won' => Icons.emoji_events_outlined,
-  'bet_lost' => Icons.sentiment_dissatisfied_outlined,
-  'bet_refunded' || 'bet_cancelled' => Icons.undo,
-  'social_result' => Icons.gavel_outlined,
-  'dispute_received' || 'dispute_new' || 'dispute_resolved' => Icons.report_outlined,
-  'duel_invite' || 'duel_accepted' => Icons.sports_kabaddi,
-  'level_up' => Icons.military_tech_outlined,
-  'referee_strike' => Icons.warning_amber_outlined,
-  'referee_due' => Icons.schedule,
-  'admin_grant' => Icons.account_balance_wallet_outlined,
-  _ => Icons.notifications_outlined,
+  'bet_won' => Symbols.emoji_events_rounded,
+  'bet_lost' => Symbols.sentiment_dissatisfied_rounded,
+  'bet_refunded' || 'bet_cancelled' => Symbols.undo_rounded,
+  'social_result' => Symbols.gavel_rounded,
+  'dispute_received' || 'dispute_new' || 'dispute_resolved' => Symbols.report_rounded,
+  'duel_invite' || 'duel_accepted' => Symbols.sports_kabaddi_rounded,
+  'level_up' => Symbols.military_tech_rounded,
+  'referee_strike' => Symbols.warning_amber_rounded,
+  'referee_due' => Symbols.schedule_rounded,
+  'admin_grant' => Symbols.account_balance_wallet_rounded,
+  _ => Symbols.notifications_rounded,
 };
 
 /// `/bildirimler`: son 50 bildirim, okunmamışlar vurgulu. Dokununca okundu olur ve ilgili ekran açılır.
@@ -130,7 +131,7 @@ class NotificationsScreen extends ConsumerWidget {
         },
         child: switch (list) {
           AsyncData(:final value) when value.isEmpty => ListView(
-            children: const [EmptyView(text: 'Henüz bildirimin yok.', icon: Icons.notifications_none)],
+            children: const [EmptyView(text: 'Henüz bildirimin yok.', icon: Symbols.notifications_none_rounded)],
           ),
           AsyncData(:final value) => ListView.separated(
             itemCount: value.length,

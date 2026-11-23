@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' show PostgrestException;
 
+import '../achievements/achievements_data.dart';
 import '../bets/bets_tab.dart' show formatIstanbul;
 import '../core/app_theme.dart';
+import '../core/design_tokens.dart';
 import '../core/routes.dart';
 import '../core/state_views.dart';
 import '../core/verify_email_card.dart';
@@ -58,7 +61,7 @@ class LeaderboardTab extends ConsumerWidget {
             Card(
               margin: const EdgeInsets.only(top: 8),
               child: ListTile(
-                leading: const Icon(Icons.visibility_off_outlined),
+                leading: const Icon(Symbols.visibility_off_rounded),
                 title: const Text('Sıralamalarda gizlisin'),
                 subtitle: const Text("Okul arkadaşların seni görmez. Profil > Gizlilik'ten açabilirsin."),
               ),
@@ -67,7 +70,7 @@ class LeaderboardTab extends ConsumerWidget {
           switch (rows) {
             AsyncData(:final value) when value.isEmpty => const EmptyView(
               text: 'Bu dönemde henüz sıralamaya giren yok.',
-              icon: Icons.leaderboard_outlined,
+              icon: Symbols.leaderboard_rounded,
             ),
             AsyncData(:final value) => _Board(rows: value, metric: query.metric),
             AsyncError(:final error) when error is PostgrestException && error.code == 'KB002' => const VerifyEmailCard(
@@ -121,7 +124,7 @@ class _Board extends StatelessWidget {
           if (i > 0 && rows[i].rank > rows[i - 1].rank + 1 && rows[i].isMe)
             const Padding(
               padding: EdgeInsets.symmetric(vertical: 4),
-              child: Center(child: Text('⋯')),
+              child: Center(child: Icon(Symbols.more_horiz_rounded)),
             ),
           _RowTile(row: rows[i], metric: metric),
         ],
@@ -145,8 +148,6 @@ class _RowTile extends StatelessWidget {
   final LeaderboardRow row;
   final LeaderboardMetric metric;
 
-  static const _medals = {1: '🥇', 2: '🥈', 3: '🥉'};
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -156,20 +157,20 @@ class _RowTile extends StatelessWidget {
       leaderboardDetailText(metric, row),
     ].join(' · ');
     return Card(
+      // Kendi satırın: renkli zemin + çerçeve; ilk üç altın / gümüş / bronz sıra rozetli.
       color: row.isMe ? theme.colorScheme.secondaryContainer : null,
+      shape: row.isMe
+          ? RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(Radii.lg),
+              side: BorderSide(color: theme.colorScheme.primary, width: 1.5),
+            )
+          : null,
       child: ListTile(
         onTap: () => context.push(Routes.person(row.userId)),
         leading: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            SizedBox(
-              width: 32,
-              child: Text(
-                _medals[row.rank] ?? '${row.rank}.',
-                style: theme.textTheme.titleMedium,
-                textAlign: TextAlign.center,
-              ),
-            ),
+            RankBadge(rank: row.rank),
             const SizedBox(width: 8),
             ProfileAvatar(initials: row.initials, frameColor: row.frameColor, radius: 18),
           ],
@@ -180,7 +181,52 @@ class _RowTile extends StatelessWidget {
           overflow: TextOverflow.ellipsis,
         ),
         subtitle: Text(subtitle, overflow: TextOverflow.ellipsis),
-        trailing: Text(leaderboardValueText(metric, row), style: theme.textTheme.titleMedium),
+        trailing: Text(
+          leaderboardValueText(metric, row),
+          style: tabular(theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
+        ),
+      ),
+    );
+  }
+}
+
+/// Sıra: ilk üç altın / gümüş / bronz dolu daire içinde numara, diğerleri sade numara (sabit genişlik).
+class RankBadge extends StatelessWidget {
+  const RankBadge({super.key, required this.rank});
+
+  final int rank;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final color = switch (rank) {
+      1 => tierColor(3),
+      2 => tierColor(2),
+      3 => tierColor(1),
+      _ => null,
+    };
+    if (color == null) {
+      return SizedBox(
+        width: 32,
+        child: Text('$rank.', style: tabular(theme.textTheme.titleMedium), textAlign: TextAlign.center),
+      );
+    }
+    return Container(
+      width: 32,
+      height: 32,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color.lerp(color, Colors.white, 0.25)!, color],
+        ),
+        boxShadow: [BoxShadow(color: color.withValues(alpha: 0.35), blurRadius: 6, offset: const Offset(0, 2))],
+      ),
+      child: Text(
+        '$rank',
+        style: tabular(theme.textTheme.titleMedium?.copyWith(color: Colors.white, fontWeight: FontWeight.w800)),
       ),
     );
   }

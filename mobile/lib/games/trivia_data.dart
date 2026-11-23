@@ -132,9 +132,7 @@ final triviaDuelsProvider = FutureProvider<List<TriviaDuel>>((ref) async {
         'trivia_duel_plays(player_id, submitted_at, score)',
       );
   if (schoolId != null) query = query.eq('school_id', schoolId);
-  final rows = await query
-      .order('created_at', ascending: false)
-      .limit(30);
+  final rows = await query.order('created_at', ascending: false).limit(30);
   return rows.map(TriviaDuel.fromJson).toList();
 });
 

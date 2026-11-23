@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
 import '../core/error_messages.dart';
 import '../wallet/wallet_data.dart';
@@ -20,7 +21,7 @@ class MyStatsCard extends ConsumerWidget {
         AsyncData(value: final s?) => Column(
           children: [
             ListTile(
-              leading: const Icon(Icons.insights_outlined),
+              leading: const Icon(Symbols.insights_rounded),
               title: const Text('İstatistiklerim'),
               subtitle: Text(_weekRanks(s)),
             ),
@@ -65,12 +66,15 @@ class MyStatsCard extends ConsumerWidget {
           ],
         ),
         AsyncError(:final error) => ListTile(
-          leading: const Icon(Icons.insights_outlined),
+          leading: const Icon(Symbols.insights_rounded),
           title: const Text('İstatistikler alınamadı'),
           subtitle: Text(userMessage(error)),
-          trailing: IconButton(icon: const Icon(Icons.refresh), onPressed: () => ref.invalidate(myStatsProvider)),
+          trailing: IconButton(
+            icon: const Icon(Symbols.refresh_rounded),
+            onPressed: () => ref.invalidate(myStatsProvider),
+          ),
         ),
-        _ => const ListTile(leading: Icon(Icons.insights_outlined), title: Text('İstatistiklerim')),
+        _ => const ListTile(leading: Icon(Symbols.insights_rounded), title: Text('İstatistiklerim')),
       },
     );
   }

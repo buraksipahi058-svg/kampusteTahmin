@@ -38,7 +38,10 @@ class ConfigErrorApp extends StatelessWidget {
       darkTheme: _darkTheme,
       home: Scaffold(
         body: Center(
-          child: Padding(padding: const EdgeInsets.all(32), child: Text(problem, textAlign: TextAlign.center)),
+          child: Padding(
+            padding: const EdgeInsets.all(32),
+            child: Text(problem, textAlign: TextAlign.center),
+          ),
         ),
       ),
     );

@@ -113,9 +113,7 @@ class CampusApi {
 
   /// `public.submit_campus_task_qr`: kod doğruysa ödül hemen verilir. (para birimi, tutar, XP)
   Future<({String currency, int amount, int xp})> submitQr(String taskId, String code) async {
-    final row = await _client
-        .rpc('submit_campus_task_qr', params: {'p_task_id': taskId, 'p_code': code})
-        .single();
+    final row = await _client.rpc('submit_campus_task_qr', params: {'p_task_id': taskId, 'p_code': code}).single();
     return (
       currency: row['reward_currency'] as String,
       amount: row['reward_amount'] as int,

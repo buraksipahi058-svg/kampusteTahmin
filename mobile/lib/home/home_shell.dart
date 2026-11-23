@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
 import '../achievements/achievements_data.dart';
 import '../bets/bets_tab.dart';
 import '../core/account_guard.dart';
+import '../core/app_theme.dart';
+import '../core/celebration.dart';
+import '../core/design_tokens.dart';
 import '../core/routes.dart';
 import '../core/supabase.dart';
 import '../games/games_tab.dart';
@@ -19,13 +23,7 @@ import '../wallet/wallet_data.dart';
 import 'placeholder_tab.dart';
 
 class HomeTab {
-  const HomeTab({
-    required this.path,
-    required this.label,
-    required this.icon,
-    required this.selectedIcon,
-    this.page,
-  });
+  const HomeTab({required this.path, required this.label, required this.icon, required this.selectedIcon, this.page});
 
   final String path;
   final String label;
@@ -41,36 +39,36 @@ const homeTabs = [
   HomeTab(
     path: Routes.bets,
     label: 'Bahisler',
-    icon: Icons.how_to_vote_outlined,
-    selectedIcon: Icons.how_to_vote,
+    icon: Symbols.how_to_vote_rounded,
+    selectedIcon: Symbols.how_to_vote_rounded,
     page: BetsTab(),
   ),
   HomeTab(
     path: Routes.games,
     label: 'Oyunlar',
-    icon: Icons.sports_esports_outlined,
-    selectedIcon: Icons.sports_esports,
+    icon: Symbols.sports_esports_rounded,
+    selectedIcon: Symbols.sports_esports_rounded,
     page: GamesTab(),
   ),
   HomeTab(
     path: Routes.market,
     label: 'Market',
-    icon: Icons.storefront_outlined,
-    selectedIcon: Icons.storefront,
+    icon: Symbols.storefront_rounded,
+    selectedIcon: Symbols.storefront_rounded,
     page: MarketTab(),
   ),
   HomeTab(
     path: Routes.leaderboard,
     label: 'Liderlik',
-    icon: Icons.leaderboard_outlined,
-    selectedIcon: Icons.leaderboard,
+    icon: Symbols.leaderboard_rounded,
+    selectedIcon: Symbols.leaderboard_rounded,
     page: LeaderboardTab(),
   ),
   HomeTab(
     path: Routes.profile,
     label: 'Profil',
-    icon: Icons.person_outline,
-    selectedIcon: Icons.person,
+    icon: Symbols.person_rounded,
+    selectedIcon: Symbols.person_rounded,
     page: ProfileTab(),
   ),
 ];
@@ -108,7 +106,13 @@ class HomeShell extends ConsumerWidget {
       if (message == null) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(message),
+          content: Row(
+            children: [
+              Icon(Symbols.emoji_events_rounded, fill: 1, color: context.appColors.ssp),
+              const SizedBox(width: Space.md),
+              Expanded(child: Text(message)),
+            ],
+          ),
           action: SnackBarAction(label: 'Gör', onPressed: () => context.push(Routes.achievements)),
           // Düğmeli çubuk bu Flutter sürümünde varsayılan olarak kalıcı; alttaki düğmeleri örtmesin, kendiliğinden kapansın.
           persist: false,
@@ -138,11 +142,20 @@ class HomeShell extends ConsumerWidget {
       appBar: AppBar(
         title: Text(tab.label),
         actions: [
-          const NotificationBell(),
-          IconButton(
-            tooltip: 'Günlük ödül',
-            onPressed: () => showDailyReward(context),
-            icon: Badge(isLabelVisible: rewardReady, child: const Icon(Icons.card_giftcard)),
+          // Büyük yazı ayarında zil rozeti en çok 1,3 kat büyür (üst çubukta ekran başlığına yer kalsın).
+          MediaQuery.withClampedTextScaling(
+            maxScaleFactor: 1.3,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const NotificationBell(),
+                IconButton(
+                  tooltip: 'Günlük ödül',
+                  onPressed: () => showDailyReward(context),
+                  icon: Badge(isLabelVisible: rewardReady, child: const Icon(Symbols.card_giftcard_rounded)),
+                ),
+              ],
+            ),
           ),
           const BalanceBar(),
           const SizedBox(width: 8),
@@ -151,11 +164,11 @@ class HomeShell extends ConsumerWidget {
       body: shell,
       bottomNavigationBar: NavigationBar(
         selectedIndex: shell.currentIndex,
-        onDestinationSelected: (index) =>
-            shell.goBranch(index, initialLocation: index == shell.currentIndex),
+        onDestinationSelected: (index) => shell.goBranch(index, initialLocation: index == shell.currentIndex),
         destinations: [
           for (final t in homeTabs)
-            NavigationDestination(icon: Icon(t.icon), selectedIcon: Icon(t.selectedIcon), label: t.label),
+            // Seçili sekmenin ikonu dolu, diğerleri çizgi.
+            NavigationDestination(icon: Icon(t.icon), selectedIcon: Icon(t.selectedIcon, fill: 1), label: t.label),
         ],
       ),
     );
@@ -164,24 +177,22 @@ class HomeShell extends ConsumerWidget {
 
 /// Seviye atlama kutlaması: yeni seviye ve markette seviyeyle açılan ürünlere bağlantı.
 Future<void> showLevelUp(BuildContext context, int level) {
-  return showDialog<void>(
-    context: context,
+  return showCelebration(
+    context,
     useRootNavigator: true,
-    builder: (dialogContext) => AlertDialog(
-      icon: const Text('🎉', style: TextStyle(fontSize: 40)),
-      title: Text('Seviye $level!'),
-      content: Text('Tebrikler, $level. seviyeye ulaştın. Markette seviyeyle açılan ürünler olabilir.'),
-      actions: [
-        TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('Tamam')),
-        FilledButton(
-          onPressed: () {
-            Navigator.pop(dialogContext);
-            context.go(Routes.market);
-          },
-          child: const Text('Markete git'),
-        ),
-      ],
-    ),
+    icon: Symbols.military_tech_rounded,
+    title: 'Seviye $level!',
+    message: 'Tebrikler, $level. seviyeye ulaştın. Markette seviyeyle açılan ürünler olabilir.',
+    actions: (dialogContext) => [
+      TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('Tamam')),
+      FilledButton(
+        onPressed: () {
+          Navigator.pop(dialogContext);
+          context.go(Routes.market);
+        },
+        child: const Text('Markete git'),
+      ),
+    ],
   );
 }
 
@@ -213,10 +224,13 @@ String? newAchievementMessage(List<Achievement>? before, List<Achievement> now, 
     if (firstLoadAnnounced) return null;
     fresh = now.where((a) => a.claimable).toList();
   } else {
-    final known = {for (final a in before) if (a.claimable || a.unlocked) a.key};
+    final known = {
+      for (final a in before)
+        if (a.claimable || a.unlocked) a.key,
+    };
     fresh = now.where((a) => a.claimable && !known.contains(a.key)).toList();
   }
   if (fresh.isEmpty) return null;
-  if (fresh.length == 1) return '🏆 Yeni başarım: ${fresh.first.icon} ${fresh.first.title}. Ödülünü al!';
-  return '🏆 ${fresh.length} başarımın ödülü hazır!';
+  if (fresh.length == 1) return 'Yeni başarım: ${fresh.first.title}. Ödülünü al!';
+  return '${fresh.length} başarımın ödülü hazır!';
 }

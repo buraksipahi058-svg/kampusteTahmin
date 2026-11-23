@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:image/image.dart' as img;
-import 'package:supabase_flutter/supabase_flutter.dart' show PostgrestException;
 import 'package:kampusbet/achievements/achievements_data.dart';
 import 'package:kampusbet/app.dart';
 import 'package:kampusbet/bets/bets_data.dart';
@@ -14,17 +13,18 @@ import 'package:kampusbet/campus/campus_data.dart';
 import 'package:kampusbet/campus/photo_proof.dart';
 import 'package:kampusbet/campus/photo_submit_screen.dart';
 import 'package:kampusbet/campus/qr_scan_screen.dart';
-import 'package:kampusbet/games/games_tab.dart';
+import 'package:kampusbet/core/account_guard.dart';
 import 'package:kampusbet/core/app_info.dart';
 import 'package:kampusbet/core/app_theme.dart';
 import 'package:kampusbet/core/state_views.dart';
 import 'package:kampusbet/core/supabase.dart';
+import 'package:kampusbet/games/games_tab.dart';
 import 'package:kampusbet/games/trivia_data.dart';
 import 'package:kampusbet/home/home_shell.dart';
 import 'package:kampusbet/leaderboard/leaderboard_data.dart';
+import 'package:kampusbet/leaderboard/leaderboard_tab.dart';
 import 'package:kampusbet/market/market_data.dart';
 import 'package:kampusbet/notifications/notifications_data.dart';
-import 'package:kampusbet/core/account_guard.dart';
 import 'package:kampusbet/people/people_data.dart';
 import 'package:kampusbet/profile/privacy_data.dart';
 import 'package:kampusbet/profile/profile_data.dart';
@@ -33,6 +33,8 @@ import 'package:kampusbet/profile/student_email_data.dart';
 import 'package:kampusbet/progress/progress_data.dart';
 import 'package:kampusbet/quests/quests_data.dart';
 import 'package:kampusbet/wallet/wallet_data.dart';
+import 'package:material_symbols_icons/symbols.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' show PostgrestException;
 
 // Supabase'e bağlanmadan akışın ekranları: sağlayıcıların yerine sabit değerler konur.
 
@@ -326,7 +328,7 @@ void main() {
     await pumpApp(tester, userId: 'u1', profile: _profile, daily: daily);
 
     // Bugünün ödülü alınmadığı için takvim kendiliğinden açılır.
-    expect(find.text('🎁 Günlük ödül'), findsOneWidget);
+    expect(find.text('Günlük ödül'), findsOneWidget);
     expect(find.text('7. gün'), findsOneWidget);
     expect(find.text('+200 bonus'), findsOneWidget);
     await tester.tap(find.text('Ödülü al (+50 SP · +10 XP)'));
@@ -335,7 +337,7 @@ void main() {
     expect(find.text('+50 SP · +10 XP aldın! Seri: 1 gün. Yarın yine gel.'), findsOneWidget);
     await tester.tap(find.text('Kapat'));
     await tester.pumpAndSettle();
-    expect(find.text('🎁 Günlük ödül'), findsNothing);
+    expect(find.text('Günlük ödül'), findsNothing);
 
     for (final label in ['Bahisler', 'Oyunlar', 'Market', 'Liderlik', 'Profil']) {
       expect(find.descendant(of: find.byType(NavigationBar), matching: find.text(label)), findsOneWidget);
@@ -380,6 +382,9 @@ void main() {
     );
     await tester.tap(find.text('Profil'));
     await tester.pumpAndSettle();
+    // Doğrulanmış okul maili Hesap grubunda (en altta); doğrulama çağrısı yok.
+    final profileList = find.descendant(of: find.byType(ProfileTab), matching: find.byType(Scrollable)).first;
+    await tester.scrollUntilVisible(find.text('Okul maili doğrulandı'), 200, scrollable: profileList);
 
     expect(find.text('Okul maili doğrulandı'), findsOneWidget);
     expect(find.text('ada@ogr.ornek.edu.tr'), findsOneWidget);
@@ -822,11 +827,12 @@ void main() {
     await tester.tap(find.text('Liderlik'));
     await tester.pumpAndSettle();
 
-    expect(find.text('🥇'), findsOneWidget);
+    // İlk üç altın / gümüş / bronz sıra rozetinde; dışındaki sade numara.
+    expect(find.widgetWithText(RankBadge, '1'), findsOneWidget);
     expect(find.text('Mert K. ⭐'), findsOneWidget);
     expect(find.text('Sv. 7 · 🔮 Kehanet Ustası · 4/5 doğru'), findsOneWidget);
     expect(find.text('%80'), findsOneWidget);
-    expect(find.text('⋯'), findsOneWidget);
+    expect(find.byIcon(Symbols.more_horiz_rounded), findsOneWidget);
     expect(find.text('9.'), findsOneWidget);
     expect(find.text('Ada Y. (sen)'), findsOneWidget);
     expect(find.textContaining('en az 5 tahmin gerekir'), findsOneWidget);
@@ -906,8 +912,8 @@ void main() {
     expect(find.text('%80 · 4/5'), findsOneWidget);
     expect(find.text('En iyi: 3'), findsOneWidget);
     expect(find.text('+120 SP'), findsOneWidget);
-    // Alttaki düğmeye kadar kaydır: üstündeki "Geçmiş bahislerim" alt menünün arkasında kalmasın.
-    await tester.scrollUntilVisible(find.text('Çıkış yap'), 200, scrollable: profileList);
+    // "Geçmiş bahislerim" İstatistik grubunda; alt menünün arkasında kalmasın diye biraz daha kaydır.
+    await tester.scrollUntilVisible(find.text('Geçmiş bahislerim'), 200, scrollable: profileList);
     await tester.ensureVisible(find.text('Geçmiş bahislerim'));
     await tester.pumpAndSettle();
 
@@ -916,7 +922,7 @@ void main() {
     expect(find.text('Bugün yemekhanede mercimek çorbası çıkar mı?'), findsOneWidget);
     expect(find.textContaining('Günün tahmini · Sonuçlandı'), findsOneWidget);
     expect(find.textContaining('Kazandın: net +7 SP'), findsOneWidget);
-    expect(find.byIcon(Icons.check_circle), findsOneWidget);
+    expect(find.byIcon(Symbols.check_circle_rounded), findsOneWidget);
   });
 
   testWidgets('hesap silme onay ister: kutu işaretlenmeden silme düğmesi kapalı', (tester) async {
@@ -1215,7 +1221,9 @@ void main() {
     await tester.tap(find.text('Profil'));
     await tester.pumpAndSettle();
     final profileList = find.descendant(of: find.byType(ProfileTab), matching: find.byType(Scrollable)).first;
-    await tester.scrollUntilVisible(find.text('Çıkış yap'), 200, scrollable: profileList);
+    await tester.scrollUntilVisible(find.text('Geçmiş bahislerim'), 200, scrollable: profileList);
+    await tester.ensureVisible(find.text('Geçmiş bahislerim'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Geçmiş bahislerim'));
     await tester.pumpAndSettle();
 
@@ -1340,7 +1348,7 @@ void main() {
     );
     var list = [ach('ilk_tahmin', 'İlk Adım', claimable: true), ach('keskin_goz', 'Keskin Göz')];
     await pumpApp(tester, userId: 'u1', profile: _profile, achievementsNow: () => list);
-    expect(find.text('🏆 Yeni başarım: 🎯 İlk Adım. Ödülünü al!'), findsOneWidget);
+    expect(find.text('Yeni başarım: İlk Adım. Ödülünü al!'), findsOneWidget);
     tester.state<ScaffoldMessengerState>(find.byType(ScaffoldMessenger)).clearSnackBars();
     await tester.pumpAndSettle();
 
@@ -1348,7 +1356,7 @@ void main() {
     list = [ach('ilk_tahmin', 'İlk Adım', claimable: true), ach('keskin_goz', 'Keskin Göz', claimable: true)];
     ProviderScope.containerOf(tester.element(find.byType(NavigationBar))).invalidate(achievementsProvider);
     await tester.pumpAndSettle();
-    expect(find.text('🏆 Yeni başarım: 🎯 Keskin Göz. Ödülünü al!'), findsOneWidget);
+    expect(find.text('Yeni başarım: Keskin Göz. Ödülünü al!'), findsOneWidget);
 
     await tester.tap(find.text('Gör'));
     await tester.pumpAndSettle();
@@ -1364,7 +1372,7 @@ void main() {
       key: 'b', category: 'duel', title: 'B', description: 'd', icon: '🤺', tier: 1, target: 1, progress: 1,
       rewardSp: 1, rewardXp: 0, claimable: true,
     );
-    expect(newAchievementMessage(null, [a, b], firstLoadAnnounced: false), '🏆 2 başarımın ödülü hazır!');
+    expect(newAchievementMessage(null, [a, b], firstLoadAnnounced: false), '2 başarımın ödülü hazır!');
     expect(newAchievementMessage(null, [a, b], firstLoadAnnounced: true), isNull);
     expect(newAchievementMessage([a, b], [a, b], firstLoadAnnounced: true), isNull);
   });

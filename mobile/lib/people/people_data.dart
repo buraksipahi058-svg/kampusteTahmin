@@ -117,7 +117,7 @@ class PublicProfile {
   final List<Standing> standings;
 
   /// Kazandığı başarımlar (simge, ad, kademe), altından bronza.
-  final List<({String icon, String title, int tier})> badges;
+  final List<({String key, String category, String title, int tier})> badges;
 
   String get fullName => '$firstName $lastName';
 
@@ -151,12 +151,17 @@ final publicProfileProvider = FutureProvider.autoDispose.family<PublicProfile?, 
   // RLS: okul arkadaşının kazandığı başarımlar görünür.
   final unlocks = await client
       .from('achievement_unlocks')
-      .select('achievement:achievements(icon, title, tier)')
+      .select('achievement:achievements(key, category, title, tier)')
       .eq('user_id', userId);
   final badges = [
     for (final u in unlocks)
       if (u['achievement'] case final Map<String, dynamic> a)
-        (icon: a['icon'] as String, title: a['title'] as String, tier: a['tier'] as int),
+        (
+          key: a['key'] as String,
+          category: a['category'] as String,
+          title: a['title'] as String,
+          tier: a['tier'] as int,
+        ),
   ]..sort((a, b) => b.tier - a.tier);
   final standings = [
     for (final s in snapshots)

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../profile/profile_data.dart';
 import 'app_info.dart';
+import 'brand_logo.dart';
 import 'error_messages.dart';
 import 'supabase.dart';
 
@@ -22,19 +23,15 @@ class LoadingScreen extends ConsumerWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              const BrandLogo(size: 72),
+              const SizedBox(height: 16),
               Text(AppInfo.name, style: theme.textTheme.headlineMedium),
               const SizedBox(height: 24),
               if (profile.hasError && !profile.isLoading) ...[
                 Text(userMessage(profile.error!), textAlign: TextAlign.center),
                 const SizedBox(height: 16),
-                FilledButton(
-                  onPressed: () => ref.invalidate(myProfileProvider),
-                  child: const Text('Tekrar dene'),
-                ),
-                TextButton(
-                  onPressed: () => ref.read(supabaseProvider).auth.signOut(),
-                  child: const Text('Çıkış yap'),
-                ),
+                FilledButton(onPressed: () => ref.invalidate(myProfileProvider), child: const Text('Tekrar dene')),
+                TextButton(onPressed: () => ref.read(supabaseProvider).auth.signOut(), child: const Text('Çıkış yap')),
               ] else
                 const CircularProgressIndicator(),
             ],

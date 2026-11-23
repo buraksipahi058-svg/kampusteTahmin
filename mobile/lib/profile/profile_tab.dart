@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
 import '../achievements/achievements_data.dart';
 import '../core/app_theme.dart';
+import '../core/design_tokens.dart';
 import '../core/routes.dart';
 import '../core/supabase.dart';
 import '../leaderboard/leaderboard_data.dart';
@@ -49,7 +51,7 @@ class ProfileTab extends ConsumerWidget {
         await ref.read(balanceProvider.future);
       },
       child: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(Space.lg),
         children: [
           // Kuşanılmış kozmetikler: çerçeve, isim rengi, unvan, rozet (yalnızca görünüm).
           Row(
@@ -76,7 +78,9 @@ class ProfileTab extends ConsumerWidget {
                     if (cosmetics.badge != null) ...[
                       const SizedBox(height: 6),
                       Chip(
-                        avatar: Text(cosmetics.badge!.icon ?? '★'),
+                        avatar: cosmetics.badge!.icon == null
+                            ? const Icon(Symbols.star_rounded, fill: 1)
+                            : Text(cosmetics.badge!.icon!),
                         label: Text(cosmetics.badge!.name),
                         visualDensity: VisualDensity.compact,
                       ),
@@ -86,40 +90,63 @@ class ProfileTab extends ConsumerWidget {
               ),
             ],
           ),
-          const SizedBox(height: 16),
-          Card(
-            child: switch (studentEmail) {
-              null => const ListTile(leading: Icon(Icons.school_outlined), title: Text('Okul maili')),
-              StudentEmail(verified: true, :final email) => ListTile(
-                leading: Icon(Icons.verified, color: theme.colorScheme.primary),
-                title: const Text('Okul maili doğrulandı'),
-                subtitle: Text(email ?? ''),
-              ),
-              _ => ListTile(
-                leading: const Icon(Icons.mark_email_unread_outlined),
+          if (studentEmail != null && !studentEmail.verified) ...[
+            const SizedBox(height: Space.lg),
+            Card(
+              child: ListTile(
+                leading: const Icon(Symbols.mark_email_unread_rounded),
                 title: const Text('Okul mailini doğrula'),
                 subtitle: const Text('Bahis açmak ve bahse katılmak için gerekli'),
-                trailing: const Icon(Icons.chevron_right),
+                trailing: const Icon(Symbols.chevron_right_rounded),
                 onTap: () => context.push(Routes.verifyEmail),
               ),
-            },
+            ),
+          ],
+          const SizedBox(height: Space.lg),
+          // Bakiye ve seri tek bakışta: büyük, hizalı rakamlar.
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: Space.lg, horizontal: Space.sm),
+              child: Row(
+                children: [
+                  _Stat(
+                    icon: Symbols.toll_rounded,
+                    value: balance == null ? '…' : formatAmount(balance.sp),
+                    label: 'SP',
+                  ),
+                  _Stat(
+                    icon: Symbols.workspace_premium_rounded,
+                    iconColor: context.appColors.ssp,
+                    value: balance == null ? '…' : formatAmount(balance.ssp),
+                    label: 'SSP',
+                  ),
+                  _Stat(
+                    icon: Symbols.local_fire_department_rounded,
+                    value: streak == null ? '…' : '${streak.current} gün',
+                    label: streak == null ? 'Giriş serisi' : 'Seri · en uzun ${streak.longest}',
+                  ),
+                ],
+              ),
+            ),
           ),
-          const SizedBox(height: 8),
+          const _SectionTitle('İlerleme'),
+          const LevelCard(),
+          const SizedBox(height: Space.sm),
           Card(
             child: ListTile(
-              leading: const Icon(Icons.flag_outlined),
+              leading: const Icon(Symbols.flag_rounded),
               title: const Text('Görevler'),
               subtitle: Text(readyRewards > 0 ? '$readyRewards ödül alınmayı bekliyor' : 'Günlük ve haftalık görevler'),
               trailing: readyRewards > 0
-                  ? Badge(label: Text('$readyRewards'), child: const Icon(Icons.chevron_right))
-                  : const Icon(Icons.chevron_right),
+                  ? Badge(label: Text('$readyRewards'), child: const Icon(Symbols.chevron_right_rounded))
+                  : const Icon(Symbols.chevron_right_rounded),
               onTap: () => context.push(Routes.quests),
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: Space.sm),
           Card(
             child: ListTile(
-              leading: const Icon(Icons.emoji_events_outlined),
+              leading: const Icon(Symbols.emoji_events_rounded),
               title: const Text('Başarımlar'),
               subtitle: Text(
                 achievements.isEmpty
@@ -128,73 +155,104 @@ class ProfileTab extends ConsumerWidget {
                           '${readyAchievements > 0 ? ' · $readyAchievements ödül hazır' : ''}',
               ),
               trailing: readyAchievements > 0
-                  ? Badge(label: Text('$readyAchievements'), child: const Icon(Icons.chevron_right))
-                  : const Icon(Icons.chevron_right),
+                  ? Badge(label: Text('$readyAchievements'), child: const Icon(Symbols.chevron_right_rounded))
+                  : const Icon(Symbols.chevron_right_rounded),
               onTap: () => context.push(Routes.achievements),
             ),
           ),
-          const SizedBox(height: 8),
+          const _SectionTitle('İstatistik'),
+          const MyStatsCard(),
+          const SizedBox(height: Space.sm),
+          Card(
+            child: ListTile(
+              leading: const Icon(Symbols.history_rounded),
+              title: const Text('Geçmiş bahislerim'),
+              subtitle: const Text('Katıldığın bahisler ve sonuçları'),
+              trailing: const Icon(Symbols.chevron_right_rounded),
+              onTap: () => context.push(Routes.history),
+            ),
+          ),
+          const _SectionTitle('Hesap'),
           Card(
             child: Column(
               children: [
+                if (studentEmail case StudentEmail(verified: true, :final email)) ...[
+                  ListTile(
+                    leading: Icon(Symbols.verified_rounded, fill: 1, color: theme.colorScheme.primary),
+                    title: const Text('Okul maili doğrulandı'),
+                    subtitle: Text(email ?? ''),
+                  ),
+                  const Divider(indent: Space.lg, endIndent: Space.lg),
+                ],
                 ListTile(
-                  leading: const Icon(Icons.toll),
-                  title: const Text('SP'),
-                  subtitle: const Text('Günlük ödül ve oyunlarla kazanılır'),
-                  trailing: Text(balance == null ? '…' : formatAmount(balance.sp), style: theme.textTheme.titleMedium),
-                ),
-                ListTile(
-                  leading: const Icon(Icons.workspace_premium),
-                  title: const Text('SSP'),
-                  subtitle: const Text('Resmi etkinlik ve görevlerle kazanılır'),
-                  trailing: Text(balance == null ? '…' : formatAmount(balance.ssp), style: theme.textTheme.titleMedium),
-                ),
-                ListTile(
-                  leading: const Icon(Icons.local_fire_department_outlined),
-                  title: const Text('Giriş serisi'),
-                  subtitle: Text(streak == null ? '' : 'En uzun: ${streak.longest} gün'),
-                  trailing: Text(streak == null ? '…' : '${streak.current} gün', style: theme.textTheme.titleMedium),
+                  leading: const Icon(Symbols.password_rounded),
+                  title: const Text('Şifreyi değiştir'),
+                  trailing: const Icon(Symbols.chevron_right_rounded),
+                  onTap: () => context.push(Routes.changePassword),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 8),
-          const LevelCard(),
-          const SizedBox(height: 8),
-          const MyStatsCard(),
-          const SizedBox(height: 8),
-          Card(
-            child: ListTile(
-              leading: const Icon(Icons.history),
-              title: const Text('Geçmiş bahislerim'),
-              subtitle: const Text('Katıldığın bahisler ve sonuçları'),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () => context.push(Routes.history),
-            ),
-          ),
-          const SizedBox(height: 8),
-          Card(
-            child: ListTile(
-              leading: const Icon(Icons.password),
-              title: const Text('Şifreyi değiştir'),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () => context.push(Routes.changePassword),
-            ),
-          ),
-          const SizedBox(height: 8),
+          const SizedBox(height: Space.sm),
           const PrivacyCard(),
           const SizedBox(height: 24),
           OutlinedButton.icon(
             onPressed: () => ref.read(supabaseProvider).auth.signOut(),
-            icon: const Icon(Icons.logout),
+            icon: const Icon(Symbols.logout_rounded),
             label: const Text('Çıkış yap'),
           ),
           const SizedBox(height: 8),
           TextButton.icon(
             onPressed: () => confirmDeleteAccount(context, ref),
             style: TextButton.styleFrom(foregroundColor: theme.colorScheme.error),
-            icon: const Icon(Icons.delete_forever_outlined),
+            icon: const Icon(Symbols.delete_forever_rounded),
             label: const Text('Hesabımı sil'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Profil grubu başlığı (İlerleme, İstatistik, Hesap).
+class _SectionTitle extends StatelessWidget {
+  const _SectionTitle(this.text);
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(Space.xs, Space.xl, Space.xs, Space.sm),
+      child: Text(text, style: theme.textTheme.titleSmall?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
+    );
+  }
+}
+
+/// Bakiye şeridinde bir değer: simge, büyük sabit genişlikli sayı, altında açıklama.
+class _Stat extends StatelessWidget {
+  const _Stat({required this.icon, required this.value, required this.label, this.iconColor});
+
+  final IconData icon;
+  final String value;
+  final String label;
+  final Color? iconColor;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Expanded(
+      child: Column(
+        children: [
+          Icon(icon, size: 20, color: iconColor ?? theme.colorScheme.onSurfaceVariant),
+          const SizedBox(height: Space.xs),
+          Text(value, style: tabular(theme.textTheme.titleLarge), maxLines: 1, overflow: TextOverflow.ellipsis),
+          Text(
+            label,
+            style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+            textAlign: TextAlign.center,
+            maxLines: 2,
           ),
         ],
       ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
 import '../core/error_messages.dart';
 import '../people/people_data.dart';
@@ -48,7 +49,10 @@ class _CreateSocialBetScreenState extends ConsumerState<CreateSocialBetScreen> {
       initialDate: _locksAt ?? now,
     );
     if (date == null || !mounted) return;
-    final time = await showTimePicker(context: context, initialTime: TimeOfDay.fromDateTime(now.add(const Duration(hours: 1))));
+    final time = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.fromDateTime(now.add(const Duration(hours: 1))),
+    );
     if (time == null) return;
     setState(() => _locksAt = DateTime(date.year, date.month, date.day, time.hour, time.minute));
   }
@@ -141,14 +145,17 @@ class _CreateSocialBetScreenState extends ConsumerState<CreateSocialBetScreen> {
                       Expanded(
                         child: TextFormField(
                           controller: _options[i],
-                          decoration: InputDecoration(labelText: 'Seçenek ${i + 1}', border: const OutlineInputBorder()),
+                          decoration: InputDecoration(
+                            labelText: 'Seçenek ${i + 1}',
+                            border: const OutlineInputBorder(),
+                          ),
                           validator: (v) => _required(v, 'Seçenek', 100),
                         ),
                       ),
                       if (_options.length > 2)
                         IconButton(
                           onPressed: () => setState(() => _options.removeAt(i).dispose()),
-                          icon: const Icon(Icons.remove_circle_outline),
+                          icon: const Icon(Symbols.remove_circle_rounded),
                         ),
                     ],
                   ),
@@ -158,14 +165,14 @@ class _CreateSocialBetScreenState extends ConsumerState<CreateSocialBetScreen> {
                   alignment: Alignment.centerLeft,
                   child: TextButton.icon(
                     onPressed: () => setState(() => _options.add(TextEditingController())),
-                    icon: const Icon(Icons.add),
+                    icon: const Icon(Symbols.add_rounded),
                     label: const Text('Seçenek ekle'),
                   ),
                 ),
               const SizedBox(height: 8),
               OutlinedButton.icon(
                 onPressed: _busy ? null : _pickLocksAt,
-                icon: const Icon(Icons.schedule),
+                icon: const Icon(Symbols.schedule_rounded),
                 label: Text(_locksAt == null ? 'Kapanış zamanı seç' : 'Kapanış: ${formatIstanbul(_locksAt!)}'),
               ),
               const SizedBox(height: 12),
@@ -174,7 +181,7 @@ class _CreateSocialBetScreenState extends ConsumerState<CreateSocialBetScreen> {
                   Expanded(
                     child: OutlinedButton.icon(
                       onPressed: _busy ? null : _pickReferee,
-                      icon: const Icon(Icons.gavel_outlined),
+                      icon: const Icon(Symbols.gavel_rounded),
                       label: Text('Hakem: ${_referee?.fullName ?? 'ben'}'),
                     ),
                   ),
@@ -182,7 +189,7 @@ class _CreateSocialBetScreenState extends ConsumerState<CreateSocialBetScreen> {
                     IconButton(
                       tooltip: 'Hakem ben olayım',
                       onPressed: _busy ? null : () => setState(() => _referee = null),
-                      icon: const Icon(Icons.close),
+                      icon: const Icon(Symbols.close_rounded),
                     ),
                 ],
               ),

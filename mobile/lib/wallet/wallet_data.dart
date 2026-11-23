@@ -57,7 +57,13 @@ final loginStreakProvider = FutureProvider<LoginStreak?>((ref) async {
 /// Günlük ödül takviminin bir günü (`public.daily_login_calendar`): serinin kaçıncı günü, ödül, kilometre taşı
 /// bonusu, alındı mı, bugün mü.
 class CalendarDay {
-  const CalendarDay({required this.day, required this.amount, this.bonus = 0, this.claimed = false, this.isToday = false});
+  const CalendarDay({
+    required this.day,
+    required this.amount,
+    this.bonus = 0,
+    this.claimed = false,
+    this.isToday = false,
+  });
 
   final int day;
   final int amount;

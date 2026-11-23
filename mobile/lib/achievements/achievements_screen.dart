@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
 import '../bets/bets_tab.dart' show formatIstanbul;
 import '../core/async_button.dart';
 import '../core/error_messages.dart';
+import '../core/haptics.dart';
 import '../core/state_views.dart';
 import '../wallet/wallet_data.dart';
+import 'achievement_badge.dart';
 import 'achievements_data.dart';
 
 /// `/basarimlar`: kazanılan / toplam, hazır ödüller üstte, sonra kategoriler. Her kartta kademe (bronz /
@@ -102,6 +105,7 @@ class AchievementCard extends ConsumerWidget {
     final messenger = ScaffoldMessenger.of(context);
     try {
       final r = await claimAchievement(ref, achievement.key);
+      Haptics.success();
       messenger.showSnackBar(
         SnackBar(
           content: Text(
@@ -128,18 +132,12 @@ class AchievementCard extends ConsumerWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Opacity(
-              opacity: faded ? 0.35 : 1,
-              child: Container(
-                width: 48,
-                height: 48,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: tierColor(a.tier), width: 3),
-                ),
-                child: Text(a.icon, style: const TextStyle(fontSize: 22)),
-              ),
+            AchievementBadge(
+              tier: a.tier,
+              achievementKey: a.key,
+              category: a.category,
+              earned: !faded,
+              masked: a.masked,
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -181,7 +179,7 @@ class AchievementCard extends ConsumerWidget {
                 ],
               ),
             ),
-            if (a.unlocked) Icon(Icons.verified, color: tierColor(a.tier)),
+            if (a.unlocked) Icon(Symbols.verified_rounded, fill: 1, color: tierColor(a.tier)),
           ],
         ),
       ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
 import '../bets/bets_data.dart';
 import '../core/async_button.dart';
@@ -62,7 +63,7 @@ class DuelsScreen extends ConsumerWidget {
             if (verified == true)
               FilledButton.icon(
                 onPressed: () => _challenge(context, ref),
-                icon: const Icon(Icons.sports_kabaddi),
+                icon: const Icon(Symbols.sports_kabaddi_rounded),
                 label: const Text('Meydan oku'),
               ),
             const SizedBox(height: 12),
@@ -70,7 +71,7 @@ class DuelsScreen extends ConsumerWidget {
               AsyncData(value: final list) when list.isEmpty && verified == false => const SizedBox.shrink(),
               AsyncData(value: final list) when list.isEmpty => const EmptyView(
                 text: 'Henüz düello yok. İlk meydan okuyan sen ol.',
-                icon: Icons.quiz_outlined,
+                icon: Symbols.quiz_rounded,
               ),
               AsyncData(value: final list) => Column(
                 children: [
@@ -130,7 +131,7 @@ class DuelCard extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             ListTile(
-              leading: const Icon(Icons.quiz_outlined),
+              leading: const Icon(Symbols.quiz_rounded),
               title: Wrap(
                 crossAxisAlignment: WrapCrossAlignment.center,
                 spacing: 6,
@@ -262,7 +263,7 @@ class _StakeDialogState extends State<_StakeDialog> {
             if (_toPerson)
               OutlinedButton.icon(
                 onPressed: _pick,
-                icon: const Icon(Icons.person_search),
+                icon: const Icon(Symbols.person_search_rounded),
                 label: Text(_invited == null ? 'Kişi seç' : _invited!.fullName),
               ),
             const SizedBox(height: 8),

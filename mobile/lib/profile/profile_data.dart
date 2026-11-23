@@ -8,8 +8,7 @@ class School {
   final String id;
   final String name;
 
-  factory School.fromJson(Map<String, dynamic> json) =>
-      School(id: json['id'] as String, name: json['name'] as String);
+  factory School.fromJson(Map<String, dynamic> json) => School(id: json['id'] as String, name: json['name'] as String);
 }
 
 class Profile {
@@ -81,12 +80,7 @@ const _profileColumns =
 final myProfileProvider = FutureProvider<ProfileStatus>((ref) async {
   final userId = ref.watch(currentUserIdProvider);
   if (userId == null) return const ProfileStatus(userId: null, profile: null);
-  final row = await ref
-      .watch(supabaseProvider)
-      .from('profiles')
-      .select(_profileColumns)
-      .eq('id', userId)
-      .maybeSingle();
+  final row = await ref.watch(supabaseProvider).from('profiles').select(_profileColumns).eq('id', userId).maybeSingle();
   return ProfileStatus(userId: userId, profile: row == null ? null : Profile.fromJson(row));
 });
 
@@ -110,15 +104,17 @@ Future<void> createProfile(
   String? department,
 }) async {
   final c = containerOf(ref);
-  await c.read(supabaseProvider).rpc(
-    'create_profile',
-    params: {
-      'p_first_name': firstName,
-      'p_last_name': lastName,
-      'p_school_id': schoolId,
-      'p_department': department,
-    },
-  );
+  await c
+      .read(supabaseProvider)
+      .rpc(
+        'create_profile',
+        params: {
+          'p_first_name': firstName,
+          'p_last_name': lastName,
+          'p_school_id': schoolId,
+          'p_department': department,
+        },
+      );
   c.invalidate(myProfileProvider);
 }
 
