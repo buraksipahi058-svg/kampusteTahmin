@@ -4,9 +4,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../bets/bets_data.dart';
+import '../core/async_button.dart';
 import '../core/error_messages.dart';
 import '../core/routes.dart';
 import '../core/supabase.dart';
+import '../market/market_data.dart';
+import '../people/people_data.dart';
+import '../people/person_picker.dart';
+import '../people/public_profile_screen.dart';
 import '../profile/student_email_data.dart';
 import '../wallet/wallet_data.dart';
 import 'daily_prediction_card.dart';
@@ -26,6 +31,8 @@ class GamesTab extends ConsumerWidget {
     final wagers = ref.watch(myWagersProvider).value ?? const <String, Wager>{};
     final verified = ref.watch(studentEmailProvider).value?.verified;
     final userId = ref.watch(currentUserIdProvider);
+    final players = cosmeticsKey([for (final d in duels.value ?? const <TriviaDuel>[]) ...[d.challengerId, d.opponentId]]);
+    final looks = ref.watch(cosmeticsOfProvider(players)).value ?? const <String, Cosmetics>{};
     final theme = Theme.of(context);
 
     return RefreshIndicator(
@@ -70,7 +77,8 @@ class GamesTab extends ConsumerWidget {
           const SizedBox(height: 4),
           Text(
             'Okulundan biriyle aynı soruları çöz. İkiniz de aynı SP\'yi yatırırsınız; çok doğru yapan, '
-            'eşitlikte daha hızlı olan havuzu alır. Soru başına 15 saniye.',
+            'eşitlikte daha hızlı olan havuzu alır. Soru başına 15 saniye. Herkese açık ya da belirli birine '
+            'meydan okuyabilirsin.',
             style: theme.textTheme.bodySmall,
           ),
           const SizedBox(height: 12),
@@ -97,7 +105,7 @@ class GamesTab extends ConsumerWidget {
             ),
             AsyncData(value: final list) => Column(
               children: [
-                for (final duel in list) DuelCard(duel: duel, userId: userId, canJoin: verified == true),
+                for (final duel in list) DuelCard(duel: duel, userId: userId, canJoin: verified == true, looks: looks),
               ],
             ),
             AsyncError(:final error) => Column(
@@ -114,11 +122,11 @@ class GamesTab extends ConsumerWidget {
   }
 
   Future<void> _challenge(BuildContext context, WidgetRef ref) async {
-    final stake = await showDialog<int>(context: context, builder: (_) => const _StakeDialog());
-    if (stake == null || !context.mounted) return;
+    final choice = await showDialog<_Challenge>(context: context, builder: (_) => const _StakeDialog());
+    if (choice == null || !context.mounted) return;
     final messenger = ScaffoldMessenger.of(context);
     try {
-      final betId = await createDuel(ref, stake: stake);
+      final betId = await createDuel(ref, stake: choice.stake, invitedId: choice.invited?.id);
       if (context.mounted) context.push(Routes.duelPlay(betId));
     } catch (e) {
       messenger.showSnackBar(SnackBar(content: Text(userMessage(e))));
@@ -127,18 +135,27 @@ class GamesTab extends ConsumerWidget {
 }
 
 class DuelCard extends ConsumerWidget {
-  const DuelCard({super.key, required this.duel, required this.userId, required this.canJoin});
+  const DuelCard({
+    super.key,
+    required this.duel,
+    required this.userId,
+    required this.canJoin,
+    this.looks = const {},
+  });
 
   final TriviaDuel duel;
   final String? userId;
   final bool canJoin;
+
+  /// Oyuncuların kuşandığı kozmetikler (isim rengi, çerçeve, rozet).
+  final Map<String, Cosmetics> looks;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final now = DateTime.now();
     final mine = duel.isPlayer(userId);
     final wager = ref.watch(myWagersProvider).value?[duel.betId];
-    final opponent = duel.opponentName ?? (duel.invitedId == null ? 'herkese açık' : 'davetli bekleniyor');
+    final waiting = duel.invitedId == null ? 'herkese açık' : '${duel.invitedName ?? 'davetli'} bekleniyor';
     final myPlay = duel.playOf(userId);
 
     return Card(
@@ -150,7 +167,18 @@ class DuelCard extends ConsumerWidget {
           children: [
             ListTile(
               leading: const Icon(Icons.quiz_outlined),
-              title: Text('${duel.challengerName} vs $opponent'),
+              title: Wrap(
+                crossAxisAlignment: WrapCrossAlignment.center,
+                spacing: 6,
+                children: [
+                  PersonLabel(userId: duel.challengerId, name: duel.challengerName, cosmetics: looks[duel.challengerId]),
+                  const Text('vs'),
+                  if (duel.opponentId != null)
+                    PersonLabel(userId: duel.opponentId!, name: duel.opponentName ?? '', cosmetics: looks[duel.opponentId])
+                  else
+                    Text(waiting),
+                ],
+              ),
               subtitle: Text('${formatAmount(duel.stake)} SP · ${_statusText(duel, userId, wager)}'),
             ),
             Padding(
@@ -159,11 +187,19 @@ class DuelCard extends ConsumerWidget {
                 spacing: 8,
                 children: [
                   if (canJoin && duel.canAccept(userId, now))
-                    FilledButton(onPressed: () => _accept(context, ref), child: Text('Kabul et (${formatAmount(duel.stake)} SP)')),
+                    AsyncButton(
+                      onPressed: () => _accept(context, ref),
+                      child: Text('Kabul et (${formatAmount(duel.stake)} SP)'),
+                    ),
                   if (mine && duel.canPlay(userId, now))
                     FilledButton.tonal(
                       onPressed: () => context.push(Routes.duelPlay(duel.betId)),
                       child: Text(myPlay == null ? 'Oyna' : 'Oyuna dön'),
+                    ),
+                  if (mine && duel.finished && myPlay != null)
+                    OutlinedButton(
+                      onPressed: () => context.push(Routes.duelReview(duel.betId)),
+                      child: const Text('Cevapları gör'),
                     ),
                 ],
               ),
@@ -205,6 +241,9 @@ class DuelCard extends ConsumerWidget {
   }
 }
 
+/// Meydan okuma seçimi: tutar ve (belirli birine ise) davet edilen kişi.
+typedef _Challenge = ({int stake, Person? invited});
+
 class _StakeDialog extends StatefulWidget {
   const _StakeDialog();
 
@@ -215,6 +254,8 @@ class _StakeDialog extends StatefulWidget {
 class _StakeDialogState extends State<_StakeDialog> {
   final _stake = TextEditingController(text: '20');
   String? _error;
+  var _toPerson = false;
+  Person? _invited;
 
   @override
   void dispose() {
@@ -222,23 +263,51 @@ class _StakeDialogState extends State<_StakeDialog> {
     super.dispose();
   }
 
+  Future<void> _pick() async {
+    final person = await pickPerson(context, title: 'Kime meydan okuyorsun?');
+    if (person != null && mounted) setState(() => _invited = person);
+  }
+
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
       title: const Text('Meydan oku'),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text('Okulundaki herkes görür; kabul eden aynı tutarı yatırır. 24 saatte kimse kabul etmezse SP\'n iade edilir.'),
-          const SizedBox(height: 12),
-          TextField(
-            controller: _stake,
-            keyboardType: TextInputType.number,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-            decoration: InputDecoration(labelText: 'Yatırılacak SP (en fazla 100)', errorText: _error),
-          ),
-        ],
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SegmentedButton<bool>(
+              segments: const [
+                ButtonSegment(value: false, label: Text('Herkese açık')),
+                ButtonSegment(value: true, label: Text('Birine')),
+              ],
+              selected: {_toPerson},
+              showSelectedIcon: false,
+              onSelectionChanged: (s) => setState(() => _toPerson = s.first),
+            ),
+            const SizedBox(height: 12),
+            if (_toPerson)
+              OutlinedButton.icon(
+                onPressed: _pick,
+                icon: const Icon(Icons.person_search),
+                label: Text(_invited == null ? 'Kişi seç' : _invited!.fullName),
+              ),
+            const SizedBox(height: 8),
+            Text(
+              _toPerson
+                  ? 'Yalnızca seçtiğin kişi kabul edebilir ve aynı tutarı yatırır. 24 saatte kabul etmezse SP\'n iade edilir.'
+                  : 'Okulundaki herkes görür; kabul eden aynı tutarı yatırır. 24 saatte kimse kabul etmezse SP\'n iade edilir.',
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _stake,
+              keyboardType: TextInputType.number,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              decoration: InputDecoration(labelText: 'Yatırılacak SP (en fazla 100)', errorText: _error),
+            ),
+          ],
+        ),
       ),
       actions: [
         TextButton(onPressed: () => Navigator.pop(context), child: const Text('Vazgeç')),
@@ -249,7 +318,11 @@ class _StakeDialogState extends State<_StakeDialog> {
               setState(() => _error = '1 ile 100 arasında bir tutar gir.');
               return;
             }
-            Navigator.pop(context, value);
+            if (_toPerson && _invited == null) {
+              setState(() => _error = 'Önce meydan okuyacağın kişiyi seç.');
+              return;
+            }
+            Navigator.pop<_Challenge>(context, (stake: value, invited: _toPerson ? _invited : null));
           },
           child: const Text('Meydan oku ve oyna'),
         ),

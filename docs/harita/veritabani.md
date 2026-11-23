@@ -27,6 +27,7 @@ Konu bölgeleri: [kimlik.md](kimlik.md), [para.md](para.md), [bahis.md](bahis.md
 | `20261122182015_yonetim_guvenlik.sql` | 13 | `profiles.banned_at`, `guard.check_request` + `pgrst.db_pre_request` (istek bekçisi), `set_user_ban`, `reset_referee_strikes`, `update_official_bet_odds` ([guvenlik](guvenlik.md)) |
 | `20261122182256_yasak_gerekcesi.sql` | 13 | yasak gerekçesi profilden kaldırıldı (okula açıktı), yalnızca denetim kaydında; `set_user_ban` yeniden |
 | `20261122200659_gizlilik.sql` | 14 | `profile_private.leaderboard_hidden` + `set_leaderboard_hidden`, `store_leaderboard` / `get_leaderboard` (gizliyi saymaz), `export_my_data`, `economy_settings.api_write_limit_per_minute`, `private.request_log` (unlogged) + `guard.check_request` (istek sınırı, `KB026`), 10 dakikalık `kampusbet_istek_sayaci` temizliği ([guvenlik](guvenlik.md)) |
+| `20261122203439_mobil_eksikler.sql` | 15 | `search_schoolmates` (meydan okuma / hakem için doğrulanmış okul arkadaşı arama), `trivia_duel_review` (bitmiş düellonun cevapları, yalnızca oynamış oyuncuya) ([bahis](bahis.md)) |
 | `20261122105335_gunun_tahmini.sql` | 8 | günün tahmini ayarları, `bets_settlement_by_type` (mini oyunda `admin` de olur), `place_wager` (yalnızca `auto` mini oyuna kapalı; admin sonuçlandırmalıda açan / kapatan yatıramaz), `create/settle/cancel_daily_prediction`, saatlik pg_cron işi |
 
 ## Koda inmek gerekirse

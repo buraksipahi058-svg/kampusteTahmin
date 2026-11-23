@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/supabase.dart';
+import '../profile/profile_data.dart';
 import '../wallet/wallet_data.dart';
 
 // Market yalnızca kozmetiktir: hiçbir ürün bahis şansını, oranı ya da ödemeyi etkilemez (MIMARI §2).
@@ -102,18 +103,17 @@ class Cosmetics {
   final MarketItem? nameColor;
 }
 
-const _itemColumns =
+const marketItemColumns =
     'id, name, description, category, icon, color, price, currency, available_from, available_until, active, min_level';
 
 /// Satıştaki ürünler (RLS: okulun ve genel ürünler). Satıştan kalkmış ama sahip olunanlar envanterden gelir.
 final marketItemsProvider = FutureProvider<List<MarketItem>>((ref) async {
   final userId = ref.watch(currentUserIdProvider);
   if (userId == null) return const [];
-  final rows = await ref
-      .watch(supabaseProvider)
-      .from('market_items')
-      .select(_itemColumns)
-      .eq('active', true)
+  final schoolId = await mySchoolId(ref);
+  var query = ref.watch(supabaseProvider).from('market_items').select(marketItemColumns).eq('active', true);
+  if (schoolId != null) query = query.or('school_id.is.null,school_id.eq.$schoolId');
+  final rows = await query
       .order('price', ascending: true);
   return rows.map(MarketItem.fromJson).toList();
 });
@@ -124,7 +124,7 @@ final myInventoryProvider = FutureProvider<List<OwnedItem>>((ref) async {
   final rows = await ref
       .watch(supabaseProvider)
       .from('user_inventory')
-      .select('equipped, item:market_items($_itemColumns)')
+      .select('equipped, item:market_items($marketItemColumns)')
       .eq('user_id', userId)
       .order('acquired_at');
   return [

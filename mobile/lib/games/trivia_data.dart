@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../bets/bets_data.dart';
 import '../core/supabase.dart';
+import '../profile/profile_data.dart';
 
 /// Bir oyuncunun düello oyunu. Düello bitmeden yalnızca kişinin kendi oyunu görünür (RLS).
 class DuelPlay {
@@ -29,6 +30,7 @@ class TriviaDuel {
     this.opponentId,
     this.opponentName,
     this.invitedId,
+    this.invitedName,
     this.playDeadline,
     this.cancelReason,
     this.plays = const [],
@@ -42,6 +44,7 @@ class TriviaDuel {
 
   /// Belirli birine meydan okunduysa o kişi; null ise okula açık.
   final String? invitedId;
+  final String? invitedName;
   final int stake;
 
   /// Düellonun bahsinin durumu: open (rakip bekleniyor), locked (oynanıyor), settled, cancelled.
@@ -84,6 +87,7 @@ class TriviaDuel {
       opponentId: json['opponent_id'] as String?,
       opponentName: json['opponent'] == null ? null : name(json['opponent']),
       invitedId: json['invited_id'] as String?,
+      invitedName: json['invited'] == null ? null : name(json['invited']),
       stake: json['stake'] as int,
       status: bet['status'] as String,
       cancelReason: bet['cancel_reason'] as String?,
@@ -114,14 +118,18 @@ class DuelGame {
 final triviaDuelsProvider = FutureProvider<List<TriviaDuel>>((ref) async {
   final userId = ref.watch(currentUserIdProvider);
   if (userId == null) return const [];
-  final rows = await ref
+  final schoolId = await mySchoolId(ref);
+  var query = ref
       .watch(supabaseProvider)
       .from('trivia_duels')
       .select(
         'bet_id, challenger_id, opponent_id, invited_id, stake, accept_deadline, play_deadline, '
         'bet:bets(status, cancel_reason), challenger:profiles!challenger_id(first_name, last_name), '
-        'opponent:profiles!opponent_id(first_name, last_name), trivia_duel_plays(player_id, submitted_at, score)',
-      )
+        'opponent:profiles!opponent_id(first_name, last_name), invited:profiles!invited_id(first_name, last_name), '
+        'trivia_duel_plays(player_id, submitted_at, score)',
+      );
+  if (schoolId != null) query = query.eq('school_id', schoolId);
+  final rows = await query
       .order('created_at', ascending: false)
       .limit(30);
   return rows.map(TriviaDuel.fromJson).toList();
@@ -150,10 +158,12 @@ void _refresh(ProviderContainer c) {
   refreshAfterBet(c);
 }
 
-/// `public.create_trivia_duel`: payın hemen düşer; okula açık meydan okuma.
-Future<String> createDuel(WidgetRef ref, {required int stake}) async {
+/// `public.create_trivia_duel`: payın hemen düşer; okula açık ya da [invitedId] verilirse yalnızca o kişiye.
+Future<String> createDuel(WidgetRef ref, {required int stake, String? invitedId}) async {
   final c = containerOf(ref);
-  final betId = await c.read(supabaseProvider).rpc('create_trivia_duel', params: {'p_stake': stake});
+  final betId = await c
+      .read(supabaseProvider)
+      .rpc('create_trivia_duel', params: {'p_stake': stake, 'p_invited_id': ?invitedId});
   _refresh(c);
   return betId as String;
 }
@@ -175,3 +185,37 @@ Future<(int, bool)> submitAnswers(WidgetRef ref, String betId, List<int?> answer
   _refresh(c);
   return (row['score'] as int, row['late'] as bool);
 }
+
+/// Bitmiş düellonun bir sorusu: doğru şık, kişinin ve rakibin cevabı (cevapsız: null).
+class DuelReviewItem {
+  const DuelReviewItem({
+    required this.no,
+    required this.question,
+    required this.options,
+    required this.correctIndex,
+    this.myAnswer,
+    this.opponentAnswer,
+  });
+
+  final int no;
+  final String question;
+  final List<String> options;
+  final int correctIndex;
+  final int? myAnswer;
+  final int? opponentAnswer;
+
+  factory DuelReviewItem.fromJson(Map<String, dynamic> json) => DuelReviewItem(
+    no: json['question_no'] as int,
+    question: json['question'] as String,
+    options: (json['options'] as List).cast<String>(),
+    correctIndex: json['correct_index'] as int,
+    myAnswer: json['my_answer'] as int?,
+    opponentAnswer: json['opponent_answer'] as int?,
+  );
+}
+
+/// `public.trivia_duel_review`: düello bitince, oynamış oyuncuya sorular ve doğru cevaplar.
+final duelReviewProvider = FutureProvider.autoDispose.family<List<DuelReviewItem>, String>((ref, betId) async {
+  final rows = await ref.watch(supabaseProvider).rpc('trivia_duel_review', params: {'p_bet_id': betId}) as List;
+  return [for (final r in rows) DuelReviewItem.fromJson(r as Map<String, dynamic>)];
+});

@@ -89,8 +89,16 @@ v1'de başka mini oyun yok (reflex / şans oyunları kullanıcı kararıyla çı
 - Yönetim (admin paneli, `admin_audit_log`'a yazar): `create_daily_prediction(school, question, locks_at, description?)` (`resmi_bahis_ac`, kapanış ≤ 7 gün), `settle_daily_prediction(bet, option)`, `cancel_daily_prediction(bet, reason)` (`resmi_bahis_kapat`). Yetki kontrolü `private.daily_prediction_for`. Resmi bahis fonksiyonları günün tahminine, bunlar da resmi bahse / düelloya `P0002` verir.
 - **pg_cron** `kampusbet_gunun_tahmini` saatte bir `private.process_daily_predictions()`: kapanıştan 3 gün sonra hâlâ sonuçsuz olanı iptal + iade.
 
+## Mobil eksikler (Adım 15)
+
+Kod: `20261122203439_mobil_eksikler.sql`. Test: `16_mobil_eksikler.test.sql` (17).
+
+- `search_schoolmates(sorgu)` → (kişi, ad, soyad, bölüm, seviye, `can_referee`): okulun okul maili doğrulanmış öğrencileri; kendisi, silinmiş, yasaklı ve başka okul gelmez; 2–50 karakter (`23514`), en fazla 20, ad + soyad içinde büyük / küçük harf duyarsız (`%` `_` düz aranır). `can_referee` = ihtar sınırında değil. Mobil kişi seçme penceresi (`lib/people/person_picker.dart`) meydan okumada "Birine" ve sosyal bahiste "Hakem" için.
+- `trivia_duel_review(bet)` → (soru no, soru, şıklar, doğru şık, kişinin cevabı, rakibin cevabı): yalnızca düello bittiyse (`settled` / `cancelled`), düellonun oyuncusuna ve yalnızca oynamışsa (soruları görmemiş olana `P0002`). Mobil: biten düelloda "Cevapları gör" → `/duello/:id/cevaplar`.
+
 ## Sıradaki işler
 
 - Grup oluşturma ve davetle katılma (özel kapsamlı sosyal bahisler için).
-- Resmi bahis kalan: sabit oran mı havuz mu kararı "sonra tekrar bakılacak" (KARARLAR). Oran sonradan değiştirilemiyor (yalnızca açarken).
+- Resmi bahis kalan: sabit oran mı havuz mu kararı "sonra tekrar bakılacak" (KARARLAR). Oran açık bahiste değiştirilebilir (Adım 13).
+- Düello cevapları gösterildiği için soru havuzu büyümeli (seed'de 16 genel soru).
 - Düello/sosyal havuzla bilerek kaybedip SP aktarma riski: düşük limit + aynı kişilerin sık eşleşmesini izleme.

@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' show PostgrestException;
 import 'package:kampusbet/app.dart';
 import 'package:kampusbet/bets/bets_data.dart';
 import 'package:kampusbet/bets/bets_tab.dart';
@@ -12,6 +13,8 @@ import 'package:kampusbet/core/supabase.dart';
 import 'package:kampusbet/games/trivia_data.dart';
 import 'package:kampusbet/leaderboard/leaderboard_data.dart';
 import 'package:kampusbet/market/market_data.dart';
+import 'package:kampusbet/core/account_guard.dart';
+import 'package:kampusbet/people/people_data.dart';
 import 'package:kampusbet/profile/privacy_data.dart';
 import 'package:kampusbet/profile/profile_data.dart';
 import 'package:kampusbet/profile/profile_tab.dart';
@@ -50,6 +53,12 @@ Future<void> pumpApp(
   Progress progress = const Progress(xp: 110, level: 2, levelXp: 100, nextLevelXp: 300, pickXpToday: 15),
   List<XpEvent> xpEvents = const [],
   FakePrivacyApi? privacy,
+  Map<String, Cosmetics> looks = const {},
+  List<Person> people = const [],
+  List<DuelReviewItem> review = const [],
+  Map<String, PublicProfile> publicProfiles = const {},
+  List<Bet> ownBets = const [],
+  Progress Function()? progressNow,
 }) async {
   final privacyApi = privacy ?? FakePrivacyApi();
   // Gerçek telefon boyutu (Pixel 7); varsayılan 800×600 test ekranında düğmeler görünür alanın dışında kalıyor.
@@ -78,9 +87,22 @@ Future<void> pumpApp(
         leaderboardMinimumsProvider.overrideWith((ref) async => (week: 5, allTime: 20)),
         myStatsProvider.overrideWith((ref) async => stats),
         privacyApiProvider.overrideWithValue(privacyApi),
+        cosmeticsOfProvider.overrideWith((ref, key) async => {
+          for (final id in key.split(','))
+            if (looks[id] != null) id: looks[id]!,
+        }),
+        schoolmateSearchProvider.overrideWith(
+          (ref, query) async => [
+            for (final p in people)
+              if (p.fullName.toLowerCase().contains(query.toLowerCase())) p,
+          ],
+        ),
         leaderboardHiddenProvider.overrideWith((ref) async => privacyApi.hidden),
         myWagerHistoryProvider.overrideWith((ref) async => history),
-        myProgressProvider.overrideWith((ref) async => progress),
+        myProgressProvider.overrideWith((ref) async => progressNow?.call() ?? progress),
+        duelReviewProvider.overrideWith((ref, betId) async => review),
+        publicProfileProvider.overrideWith((ref, id) async => publicProfiles[id]),
+        myOwnSocialBetsProvider.overrideWith((ref) async => ownBets),
         xpRulesProvider.overrideWith((ref) async => (dailyLogin: 10, correctPick: 15, dailyPickCap: 60)),
         xpEventsProvider.overrideWith((ref) async => xpEvents),
         schoolsProvider.overrideWith((ref) async => const [School(id: 's1', name: 'Örnek Üniversitesi')]),
@@ -345,7 +367,9 @@ void main() {
     await openSocial(tester);
 
     expect(find.textContaining('Hakemin sonucu: Evet'), findsOneWidget);
-    expect(find.textContaining('Hakem: Veli Demir'), findsOneWidget);
+    // Hakem adı dokunulabilir kişi etiketi (profiline gider).
+    expect(find.text('Hakem:'), findsOneWidget);
+    expect(find.text('Veli Demir'), findsOneWidget);
     expect(find.text('Yatırımın: 50 SP · Hayır'), findsOneWidget);
 
     await tester.ensureVisible(find.widgetWithText(OutlinedButton, 'İtiraz et'));
@@ -414,7 +438,8 @@ void main() {
     await tester.tap(find.text('Oyunlar'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Veli Demir vs herkese açık'), findsOneWidget);
+    expect(find.text('Veli Demir'), findsOneWidget);
+    expect(find.text('herkese açık'), findsOneWidget);
     expect(find.text('20 SP · Rakip aranıyor'), findsOneWidget);
     expect(find.widgetWithText(FilledButton, 'Kabul et (20 SP)'), findsOneWidget);
     expect(find.widgetWithText(FilledButton, 'Meydan oku'), findsOneWidget);
@@ -447,7 +472,8 @@ void main() {
     await tester.tap(find.text('Oyunlar'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Ada Yılmaz vs Veli Demir'), findsOneWidget);
+    expect(find.text('Ada Yılmaz'), findsOneWidget);
+    expect(find.text('Veli Demir'), findsOneWidget);
     expect(find.text('20 SP · Kazandın: net +20 SP · skor 5 - 3'), findsOneWidget);
     expect(find.widgetWithText(FilledButton, 'Kabul et (20 SP)'), findsNothing);
   });
@@ -841,6 +867,204 @@ void main() {
 
   test('veri dosyasının adı tarihli', () {
     expect(dataExportFileName(DateTime(2026, 3, 7)), 'kampusbet-verilerim-20260307.json');
+  });
+
+  testWidgets('belirli birine meydan okuma: kişi seçmeden gönderilmez, aranan kişi seçilir', (tester) async {
+    await pumpApp(
+      tester,
+      userId: 'u1',
+      profile: _profile,
+      studentEmail: verified,
+      people: const [
+        Person(id: 'u2', firstName: 'Veli', lastName: 'Demir', department: 'Fizik', level: 3),
+        Person(id: 'u3', firstName: 'Ece', lastName: 'Kaya'),
+      ],
+    );
+    await tester.tap(find.text('Oyunlar'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(FilledButton, 'Meydan oku'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Birine'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(FilledButton, 'Meydan oku ve oyna'));
+    await tester.pumpAndSettle();
+    expect(find.text('Önce meydan okuyacağın kişiyi seç.'), findsOneWidget);
+
+    await tester.tap(find.text('Kişi seç'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.widgetWithText(TextField, 'Ad ya da soyad'), 'vel');
+    await tester.pump(const Duration(milliseconds: 400));
+    await tester.pumpAndSettle();
+    expect(find.text('Fizik · Sv. 3'), findsOneWidget);
+    expect(find.text('Ece Kaya'), findsNothing);
+    await tester.tap(find.text('Veli Demir'));
+    await tester.pumpAndSettle();
+    expect(find.widgetWithText(OutlinedButton, 'Veli Demir'), findsOneWidget);
+  });
+
+  testWidgets('biten düelloda cevaplar: doğru şık, kendi ve rakibin cevabı', (tester) async {
+    await pumpApp(
+      tester,
+      userId: 'u1',
+      profile: _profile,
+      studentEmail: verified,
+      duels: [
+        TriviaDuel(
+          betId: 'd2',
+          challengerId: 'u1',
+          challengerName: 'Ada Yılmaz',
+          opponentId: 'u2',
+          opponentName: 'Veli Demir',
+          stake: 20,
+          status: 'settled',
+          acceptDeadline: DateTime.now(),
+          plays: const [
+            DuelPlay(playerId: 'u1', submitted: true, score: 1),
+            DuelPlay(playerId: 'u2', submitted: true, score: 0),
+          ],
+        ),
+      ],
+      review: const [
+        DuelReviewItem(no: 1, question: 'Başkent?', options: ['Ankara', 'İzmir'], correctIndex: 0, myAnswer: 0, opponentAnswer: 1),
+        DuelReviewItem(no: 2, question: 'En büyük gezegen?', options: ['Mars', 'Jüpiter'], correctIndex: 1),
+      ],
+    );
+    await tester.tap(find.text('Oyunlar'));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Cevapları gör'));
+    await tester.tap(find.text('Cevapları gör'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Düello cevapları'), findsOneWidget);
+    expect(find.text('1/2 doğru'), findsOneWidget);
+    expect(find.text('1. Başkent?'), findsOneWidget);
+    expect(find.text('Sen'), findsOneWidget);
+    expect(find.text('Rakip'), findsOneWidget);
+    expect(find.text('Bu soruyu cevaplamadın.'), findsOneWidget);
+  });
+
+  testWidgets('liderlikten başkasının profili: kozmetik ve sıralamalar', (tester) async {
+    final frame = MarketItem(
+      id: 'f',
+      name: 'Altın çerçeve',
+      category: 'frame',
+      color: '#FFC107',
+      price: 300,
+      currency: 'SP',
+      active: true,
+    );
+    await pumpApp(
+      tester,
+      userId: 'u1',
+      profile: _profile,
+      leaderboard: (_) => const [
+        LeaderboardRow(rank: 1, userId: 'u2', firstName: 'Mert', lastName: 'Kaya', value: 0.8, sample: 5),
+      ],
+      publicProfiles: {
+        'u2': PublicProfile(
+          id: 'u2',
+          firstName: 'Mert',
+          lastName: 'Kaya',
+          department: 'Fizik',
+          schoolName: 'Örnek Üniversitesi',
+          level: 7,
+          deleted: false,
+          cosmetics: Cosmetics(frame: frame),
+          standings: const [
+            Standing(metric: LeaderboardMetric.hitRate, allTime: false, rank: 1, value: 0.8, sample: 5),
+          ],
+        ),
+      },
+    );
+    await tester.tap(find.text('Liderlik'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.textContaining('Mert K.'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Mert Kaya'), findsOneWidget);
+    expect(find.text('Örnek Üniversitesi · Fizik · Seviye 7'), findsOneWidget);
+    expect(find.text('İsabet · Bu hafta'), findsOneWidget);
+    expect(find.text('1. · %80'), findsOneWidget);
+  });
+
+  testWidgets('sosyal bahis açarken başka hakem seçilir', (tester) async {
+    await pumpApp(
+      tester,
+      userId: 'u1',
+      profile: _profile,
+      studentEmail: verified,
+      people: const [
+        Person(id: 'u2', firstName: 'Veli', lastName: 'Demir'),
+        Person(id: 'u3', firstName: 'Can', lastName: 'Demir', canReferee: false),
+      ],
+    );
+    await tester.tap(find.text('Sosyal'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Sosyal bahis aç'));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Hakem: ben'));
+    await tester.tap(find.text('Hakem: ben'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.widgetWithText(TextField, 'Ad ya da soyad'), 'demir');
+    await tester.pump(const Duration(milliseconds: 400));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('ihtar sınırında'), findsOneWidget);
+    expect(tester.widget<ListTile>(find.widgetWithText(ListTile, 'Can Demir')).enabled, isFalse);
+    await tester.tap(find.text('Veli Demir'));
+    await tester.pumpAndSettle();
+    expect(find.text('Hakem: Veli Demir'), findsOneWidget);
+  });
+
+  testWidgets('geçmiş: açtığı ve hakemi olduğu bahisler, uzun listede daha fazla göster', (tester) async {
+    final entry = (
+      bet: prediction(status: 'settled', yesWins: true),
+      wager: const Wager(betId: 'p1', optionId: 'y', amount: 30, payout: 37),
+    );
+    await pumpApp(
+      tester,
+      userId: 'u1',
+      profile: _profile,
+      history: List.filled(HistoryLimit.pageSize + 1, entry),
+      ownBets: [socialBet(status: 'cancelled', refereeId: 'u1')],
+    );
+    await tester.tap(find.text('Profil'));
+    await tester.pumpAndSettle();
+    final profileList = find.descendant(of: find.byType(ProfileTab), matching: find.byType(Scrollable)).first;
+    await tester.scrollUntilVisible(find.text('Çıkış yap'), 200, scrollable: profileList);
+    await tester.tap(find.text('Geçmiş bahislerim'));
+    await tester.pumpAndSettle();
+
+    await tester.scrollUntilVisible(find.text('Daha fazla göster'), 400);
+    expect(find.text('Daha fazla göster'), findsOneWidget);
+
+    await tester.tap(find.text('Açtıklarım'));
+    await tester.pumpAndSettle();
+    expect(find.text('Yarın yemekhanede pilav çıkar mı?'), findsOneWidget);
+    expect(find.textContaining('Açtın, Hakemsin · İptal'), findsOneWidget);
+  });
+
+  testWidgets('seviye atlayınca kutlama çıkar', (tester) async {
+    var progress = const Progress(xp: 190, level: 2, levelXp: 100, nextLevelXp: 300, pickXpToday: 0);
+    await pumpApp(tester, userId: 'u1', profile: _profile, progressNow: () => progress);
+    expect(find.text('Seviye 3!'), findsNothing);
+
+    progress = const Progress(xp: 310, level: 3, levelXp: 300, nextLevelXp: 600, pickXpToday: 15);
+    ProviderScope.containerOf(tester.element(find.byType(NavigationBar))).invalidate(myProgressProvider);
+    await tester.pumpAndSettle();
+    expect(find.text('Seviye 3!'), findsOneWidget);
+    await tester.tap(find.text('Tamam'));
+    await tester.pumpAndSettle();
+    expect(find.text('Seviye 3!'), findsNothing);
+  });
+
+  test('yardımcılar: hesap engeli, kozmetik anahtarı, İstanbul haftası', () {
+    expect(isAccountBlocked(const PostgrestException(message: 'x', code: 'KB025')), isTrue);
+    expect(isAccountBlocked(const PostgrestException(message: 'x', code: 'KB001')), isFalse);
+    expect(isAccountBlocked(Exception('x')), isFalse);
+    expect(cosmeticsKey(['b', null, 'a', 'b']), 'a,b');
+    // Pazar 23:30 UTC = pazartesi 02:30 İstanbul: yeni hafta.
+    expect(istanbulWeekStart(DateTime.utc(2026, 11, 22, 23, 30)), DateTime.utc(2026, 11, 23));
+    expect(istanbulWeekStart(DateTime.utc(2026, 11, 22, 12)), DateTime.utc(2026, 11, 16));
   });
 
   test('sonuç metni: kazanç, kazançsız doğru tahmin, kazanan çıkmayınca iade, kayıp', () {

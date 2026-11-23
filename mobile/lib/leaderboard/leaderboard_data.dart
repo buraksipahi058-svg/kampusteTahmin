@@ -141,18 +141,24 @@ final leaderboardMinimumsProvider = FutureProvider<({int week, int allTime})>((r
 String formatPercent(double rate) => '%${(rate * 100).round()}';
 
 /// Sıralamadaki değerin metni.
-String leaderboardValueText(LeaderboardMetric metric, LeaderboardRow row) => switch (metric) {
-  LeaderboardMetric.hitRate => formatPercent(row.value),
-  LeaderboardMetric.spProfit => '+${formatAmount(row.value.round())} SP',
-  LeaderboardMetric.sspProfit => '+${formatAmount(row.value.round())} SSP',
-  LeaderboardMetric.bestStreak => '${row.value.round()} üst üste',
+String leaderboardValueText(LeaderboardMetric metric, LeaderboardRow row) => metricValueText(metric, row.value);
+
+/// Ölçüt değeri (liderlik satırı ve başkasının profili ortak).
+String metricValueText(LeaderboardMetric metric, double value) => switch (metric) {
+  LeaderboardMetric.hitRate => formatPercent(value),
+  LeaderboardMetric.spProfit => '+${formatAmount(value.round())} SP',
+  LeaderboardMetric.sspProfit => '+${formatAmount(value.round())} SSP',
+  LeaderboardMetric.bestStreak => '${value.round()} üst üste',
 };
 
 /// Değerin altındaki ayrıntı.
-String leaderboardDetailText(LeaderboardMetric metric, LeaderboardRow row) => switch (metric) {
-  LeaderboardMetric.hitRate => '${(row.value * row.sample).round()}/${row.sample} doğru',
-  LeaderboardMetric.bestStreak => '${row.sample} tahmin',
-  _ => '${row.sample} bahis',
+String leaderboardDetailText(LeaderboardMetric metric, LeaderboardRow row) =>
+    metricDetailText(metric, row.value, row.sample);
+
+String metricDetailText(LeaderboardMetric metric, double value, int sample) => switch (metric) {
+  LeaderboardMetric.hitRate => '${(value * sample).round()}/$sample doğru',
+  LeaderboardMetric.bestStreak => '$sample tahmin',
+  _ => '$sample bahis',
 };
 
 /// Kişinin kendi istatistikleri (`public.my_stats`, tüm zamanlar; sıralar bu haftanın son hesaplamasından).

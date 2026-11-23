@@ -1644,6 +1644,17 @@ export type Database = {
           week_start: string
         }[]
       }
+      search_schoolmates: {
+        Args: { p_query: string }
+        Returns: {
+          can_referee: boolean
+          department: string
+          first_name: string
+          last_name: string
+          level: number
+          user_id: string
+        }[]
+      }
       set_item_equipped: {
         Args: { p_equipped: boolean; p_item_id: string }
         Returns: undefined
@@ -1682,6 +1693,17 @@ export type Database = {
         Returns: {
           late: boolean
           score: number
+        }[]
+      }
+      trivia_duel_review: {
+        Args: { p_bet_id: string }
+        Returns: {
+          correct_index: number
+          my_answer: number
+          opponent_answer: number
+          options: string[]
+          question: string
+          question_no: number
         }[]
       }
       update_official_bet_odds: {

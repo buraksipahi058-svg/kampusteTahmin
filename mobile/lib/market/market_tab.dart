@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../core/async_button.dart';
 import '../core/error_messages.dart';
 import '../progress/progress_data.dart';
 import '../wallet/wallet_data.dart';
@@ -114,11 +115,16 @@ class MarketItemCard extends ConsumerWidget {
         title: Text(item.name),
         subtitle: Text(subtitle),
         trailing: switch (owned) {
-          OwnedItem(equipped: true) => OutlinedButton(
+          OwnedItem(equipped: true) => AsyncButton(
+            kind: AsyncButtonKind.outlined,
             onPressed: () => _equip(context, ref, false),
             child: const Text('Çıkar'),
           ),
-          OwnedItem() => FilledButton.tonal(onPressed: () => _equip(context, ref, true), child: const Text('Kuşan')),
+          OwnedItem() => AsyncButton(
+            kind: AsyncButtonKind.tonal,
+            onPressed: () => _equip(context, ref, true),
+            child: const Text('Kuşan'),
+          ),
           // Satış tarihi geçmişse "Satış bitti", başlamamışsa ya da kapalıysa "Yakında".
           null when !onSale =>
             Text(item.availableUntil != null && !DateTime.now().isBefore(item.availableUntil!) ? 'Satış bitti' : 'Yakında'),
@@ -127,7 +133,7 @@ class MarketItemCard extends ConsumerWidget {
             icon: const Icon(Icons.lock_outline, size: 18),
             label: Text('Seviye ${item.minLevel}'),
           ),
-          null => FilledButton(
+          null => AsyncButton(
             onPressed: () => _buy(context, ref),
             child: Text('${formatAmount(item.price)} ${item.currency}'),
           ),

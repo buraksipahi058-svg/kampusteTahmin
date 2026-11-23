@@ -8,12 +8,13 @@ ProviderContainer containerOf(WidgetRef ref) => ProviderScope.containerOf(ref.co
 /// Tek Supabase istemcisi. Testlerde yerine sahte değerler konur (override).
 final supabaseProvider = Provider<SupabaseClient>((ref) => Supabase.instance.client);
 
-final _authChangesProvider = StreamProvider<AuthState>(
+/// Supabase Auth olayları (giriş, çıkış, şifre sıfırlama linkiyle gelme...).
+final authChangesProvider = StreamProvider<AuthState>(
   (ref) => ref.watch(supabaseProvider).auth.onAuthStateChange,
 );
 
 /// Giriş yapmış kullanıcının id'si; oturum yoksa null. Oturum açılınca / kapanınca yeniden hesaplanır.
 final currentUserIdProvider = Provider<String?>((ref) {
-  ref.watch(_authChangesProvider);
+  ref.watch(authChangesProvider);
   return ref.watch(supabaseProvider).auth.currentUser?.id;
 });

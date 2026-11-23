@@ -38,7 +38,7 @@ Ekran görüntüsü: `adb shell screencap -p /sdcard/x.png` + `adb pull`.
 | `profile/verify_email_screen.dart` | `/okul-maili`: mail → kod; okulun alan adını ipucu gösterir (profil sorgusu `school_email_domains`'i de çeker) |
 | `wallet/wallet_data.dart` | `balanceProvider`, `loginStreakProvider`, `dailyRewardProvider` (`claim_daily_login`), `formatAmount` |
 | `wallet/balance_bar.dart` | Üst çubukta SP / SSP; dokununca yenilenir |
-| `home/home_shell.dart` | Alt sekmeler (`homeTabs`), günlük ödül bildirimi; boş sekmeler `placeholder_tab.dart` |
+| `home/home_shell.dart` | Alt sekmeler (`homeTabs`), günlük ödül bildirimi, seviye atlama kutlaması (`showLevelUp`), şifre sıfırlama linkiyle gelindiyse şifre ekranı; boş sekmeler `placeholder_tab.dart` |
 | `bets/bets_data.dart` | `Bet` (`settlementMode`: günün tahmini / düello ayrımı), `BetOption`, `Wager`; `officialBetsProvider`, `socialBetsProvider`, `dailyPredictionsProvider`, `myWagersProvider`, `placeWager` (`place_wager`), `potentialPayout` (bilgi için) |
 | `bets/bets_tab.dart` | Bahisler sekmesi: "Resmi / Sosyal" seçici; resmi bahis kartı (oran, kapanış İstanbul saati, kişinin yatırımı / sonucu), yatırım alt sayfası (oranlı ya da havuz); doğrulanmamışsa uyarı |
 | `bets/social_bet_card.dart` | Sosyal bahis kartı: havuz miktarları, hakem; duruma göre "Sonucu gir" (hakem), "İtiraz et" (katılımcı, pencere içinde), "Geri çek" (açan, yatırım yokken) |
@@ -54,7 +54,13 @@ Ekran görüntüsü: `adb shell screencap -p /sdcard/x.png` + `adb pull`.
 | `leaderboard/leaderboard_data.dart` | `LeaderboardMetric` / `LeaderboardPeriod`, `leaderboardQueryProvider` (seçili ölçüt + dönem, Notifier), `leaderboardProvider` (`get_leaderboard`), `leaderboardMinimumsProvider` (isabet eşiği, ekonomi ayarı), `MyStats` + `myStatsProvider` (`my_stats`) |
 | `leaderboard/leaderboard_tab.dart` | Liderlik sekmesi: "Bu hafta / Geçen hafta / Tüm zamanlar", ölçüt çipleri (İsabet, Kazanç, Seri, SSP), satırda madalya, çerçeveli avatar, isim rengi + rozet, seviye ("Sv. N"), unvan; kişinin satırı vurgulu, ilk 50 dışındaysa "⋯" ile sonda; son hesaplama zamanı |
 | `leaderboard/my_stats_card.dart` | Profil'de "İstatistiklerim": bu haftaki sıralar, isabet, doğru tahmin serisi, net kazanç, düello, sonucu bekleyen yatırım |
-| `profile/history_screen.dart` | `/gecmis`: son 100 yatırım (`myWagerHistoryProvider`, `bets_data.dart`; `wagers` + `bets!bet_id` gömmesi), tür, durum, `wagerText` sonucu |
+| `profile/history_screen.dart` | `/gecmis`: "Yatırımlarım" 30'ar sayfa, "Daha fazla göster" (`myWagerHistoryProvider` + `historyLimitProvider`, `bets_data.dart`; `wagers` + `bets!bet_id` gömmesi; tür, durum, `wagerText` sonucu) ve "Açtıklarım" (açtığı / hakemi olduğu sosyal bahisler, `myOwnSocialBetsProvider`) |
+| `people/people_data.dart` | `Person` + `schoolmateSearchProvider` (`search_schoolmates`), `cosmeticsOfProvider(cosmeticsKey(kişiler))` (kuşanılmış kozmetikler, `user_inventory`), `PublicProfile` + `publicProfileProvider` (profil, kozmetik, bu hafta / tüm zamanlar sıralama satırları), `istanbulWeekStart` |
+| `people/person_picker.dart` | `pickPerson(context, title, forReferee)`: arama penceresi (300 ms gecikmeli), hakemde ihtar sınırındaki kişi seçilemez |
+| `people/public_profile_screen.dart` | `PersonLabel` (kartlarda çerçeveli avatar + isim rengi + rozet, dokununca profil) ve `/kisi/:id` profil ekranı |
+| `games/duel_review_screen.dart` | `/duello/:id/cevaplar`: sorular, doğru şık, "Sen" / "Rakip" etiketleri (`duelReviewProvider`, `trivia_duel_review`) |
+| `core/async_button.dart` | `AsyncButton`: işlem sürerken kapalı düğme (ödül al, kuşan / çıkar, satın al, kabul et) |
+| `core/account_guard.dart` | `AccountGuard` (ProviderObserver: `KB025` gelince bu cihazda çıkış; `main.dart`), `passwordRecoveryProvider` (şifre linkiyle gelince `HomeShell` şifre ekranını açar) |
 | `progress/progress_data.dart` | `Progress` + `myProgressProvider` (`my_progress`), `xpRulesProvider` (ekonomi ayarları), `xpEventsProvider` (son 20 XP olayı), `refreshProgress` (giriş ödülü, görev, bahis sonrası) |
 | `progress/level_card.dart` | Profil'de "Seviye N", ilerleme çubuğu, sonraki seviyeye kalan XP; dokununca kök navigator'da XP kuralları ve son kazançlar sayfası |
 | `profile/change_password_screen.dart` | `/sifre`: yeni şifre + tekrar (en az 8), `auth.updateUser`; Profil'den açılır (şifre sıfırlama linkiyle gelindiğinde de buradan) |
@@ -65,13 +71,15 @@ Ekran görüntüsü: `adb shell screencap -p /sdcard/x.png` + `adb pull`.
 | `bets/create_social_bet_screen.dart` | `/sosyal-bahis-ac`: soru, 2–4 seçenek, kapanış (tarih + saat seçici), kişi başı en fazla (≤ 100); okul kümesinde açar (`Profile.schoolId`) |
 
 ## Akış
+Uygulama yalnızca kişinin okulunu gösterir: bahis, günün tahmini, düello ve market sorguları `mySchoolId` (`profile_data.dart`) ile süzülür (süperadmin RLS'te her okulu görür). Bahisler okul kümesine göre süzülür; gruplar gelince (Adım 17) grup bahisleri için güncellenmeli.
+
 
 Oturum yok → `/giris`. Oturum var, profil sorgusu sürüyor → `/yukleniyor` (hata olursa "Tekrar dene").
 Profil yok → `/profil-olustur` (okullar `clusters where type = 'school'`). Profil var → `/bahisler` ve diğer sekmeler.
 Kabuk açılınca `claim_daily_login()` bir kez çağrılır; ödül alındıysa bildirim + bakiye/seri sunucudan yeniden okunur.
 Sağlayıcılar `currentUserIdProvider`'a bağlı: çıkış/giriş olunca kendiliğinden yeniden çalışır.
 
-## Testler (`mobile/test/`, 50)
+## Testler (`mobile/test/`, 57)
 
 `app_test.dart` `pumpApp` test ekranını telefon boyutuna (1080×2400, dpr 2.625) ayarlar; varsayılan 800×600'de
 düğmeler görünür alanın dışında kalır, ayrıca alttaki günlük ödül bildirimi düğmeleri örtebilir.

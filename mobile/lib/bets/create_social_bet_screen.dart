@@ -3,11 +3,14 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/error_messages.dart';
+import '../people/people_data.dart';
+import '../people/person_picker.dart';
 import '../profile/profile_data.dart';
 import 'bets_data.dart';
 import 'bets_tab.dart';
 
-/// Okul geneli sosyal bahis açma. Hakem açan kişidir; kişi başı sınır sunucudaki üst sınırı (100 SP) aşamaz.
+/// Okul geneli sosyal bahis açma. Hakem varsayılan olarak açan kişidir, okulundan doğrulanmış biri seçilebilir;
+/// kişi başı sınır sunucudaki üst sınırı (100 SP) aşamaz.
 class CreateSocialBetScreen extends ConsumerStatefulWidget {
   const CreateSocialBetScreen({super.key});
 
@@ -22,6 +25,9 @@ class _CreateSocialBetScreenState extends ConsumerState<CreateSocialBetScreen> {
   final _maxStake = TextEditingController(text: '100');
   final _options = [TextEditingController(text: 'Evet'), TextEditingController(text: 'Hayır')];
   DateTime? _locksAt;
+
+  /// Seçilen hakem; null ise açan kişi.
+  Person? _referee;
   var _busy = false;
   String? _error;
 
@@ -47,6 +53,11 @@ class _CreateSocialBetScreenState extends ConsumerState<CreateSocialBetScreen> {
     setState(() => _locksAt = DateTime(date.year, date.month, date.day, time.hour, time.minute));
   }
 
+  Future<void> _pickReferee() async {
+    final person = await pickPerson(context, title: 'Hakemi seç', forReferee: true);
+    if (person != null && mounted) setState(() => _referee = person);
+  }
+
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     final locksAt = _locksAt;
@@ -70,6 +81,7 @@ class _CreateSocialBetScreenState extends ConsumerState<CreateSocialBetScreen> {
         options: [for (final c in _options) c.text.trim()],
         locksAt: locksAt,
         maxStake: int.tryParse(_maxStake.text.trim()),
+        refereeId: _referee?.id,
       );
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Sosyal bahis açıldı.')));
@@ -100,8 +112,8 @@ class _CreateSocialBetScreenState extends ConsumerState<CreateSocialBetScreen> {
             padding: const EdgeInsets.all(24),
             children: [
               Text(
-                'Okulundaki herkes görür ve SP ile katılır. Hakem sensin: kapanıştan sonra sonucu sen girersin, '
-                'katılanlar itiraz ederse moderatör karar verir.',
+                'Okulundaki herkes görür ve SP ile katılır. Hakem kapanıştan sonra sonucu girer, katılanlar itiraz '
+                'ederse moderatör karar verir. Hakem varsayılan olarak sensin; başka birini seçersen o yatıramaz.',
                 style: theme.textTheme.bodySmall,
               ),
               const SizedBox(height: 16),
@@ -155,6 +167,24 @@ class _CreateSocialBetScreenState extends ConsumerState<CreateSocialBetScreen> {
                 onPressed: _busy ? null : _pickLocksAt,
                 icon: const Icon(Icons.schedule),
                 label: Text(_locksAt == null ? 'Kapanış zamanı seç' : 'Kapanış: ${formatIstanbul(_locksAt!)}'),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: _busy ? null : _pickReferee,
+                      icon: const Icon(Icons.gavel_outlined),
+                      label: Text('Hakem: ${_referee?.fullName ?? 'ben'}'),
+                    ),
+                  ),
+                  if (_referee != null)
+                    IconButton(
+                      tooltip: 'Hakem ben olayım',
+                      onPressed: _busy ? null : () => setState(() => _referee = null),
+                      icon: const Icon(Icons.close),
+                    ),
+                ],
               ),
               const SizedBox(height: 12),
               TextFormField(

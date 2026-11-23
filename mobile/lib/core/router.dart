@@ -1,18 +1,22 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../auth/auth_screen.dart';
 import '../bets/create_social_bet_screen.dart';
 import '../games/duel_play_screen.dart';
+import '../games/duel_review_screen.dart';
 import '../home/home_shell.dart';
 import '../legal/legal_screen.dart';
+import '../people/public_profile_screen.dart';
 import '../profile/change_password_screen.dart';
 import '../profile/create_profile_screen.dart';
 import '../profile/history_screen.dart';
 import '../profile/profile_data.dart';
 import '../profile/verify_email_screen.dart';
 import '../quests/quests_screen.dart';
+import 'account_guard.dart';
 import 'loading_screen.dart';
 import 'routes.dart';
 import 'supabase.dart';
@@ -44,6 +48,10 @@ final routerProvider = Provider<GoRouter>((ref) {
   final refresh = ValueNotifier<int>(0);
   ref.listen(currentUserIdProvider, (_, _) => refresh.value++);
   ref.listen(myProfileProvider, (_, _) => refresh.value++);
+  // Şifre sıfırlama linkiyle gelindi: sekmeler açılınca şifre ekranı gösterilir (HomeShell).
+  ref.listen(authChangesProvider, (_, next) {
+    if (next.value?.event == AuthChangeEvent.passwordRecovery) ref.read(passwordRecoveryProvider.notifier).start();
+  });
 
   final router = GoRouter(
     initialLocation: Routes.loading,
@@ -67,6 +75,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: Routes.duelPlayPattern,
         builder: (_, state) => DuelPlayScreen(betId: state.pathParameters['id']!),
+      ),
+      GoRoute(
+        path: Routes.duelReviewPattern,
+        builder: (_, state) => DuelReviewScreen(betId: state.pathParameters['id']!),
+      ),
+      GoRoute(
+        path: Routes.personPattern,
+        builder: (_, state) => PublicProfileScreen(userId: state.pathParameters['id']!),
       ),
       StatefulShellRoute.indexedStack(
         builder: (_, _, shell) => HomeShell(shell: shell),

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../bets/bets_tab.dart' show formatIstanbul;
 import '../core/error_messages.dart';
+import '../core/routes.dart';
 import '../market/cosmetic_preview.dart';
 import '../profile/privacy_data.dart';
 import 'leaderboard_data.dart';
@@ -151,6 +153,7 @@ class _RowTile extends StatelessWidget {
     return Card(
       color: row.isMe ? theme.colorScheme.secondaryContainer : null,
       child: ListTile(
+        onTap: () => context.push(Routes.person(row.userId)),
         leading: Row(
           mainAxisSize: MainAxisSize.min,
           children: [

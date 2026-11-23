@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'app.dart';
+import 'core/account_guard.dart';
 import 'core/env.dart';
 
 Future<void> main() async {
@@ -17,5 +18,6 @@ Future<void> main() async {
   await Supabase.initialize(url: Env.supabaseUrl, publishableKey: Env.supabasePublishableKey);
   // Riverpod'un kendiliğinden yeniden deneme özelliği kapalı: hata kullanıcıya gösterilir,
   // yeniden deneme kullanıcının elinde (aynı RPC'nin habersiz tekrarlanmaması için).
-  runApp(ProviderScope(retry: (_, _) => null, child: const KampusBetApp()));
+  // AccountGuard: silinmiş / yasaklı hesap (KB025) bu cihazda oturumu kapatır.
+  runApp(ProviderScope(retry: (_, _) => null, observers: const [AccountGuard()], child: const KampusBetApp()));
 }

@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/supabase.dart';
 import '../leaderboard/leaderboard_data.dart';
+import '../profile/profile_data.dart';
 import '../progress/progress_data.dart';
 import '../quests/quests_data.dart';
 import '../wallet/wallet_data.dart';
@@ -46,6 +47,7 @@ class Bet {
     this.poolTotal = 0,
     this.cancelReason,
     this.creatorId,
+    this.creatorName,
     this.refereeId,
     this.refereeName,
     this.proposedOptionId,
@@ -74,6 +76,7 @@ class Bet {
 
   // Sosyal bahis: hakem, hakemin girdiği sonuç ve itiraz süresi.
   final String? creatorId;
+  final String? creatorName;
   final String? refereeId;
   final String? refereeName;
   final String? proposedOptionId;
@@ -89,6 +92,7 @@ class Bet {
 
   factory Bet.fromJson(Map<String, dynamic> json) {
     final referee = json['referee'] as Map<String, dynamic>?;
+    final creator = json['creator'] as Map<String, dynamic>?;
     final disputeUntil = json['dispute_until'] as String?;
     return Bet(
       id: json['id'] as String,
@@ -104,6 +108,7 @@ class Bet {
       poolTotal: json['pool_total'] as int,
       cancelReason: json['cancel_reason'] as String?,
       creatorId: json['creator_id'] as String?,
+      creatorName: creator == null ? null : '${creator['first_name']} ${creator['last_name']}',
       refereeId: json['referee_id'] as String?,
       refereeName: referee == null ? null : '${referee['first_name']} ${referee['last_name']}',
       proposedOptionId: json['proposed_option_id'] as String?,
@@ -151,17 +156,17 @@ int potentialPayout(int amount, double odds) => (amount * odds).floor();
 const _betColumns =
     'id, type, settlement_mode, title, description, status, locks_at, currency, min_stake, max_stake, pool_total, cancel_reason, '
     'creator_id, referee_id, proposed_option_id, dispute_until, referee:profiles!referee_id(first_name, last_name), '
+    'creator:profiles!creator_id(first_name, last_name), '
     'bet_options(id, label, position, odds, pool_amount, is_winner)';
 
-// RLS: yalnızca kişinin kümelerindeki bahisler görünür.
+// RLS: yalnızca kişinin kümelerindeki bahisler görünür; ayrıca kişinin okulu (v1'de bahisler okul kümesinde).
 Future<List<Bet>> _fetchBets(Ref ref, String type) async {
   final userId = ref.watch(currentUserIdProvider);
   if (userId == null) return const [];
-  final rows = await ref
-      .watch(supabaseProvider)
-      .from('bets')
-      .select(_betColumns)
-      .eq('type', type)
+  final schoolId = await mySchoolId(ref);
+  var query = ref.watch(supabaseProvider).from('bets').select(_betColumns).eq('type', type);
+  if (schoolId != null) query = query.eq('cluster_id', schoolId);
+  final rows = await query
       .order('created_at', ascending: false)
       .limit(30);
   return rows.map(Bet.fromJson).toList();
@@ -175,12 +180,15 @@ final socialBetsProvider = FutureProvider<List<Bet>>((ref) => _fetchBets(ref, 's
 final dailyPredictionsProvider = FutureProvider<List<Bet>>((ref) async {
   final userId = ref.watch(currentUserIdProvider);
   if (userId == null) return const [];
-  final rows = await ref
+  final schoolId = await mySchoolId(ref);
+  var query = ref
       .watch(supabaseProvider)
       .from('bets')
       .select(_betColumns)
       .eq('type', 'sp_minigame')
-      .eq('settlement_mode', 'admin')
+      .eq('settlement_mode', 'admin');
+  if (schoolId != null) query = query.eq('cluster_id', schoolId);
+  final rows = await query
       .order('locks_at', ascending: false)
       .limit(10);
   return rows.map(Bet.fromJson).toList();
@@ -208,21 +216,50 @@ final myDisputedBetIdsProvider = FutureProvider<Set<String>>((ref) async {
 
 typedef WagerEntry = ({Bet bet, Wager wager});
 
-/// Kişinin yatırımları bahsiyle birlikte, en yeni önce (Profil > Geçmiş bahislerim).
+/// Geçmişte gösterilecek yatırım sayısı; "Daha fazla göster" sayfa boyu kadar artırır.
+class HistoryLimit extends Notifier<int> {
+  static const pageSize = 30;
+
+  @override
+  int build() => pageSize;
+
+  void more() => state += pageSize;
+}
+
+final historyLimitProvider = NotifierProvider<HistoryLimit, int>(HistoryLimit.new);
+
+/// Kişinin yatırımları bahsiyle birlikte, en yeni önce (Profil > Geçmiş bahislerim). Sınırdan bir fazlası
+/// istenir: liste sınırdan uzunsa "Daha fazla göster" çıkar.
 final myWagerHistoryProvider = FutureProvider<List<WagerEntry>>((ref) async {
   final userId = ref.watch(currentUserIdProvider);
   if (userId == null) return const [];
+  final limit = ref.watch(historyLimitProvider);
   final rows = await ref
       .watch(supabaseProvider)
       .from('wagers')
       .select('bet_id, option_id, amount, odds, payout, created_at, bet:bets!bet_id($_betColumns)')
       .eq('user_id', userId)
       .order('created_at', ascending: false)
-      .limit(100);
+      .limit(limit + 1);
   return [
     for (final r in rows)
       if (r['bet'] != null) (bet: Bet.fromJson(r['bet'] as Map<String, dynamic>), wager: Wager.fromJson(r)),
   ];
+});
+
+/// Kişinin açtığı ya da hakemi olduğu sosyal bahisler, en yeni önce (geçmişte; yatırım yapmasa da).
+final myOwnSocialBetsProvider = FutureProvider<List<Bet>>((ref) async {
+  final userId = ref.watch(currentUserIdProvider);
+  if (userId == null) return const [];
+  final rows = await ref
+      .watch(supabaseProvider)
+      .from('bets')
+      .select(_betColumns)
+      .eq('type', 'sp_social')
+      .or('creator_id.eq.$userId,referee_id.eq.$userId')
+      .order('created_at', ascending: false)
+      .limit(50);
+  return rows.map(Bet.fromJson).toList();
 });
 
 /// Bahis / düello işleminden sonra: bakiye, kartlar, geçmiş, istatistik, görev ilerlemesi, XP.
@@ -233,6 +270,7 @@ void refreshAfterBet(ProviderContainer c) {
   c.invalidate(myWagersProvider);
   c.invalidate(myDisputedBetIdsProvider);
   c.invalidate(myWagerHistoryProvider);
+  c.invalidate(myOwnSocialBetsProvider);
   c.invalidate(myStatsProvider);
   c.invalidate(questsProvider);
   c.invalidate(balanceProvider);
@@ -258,6 +296,7 @@ Future<void> createSocialBet(
   required List<String> options,
   required DateTime locksAt,
   int? maxStake,
+  String? refereeId,
 }) async {
   final c = containerOf(ref);
   await c.read(supabaseProvider).rpc(
@@ -269,6 +308,7 @@ Future<void> createSocialBet(
       'p_options': options,
       'p_locks_at': locksAt.toUtc().toIso8601String(),
       'p_max_stake': ?maxStake,
+      'p_referee_id': ?refereeId,
     },
   );
   refreshAfterBet(c);

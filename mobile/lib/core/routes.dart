@@ -16,4 +16,8 @@ abstract final class Routes {
   static const changePassword = '/sifre';
   static const duelPlayPattern = '/duello/:id';
   static String duelPlay(String betId) => '/duello/$betId';
+  static const duelReviewPattern = '/duello/:id/cevaplar';
+  static String duelReview(String betId) => '/duello/$betId/cevaplar';
+  static const personPattern = '/kisi/:id';
+  static String person(String userId) => '/kisi/$userId';
 }

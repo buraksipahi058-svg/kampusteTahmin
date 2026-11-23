@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../bets/bets_tab.dart';
+import '../core/account_guard.dart';
 import '../core/error_messages.dart';
 import '../core/routes.dart';
 import '../core/supabase.dart';
@@ -94,6 +95,22 @@ class HomeShell extends ConsumerWidget {
       }
     });
 
+    // Seviye atlayınca kutlama (ilerleme sunucudan yeniden okununca seviye büyüdüyse).
+    ref.listen(myProgressProvider, (previous, next) {
+      final before = previous?.value?.level;
+      final after = next.value?.level;
+      if (before != null && after != null && after > before) showLevelUp(context, after);
+    });
+
+    // Şifre sıfırlama linkiyle gelindiyse şifre ekranı bir kez açılır (olay sekmelerden önce de gelmiş olabilir).
+    if (ref.watch(passwordRecoveryProvider)) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!context.mounted || !ref.read(passwordRecoveryProvider)) return;
+        ref.read(passwordRecoveryProvider.notifier).clear();
+        context.push(Routes.changePassword);
+      });
+    }
+
     final tab = homeTabs[shell.currentIndex];
     return Scaffold(
       appBar: AppBar(title: Text(tab.label), actions: const [BalanceBar(), SizedBox(width: 8)]),
@@ -109,4 +126,27 @@ class HomeShell extends ConsumerWidget {
       ),
     );
   }
+}
+
+/// Seviye atlama kutlaması: yeni seviye ve markette seviyeyle açılan ürünlere bağlantı.
+Future<void> showLevelUp(BuildContext context, int level) {
+  return showDialog<void>(
+    context: context,
+    useRootNavigator: true,
+    builder: (dialogContext) => AlertDialog(
+      icon: const Text('🎉', style: TextStyle(fontSize: 40)),
+      title: Text('Seviye $level!'),
+      content: Text('Tebrikler, $level. seviyeye ulaştın. Markette seviyeyle açılan ürünler olabilir.'),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('Tamam')),
+        FilledButton(
+          onPressed: () {
+            Navigator.pop(dialogContext);
+            context.go(Routes.market);
+          },
+          child: const Text('Markete git'),
+        ),
+      ],
+    ),
+  );
 }

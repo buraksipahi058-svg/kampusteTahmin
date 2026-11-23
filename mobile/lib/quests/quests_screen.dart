@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../bets/bets_tab.dart';
+import '../core/async_button.dart';
 import '../core/error_messages.dart';
 import '../wallet/wallet_data.dart';
 import 'quests_data.dart';
@@ -123,7 +124,7 @@ class QuestCard extends ConsumerWidget {
                     ],
                   )
                 else if (quest.claimable)
-                  FilledButton(onPressed: () => _claim(context, ref), child: const Text('Ödülü al')),
+                  AsyncButton(onPressed: () => _claim(context, ref), child: const Text('Ödülü al')),
               ],
             ),
           ],

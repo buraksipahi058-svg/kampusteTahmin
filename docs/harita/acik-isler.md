@@ -9,7 +9,7 @@ parantez ortaya çıktığı adım.
 - [6-10] **Admin panelinde giriş sonrası tüm ekranlar** (resmi bahisler, yetkiler, bakiye, itirazlar, trivia soruları, günün tahmini, görevler, market, istatistik) tarayıcıda denenmedi. Gerekli: kullanıcının kendi şifresiyle girmesi ve hesabının yetkili ya da süperadmin olması. Arkalarındaki veritabanı fonksiyonları pgTAP ve SQL ile denendi.
 - [7] **Mobilde itiraz etme ve moderatör kararının** uygulama içinden uçtan uca akışı (tek gerçek hesap hakem olduğu için itiraz edemedi). pgTAP ve widget testleriyle sınandı.
 - [8] Mobilde **düelloyu kabul etme** (uygulamadaki "Kabul et") ve **süre bitince kendiliğinden gönderme** uçtan uca denenmedi; denemede rakip SQL ile kabul etti. Kabul, pgTAP ve widget testiyle; süre aşımı pgTAP'le sınandı.
-- [8] Düello (`kampusbet_trivia_duellolari`) ve günün tahmini (`kampusbet_gunun_tahmini`) zamanlanmış işlerinin bulutta kendiliğinden çalıştığı gözlenmedi (sosyal bahis işi gözlendi; aynı düzen). pgTAP fonksiyonları doğrudan çağırdı.
+- [8] Düello ve günün tahmini zamanlanmış işlerinin bulutta gerçek bir süre aşımını (kabul edilmeyen düelloyu iade, sonuçsuz tahmini iptal) işlediği gözlenmedi. İşlerin kendisi çalışıyor: 2026-11-22'de beş işin hepsi düzenli ve hatasız (`cron.job_run_details`). pgTAP fonksiyonları doğrudan çağırdı.
 - [8] Günün tahmininde **birden çok kişiyle havuz paylaşımı** uygulamada denenmedi; emülatör denemesinde tek katılımcı vardı (kazanınca kendi 30 SP'si döndü). Çok kişili dağıtım pgTAP'te sınandı.
 - [9] Uygulamada **SSP vitrininden satın alma**, kuşanılan ürünü **çıkarma**, **çerçeve / unvan / rozet**in profilde görünmesi ve **sezonluk görev** denenmedi (emülatörde SP ile "Mor isim" alındı ve kuşanıldı, bir günlük görev ödülü alındı). pgTAP ve widget testleriyle sınandı.
 - [10] **Dolu bir isabet sıralaması ve çok kişili liderlik** uygulamada görülmedi: bulutta tek gerçek kullanıcı var, bu hafta 2 tahmini 5'lik eşiğin altında ("Kazanç" ve "Seri" tek kişiyle görüldü). Çok kişili sıralama, eşitlik ve eşik pgTAP'te sınandı.
@@ -22,38 +22,33 @@ parantez ortaya çıktığı adım.
 - [14] **Kayıttaki koşullar onay kutusu** gerçek bir kayıtla denenmedi (emülatördeki test hesabının oturumunu kapatmamak için); `terms_version`'ın Auth metadatasına yazıldığı gerçek istekle görülmedi. Kutu ve koşullar ekranı widget testinde, koşullar ekranı release APK'da açıldı.
 - [14] **Paylaşılan veri dosyasının içeriği** cihazda açılıp okunmadı: release APK'da paylaş menüsü `kampusbet-verilerim-YYYYAAGG.json` ile açıldı (sunucu çağrısı başarılı); JSON'un biçimi widget testinde, içeriği pgTAP'te. Gmail / Drive'a gerçekten gönderilmedi.
 - [14] **İstek sınırının canlıda `KB026` döndürmesi** denenmedi (dakikada 60 yazma isteği gerekir); pgTAP'te sınandı. Canlıda bekçinin yazma isteklerini saydığı (sayaçta satır) ve okumaları saymadığı görüldü.
+- [15] Canlıda **davetli düello ve başka hakemli sosyal bahis açılmadı** (test hesabının SP'sini bağlamamak ve bulutta yeni deneme kaydı bırakmamak için): kişi seçme penceresi gerçek aramayla, seçim sonrası form görüldü; sunucu kuralları Adım 7-8 pgTAP'inde, istemci widget testinde.
+- [15] **Şifre sıfırlama linkiyle şifre ekranının açılması** gerçek mailin linkiyle denenmedi (Redirect URLs ayarı ve mail gerekir); yalnızca kod yolu yazıldı (`passwordRecovery` olayı → `HomeShell`).
+- [15] **Yasaklı / silinmiş hesabın otomatik çıkışı** canlıda denenmedi (gerçek yasaklı hesap yok); `KB025` tanıma birim testinde. **Seviye kutlaması** canlıda görülmedi (widget testinde). **Süperadmin okul süzgeci** süperadmin hesabıyla denenmedi.
 - [12-QA] Admin formlarının yeni davranışı (`ActionForm`: hata alınca girilenler kalır) tarayıcıda denenmedi (giriş gerekir); tip kontrolü ve derleme geçti.
 - [5] **Okul maili kodunun gerçek mail olarak gitmesi** (Brevo yolu). Yalnızca isteğin pg_net kuyruğuna girdiği test edildi; gerçek gönderim yok.
 - [4] **iOS derlemesi** hiç denenmedi (Mac ya da bulut CI gerekir).
 
 ## Eksik (yapılmadı, sonraya bırakıldı)
 
-- [8] Mobilde **belirli bir kişiye meydan okuma** yok (hep okula açık); veritabanı destekliyor (`p_invited_id`).
-- [8] Düello bitince **doğru cevapları gösterme** yok (oyuncu yalnızca skorunu görür).
 - [8] Günün tahmini için okul başına "günde bir soru" sınırı ya da ileri tarihli planlama yok; yetkili istediği kadar soru açabilir.
 - [7] **Grup oluşturma / gruba davetle katılma** yok; özel kapsamlı (grup) bahis veritabanında var ama oluşturulamıyor.
-- [7] Mobilde sosyal bahiste **başka hakem seçme** yok (hep açan); veritabanı destekliyor.
 - [7] **Bildirim** yok: itiraz gelince hakeme / moderatöre, sonuç kesinleşince katılanlara.
 - [2-7] Aynı kişilerin sık eşleşmesini (SP aktarma şüphesi) izleme yok (KARARLAR öneri 1'deki kalan risk).
 - [10] Eski kayıtlar için **geriye dönük XP** verilmedi: XP yalnızca bu sürümden sonraki giriş, görev ve sonuçlanan bahislerden gelir (bulutta herkes 0 XP'den başladı).
 - [10] Seviye yalnızca **market ürünü** açıyor; seviyeyle özellik açma (ör. sosyal bahis açmak için en az seviye) yok.
-- [10] Seviye atlayınca **bildirim / kutlama** yok; günlük ödül bildirimi XP'yi yazmıyor.
+- [10] Günlük ödül bildirimi XP'yi yazmıyor (seviye atlama kutlaması Adım 15'te eklendi).
 - [10] Okul maili doğrulama, hakemlik ve itirazsız kesinleşen hakem kararı **XP vermiyor**.
 - [10] Admin'den **XP düzeltme** yok; `xp_level_step` değişirse mevcut seviyeler yeniden hesaplanmaz (elle: `update public.profiles set level = private.level_for_xp(xp);`).
-- [9-10] Kuşanılan kozmetikler kişinin profilinde ve liderlikte görünüyor; sosyal bahis kartında (açan / hakem) ve düello rakibinde görünmüyor.
-- [10] Liderlikten başkasının profiline / istatistiğine bakma yok.
 - [12] **Bildirimler** yok (push için Firebase projesi gerekir; uygulama içi bildirim kutusu da yok).
 - [12] Uygulama **ikonu ve açılış ekranı** Flutter varsayılanı; hata / çökme raporlama (Crashlytics, Sentry) yok.
-- [12] Şifre sıfırlama linkiyle gelince doğrudan yeni şifre ekranı açılmıyor; kullanıcı Profil > Şifreyi değiştir'e gider (maildeki ve uygulamadaki metin bunu söylüyor).
 - [12] Canlı Supabase projesi kurulmadı, admin paneli yayında değil (rehber: [yayin](yayin.md)).
 - [12] Bağımlılıklar güncellenmedi: `shared_preferences_android` 2.5.1 (release'te R8 kuralı gerekiyor, `proguard-rules.pro`); `flutter pub upgrade` ile 2.5.5+ / jni 1.1.2+'ya geçilince o blok kaldırılabilir.
 - [14] Kullanım koşulları **değişince yeniden onay** alınmıyor; mevcut hesaplar (bulutta yalnızca test hesabı) koşulları hiç onaylamadı. Onay yalnızca Auth kullanıcı metadatasında (`terms_version`; kişi kendi metadatasını değiştirebilir), sunucuda ayrı onay kaydı yok. (Gerekirse) açık rıza akışı yok.
 - [14] Sıralamada gizli olmak yalnızca liderliği kapsar: profil (ad, soyad, okul, bölüm, seviye) okul arkadaşlarına açık kalır; sosyal bahiste açan / hakem adı görünür.
-- [11] Admin'den **kullanıcı silme** yok (yasaklama Adım 13'te eklendi); süperadmin hesabı uygulamadan silinemez (önce rolü SQL ile alınır). Yasaklanan kişi mobilde hata mesajı görür, uygulama kendiliğinden çıkış yapmaz.
-- [12-QA] Ödül al / Kuşan / Kabul et düğmelerinde çift dokunma koruması yok (ikinci istek sunucuda reddedilir, fazladan hata bildirimi çıkar). Süperadmin öğrenci uygulamasında tüm okulların bahis ve ürünlerini görür (sorgular okula göre süzülmüyor).
+- [11] Admin'den **kullanıcı silme** yok (yasaklama Adım 13'te eklendi); süperadmin hesabı uygulamadan silinemez (önce rolü SQL ile alınır).
 - [10] Canlı güncelleme (Supabase Realtime) yok; sıralama 10 dakikada bir hesaplanır.
 - [10] Başarım / rozet koleksiyonu (MIMARI §11) yok.
-- [10] Geçmiş bahisler son 100 yatırım, sayfalama yok; açılan ve hakemlik yapılan sosyal bahisler orada görünmüyor (yalnızca yatırımlar).
 - [10] Admin okul özeti yalnızca bu hafta; geçmiş haftalar ve grafik yok.
 - [9] Market'te tema, banner, emote ve bahis "flair"i türleri yok (v1: unvan, rozet, çerçeve, isim rengi); stoklu / sınırlı sayıda ürün yok.
 - [9] Admin'de ürünün kaç kez satıldığı ve görevin kaç kişi tarafından tamamlandığı görünmüyor (analitik).
@@ -75,6 +70,8 @@ parantez ortaya çıktığı adım.
 - [12-QA] Zamanlanmış işler (sosyal bahis, düello) birden çok bahsi tek transaction'da sonuçlandırır; aynı anda istemciden sonuçlandırılan ortak kişili bir bahisle nadiren kilitlenebilir (iş tarafı yakalar, istemci 40P01 alabilir).
 - [12-QA] Oturum anahtarları cihazda şifresiz (SharedPreferences) duruyor; yedeğe girmiyor ama köklü cihazda okunabilir. Gerekirse şifreli depolama (flutter_secure_storage) ile değiştirilebilir.
 - [14] İstek sınırı yalnızca **başarılı yazma** isteklerini sayar: başarısız istek transaction'la geri alındığı için sayaca girmez (hatalı isteklerle boğma sınırlanmaz); okuma istekleri ve IP başına sınır yok. Tam koruma için API'nin önüne ağ geçidi (ör. Cloudflare) gerekir.
+- [15] Kişi aramada Türkçe büyük / küçük harf (İ / i, I / ı) eşleşmesi veritabanının yerel ayarına bağlı; denenmedi ("VEL" → "Veli" testte geçti).
+- [15] Davetli düelloda davet edilen kişiye bildirim gitmiyor; düelloyu Oyunlar sekmesinde görür (bildirimler Adım 16).
 - [14] Sıralamadan çıkan kişinin donmuş geçmiş haftalardaki satırları da silinir, açınca o haftalara geri dönmez (o haftanın sıra numaralarında boşluk kalır).
 - [11] Supabase'in kendi kayıtlarında (Auth güvenlik günlüğü `auth.audit_log_entries`, `pg_net` istek kayıtları) silinen kişinin e-postası bir süre kalabilir; hesap silme bunlara dokunmaz.
 - [6-10] Bulutta deneme verisi duruyor (liderlik satırları bunlardan hesaplanıyor): "Test Yetkili" profili (`e2e00000-...0001`), deneme resmi ve sosyal bahisleri, bir trivia düellosu, bir günün tahmini ("E2E: Bugun kampuste kar yagar mi?"); kullanıcının test hesabı örnek alan adıyla doğrulanmış, iki görev ödülü almış (ikincisi +20 XP ile, Adım 10 XP denemesi) ve "Mor isim"i satın alıp kuşanmış.

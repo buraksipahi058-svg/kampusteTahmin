@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/error_messages.dart';
+import '../market/market_data.dart';
+import '../people/public_profile_screen.dart';
 import '../wallet/wallet_data.dart';
 import 'bets_data.dart';
 import 'bets_tab.dart';
@@ -16,6 +18,7 @@ class SocialBetCard extends ConsumerWidget {
     required this.userId,
     required this.canBet,
     required this.disputed,
+    this.looks = const {},
   });
 
   final Bet bet;
@@ -25,6 +28,9 @@ class SocialBetCard extends ConsumerWidget {
 
   /// Kişi bu bahsin sonucuna itiraz etti mi.
   final bool disputed;
+
+  /// Açanın ve hakemin kuşandığı kozmetikler.
+  final Map<String, Cosmetics> looks;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -44,11 +50,31 @@ class SocialBetCard extends ConsumerWidget {
           children: [
             ListTile(
               title: Text(bet.title, style: theme.textTheme.titleMedium),
-              subtitle: Text(
-                '${betStatusText(bet, open)}\n'
-                'Hakem: ${isReferee ? 'sen' : (bet.refereeName ?? '?')} · Havuz: ${formatAmount(bet.poolTotal)} SP',
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(betStatusText(bet, open)),
+                  const SizedBox(height: 4),
+                  Wrap(
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    spacing: 6,
+                    runSpacing: 4,
+                    children: [
+                      if (bet.creatorId != null && bet.creatorId != bet.refereeId) ...[
+                        const Text('Açan:'),
+                        PersonLabel(userId: bet.creatorId!, name: bet.creatorName ?? '?', cosmetics: looks[bet.creatorId]),
+                      ],
+                      if (isReferee || bet.refereeId == null)
+                        Text('Hakem: ${isReferee ? 'sen' : '?'}')
+                      else ...[
+                        const Text('Hakem:'),
+                        PersonLabel(userId: bet.refereeId!, name: bet.refereeName ?? '?', cosmetics: looks[bet.refereeId]),
+                      ],
+                      Text('· Havuz: ${formatAmount(bet.poolTotal)} SP'),
+                    ],
+                  ),
+                ],
               ),
-              isThreeLine: true,
             ),
             if (bet.description != null)
               Padding(

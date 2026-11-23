@@ -121,3 +121,9 @@ Future<void> createProfile(
   );
   c.invalidate(myProfileProvider);
 }
+
+/// Kişinin okulu (süperadmin RLS'te her okulu görür; uygulama yalnızca kendi okulunu gösterir).
+Future<String?> mySchoolId(Ref ref) async {
+  final schoolId = (await ref.watch(myProfileProvider.future)).profile?.schoolId;
+  return schoolId == null || schoolId.isEmpty ? null : schoolId;
+}

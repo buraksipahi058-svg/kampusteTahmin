@@ -4,17 +4,54 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../bets/bets_data.dart';
 import '../bets/bets_tab.dart' show formatIstanbul, wagerText;
 import '../core/error_messages.dart';
+import '../core/supabase.dart';
+import '../wallet/wallet_data.dart';
 
-/// `/gecmis`: kişinin yatırımları (son 100), en yeni önce; sonuç metni bahis kartlarıyla aynı.
-class HistoryScreen extends ConsumerWidget {
+/// `/gecmis`: "Yatırımlarım" (en yeni önce, 30'ar sayfa; sonuç metni bahis kartlarıyla aynı) ve
+/// "Açtıklarım" (kişinin açtığı ya da hakemi olduğu sosyal bahisler, yatırım yapmasa da).
+class HistoryScreen extends ConsumerStatefulWidget {
   const HistoryScreen({super.key});
+
+  @override
+  ConsumerState<HistoryScreen> createState() => _HistoryScreenState();
+}
+
+class _HistoryScreenState extends ConsumerState<HistoryScreen> {
+  var _own = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Geçmiş bahislerim')),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+            child: SegmentedButton<bool>(
+              segments: const [
+                ButtonSegment(value: false, label: Text('Yatırımlarım')),
+                ButtonSegment(value: true, label: Text('Açtıklarım')),
+              ],
+              selected: {_own},
+              showSelectedIcon: false,
+              onSelectionChanged: (s) => setState(() => _own = s.first),
+            ),
+          ),
+          Expanded(child: _own ? const _OwnBets() : const _Wagers()),
+        ],
+      ),
+    );
+  }
+}
+
+class _Wagers extends ConsumerWidget {
+  const _Wagers();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final history = ref.watch(myWagerHistoryProvider);
-    return Scaffold(
-      appBar: AppBar(title: const Text('Geçmiş bahislerim')),
-      body: RefreshIndicator(
+    final limit = ref.watch(historyLimitProvider);
+    return RefreshIndicator(
         onRefresh: () async {
           ref.invalidate(myWagerHistoryProvider);
           await ref.read(myWagerHistoryProvider.future);
@@ -28,10 +65,16 @@ class HistoryScreen extends ConsumerWidget {
               ),
             ],
           ),
-          AsyncData(:final value) => ListView.builder(
+          AsyncData(:final value) => ListView(
             padding: const EdgeInsets.all(16),
-            itemCount: value.length,
-            itemBuilder: (_, i) => _EntryCard(entry: value[i]),
+            children: [
+              for (final entry in value.take(limit)) _EntryCard(entry: entry),
+              if (value.length > limit)
+                TextButton(
+                  onPressed: () => ref.read(historyLimitProvider.notifier).more(),
+                  child: const Text('Daha fazla göster'),
+                ),
+            ],
           ),
           AsyncError(:final error) => ListView(
             padding: const EdgeInsets.all(32),
@@ -42,6 +85,73 @@ class HistoryScreen extends ConsumerWidget {
           ),
           _ => const Center(child: CircularProgressIndicator()),
         },
+    );
+  }
+}
+
+class _OwnBets extends ConsumerWidget {
+  const _OwnBets();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final userId = ref.watch(currentUserIdProvider);
+    return RefreshIndicator(
+      onRefresh: () async {
+        ref.invalidate(myOwnSocialBetsProvider);
+        await ref.read(myOwnSocialBetsProvider.future);
+      },
+      child: switch (ref.watch(myOwnSocialBetsProvider)) {
+        AsyncData(:final value) when value.isEmpty => ListView(
+          children: const [
+            Padding(
+              padding: EdgeInsets.all(32),
+              child: Center(child: Text('Açtığın ya da hakemi olduğun sosyal bahis yok.')),
+            ),
+          ],
+        ),
+        AsyncData(:final value) => ListView(
+          padding: const EdgeInsets.all(16),
+          children: [for (final bet in value) _OwnBetCard(bet: bet, userId: userId)],
+        ),
+        AsyncError(:final error) => ListView(
+          padding: const EdgeInsets.all(32),
+          children: [
+            Text('Bahisler alınamadı. ${userMessage(error)}', textAlign: TextAlign.center),
+            TextButton(onPressed: () => ref.invalidate(myOwnSocialBetsProvider), child: const Text('Tekrar dene')),
+          ],
+        ),
+        _ => const Center(child: CircularProgressIndicator()),
+      },
+    );
+  }
+}
+
+/// Açılan / hakemlik yapılan sosyal bahis: rol, durum, sonuç (kazanan seçenek ya da iptal gerekçesi), havuz.
+class _OwnBetCard extends StatelessWidget {
+  const _OwnBetCard({required this.bet, required this.userId});
+
+  final Bet bet;
+  final String? userId;
+
+  @override
+  Widget build(BuildContext context) {
+    final roles = [if (bet.creatorId == userId) 'Açtın', if (bet.refereeId == userId) 'Hakemsin'].join(', ');
+    final winner = bet.options.where((o) => o.isWinner == true).firstOrNull;
+    final result = switch (bet.status) {
+      'settled' when winner != null => 'Sonuç: ${winner.label}',
+      'cancelled' => 'İptal: ${bet.cancelReason ?? '-'}',
+      _ => null,
+    };
+    return Card(
+      child: ListTile(
+        title: Text(bet.title),
+        subtitle: Text(
+          [
+            [roles, _statusLabel(bet), 'Havuz ${formatAmount(bet.poolTotal)} SP'].join(' · '),
+            ?result,
+          ].join('\n'),
+        ),
+        isThreeLine: result != null,
       ),
     );
   }

@@ -5,10 +5,10 @@ gerektirdiği bölgeleri aç. Kod dosyalarını baştan sona okuma; bölge dosya
 
 ## Şu an
 
-- **Commit:** yalnızca kullanıcı onay verince, yalnızca yerel (push yok). Adım 7-9 `f45f3dc`'de; Adım 10 + XP / seviye `0ca9789`'da, Adım 11 `2fa4c08`'de, Adım 12 `ae29d5e`'de, Adım 13 `c205879`'da; Adım 14 çalışma ağacında, commit edilmedi.
-- **Son tamamlanan:** Adım 14 — gizlilik: sıralamadan çıkma (Profil > Gizlilik > "Liderlikte görün"), verilerimi indir (bütün kayıtlar JSON dosyası, paylaş menüsü), istek sınırı (dakikada 60 yazma isteği, `KB026`), kullanım koşulları taslağı (mobil `/kosullar`, admin `/kosullar`, kayıtta zorunlu onay), KVKK metnine yeni haklar. 653 pgTAP, 50 Flutter testi, admin lint / tip / build temiz; canlıda anonim 42 RPC reddediliyor, release APK'da veri indirme, gizlenme / görünme ve koşullar ekranı denendi. Önceki: Adım 13 (`c205879`).
+- **Commit:** yalnızca kullanıcı onay verince, yalnızca yerel (push yok). Adım 7-9 `f45f3dc`'de; Adım 10 + XP / seviye `0ca9789`'da, Adım 11 `2fa4c08`'de, Adım 12 `ae29d5e`'de, Adım 13 `c205879`'da, Adım 14 `e62ac52`'de; Adım 15 çalışma ağacında, commit edilmedi.
+- **Son tamamlanan:** Adım 15 — mobil eksikler: belirli birine meydan okuma ve sosyal bahiste hakem seçme (kişi arama), düello bitince cevaplar, bahis / düello kartlarında kozmetikli ve dokunulabilir isimler, başkasının profili (liderlikten, kartlardan), geçmişte sayfalama + "Açtıklarım", seviye kutlaması, çift dokunma koruması, şifre linkiyle şifre ekranı, yasaklı / silinmiş hesapta otomatik çıkış, süperadmin için okul süzgeci. 670 pgTAP, 57 Flutter testi; release APK'da kişi arama, cevaplar, profil, kartlar ve geçmiş gerçek veriyle denendi. Önceki: Adım 14 (`e62ac52`).
 - **Bulutta deneme verisi:** giriş yapamayan "Test Yetkili" profili (`e2e00000-...0001`), sonuçlanmış resmi ve sosyal deneme bahisleri, bir trivia düellosu, bir günün tahmini; kullanıcının test hesabı `deneme@ogr.ornek.edu.tr` ile doğrulanmış (820 SP, 20 XP, "Mor isim" kuşanılı). Seed'de 5 genel görev, 8 genel ürün.
-- **Sıradaki (öneri, açık işlerden):** Adım 15 mobil eksikler (kişi seçerek meydan okuma / hakem, düello sonrası cevaplar, kartlarda kozmetik, başkasının profili, geçmiş sayfalama, seviye kutlaması); Adım 16 uygulama içi bildirimler; Adım 17 gruplar; Adım 18 izleme / analitik. Ayrıca kullanıcının canlıya geçiş adımları ([yayin](harita/yayin.md) "Canlıya geçiş sırası"); uygulama tarafında kalanlar [acik-isler](harita/acik-isler.md)'de (bildirimler, ikon, admin panelinin girişle denenmesi, eksik özellikler).
+- **Sıradaki (öneri, açık işlerden):** Adım 16 uygulama içi bildirimler; Adım 17 gruplar; Adım 18 izleme / analitik. Ayrıca kullanıcının canlıya geçiş adımları ([yayin](harita/yayin.md) "Canlıya geçiş sırası"); uygulama tarafında kalanlar [acik-isler](harita/acik-isler.md)'de (bildirimler, ikon, admin panelinin girişle denenmesi, eksik özellikler).
 - **Açık işler** (denenmemiş, eksik, çözülmemiş, kullanıcıdan beklenen): [harita/acik-isler.md](harita/acik-isler.md).
 
 | # | Adım | Durum | Commit |
@@ -27,7 +27,8 @@ gerektirdiği bölgeleri aç. Kod dosyalarını baştan sona okuma; bölge dosya
 | 11 | Güvenlik denetimi, hesap silme, KVKK | Bitti | `2fa4c08` |
 | 12 | Yayına hazırlık (linkler, şifre, Android imza, mağaza sayfaları) + kalite kontrolü | Bitti | `ae29d5e` |
 | 13 | Yönetim ve güvenlik eksikleri (istek bekçisi, yasaklama, ihtar, oran, admin ekranları) | Bitti | `c205879` |
-| 14 | Gizlilik (sıralamadan çıkma, veri dışa aktarma, istek sınırı, kullanım koşulları) | Bitti (commit yok) | |
+| 14 | Gizlilik (sıralamadan çıkma, veri dışa aktarma, istek sınırı, kullanım koşulları) | Bitti | `e62ac52` |
+| 15 | Mobil eksikler (kişi seçme, düello cevapları, kozmetikli isimler, başkasının profili, geçmiş, kutlama) | Bitti (commit yok) | |
 
 ## Görev → ne okunur
 

@@ -6,6 +6,8 @@ import 'package:go_router/go_router.dart';
 import '../core/error_messages.dart';
 import '../core/routes.dart';
 import '../core/supabase.dart';
+import '../market/market_data.dart';
+import '../people/people_data.dart';
 import '../profile/student_email_data.dart';
 import '../wallet/wallet_data.dart';
 import 'bets_data.dart';
@@ -27,6 +29,10 @@ class _BetsTabState extends ConsumerState<BetsTab> {
     final bets = ref.watch(_social ? socialBetsProvider : officialBetsProvider);
     final wagers = ref.watch(myWagersProvider).value ?? const <String, Wager>{};
     final disputed = ref.watch(myDisputedBetIdsProvider).value ?? const <String>{};
+    final people = _social
+        ? cosmeticsKey([for (final b in bets.value ?? const <Bet>[]) ...[b.creatorId, b.refereeId]])
+        : '';
+    final looks = ref.watch(cosmeticsOfProvider(people)).value ?? const <String, Cosmetics>{};
     final verified = ref.watch(studentEmailProvider).value?.verified;
     final userId = ref.watch(currentUserIdProvider);
     final theme = Theme.of(context);
@@ -94,6 +100,7 @@ class _BetsTabState extends ConsumerState<BetsTab> {
                           userId: userId,
                           canBet: verified == true,
                           disputed: disputed.contains(bet.id),
+                          looks: looks,
                         )
                       : BetCard(bet: bet, wager: wagers[bet.id], canBet: verified == true),
               ],
