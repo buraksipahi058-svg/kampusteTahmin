@@ -33,6 +33,8 @@ const messages: Record<string, string> = {
   KB030: "Bu görev bu dönem zaten yapıldı.",
   KB031: "Görevin kontenjanı doldu.",
   KB032: "Görev şu an açık değil.",
+  KB033: "Bu gönderi zaten karara bağlandı.",
+  KB034: "Fotoğraf bulunamadı ya da daha önce kullanıldı.",
   "42501": "Bu işlem için yetkin yok.",
   "23514": "Girilen bilgilerden biri geçersiz.",
   "23505": "Bu kayıt zaten var.",

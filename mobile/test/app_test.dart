@@ -4,12 +4,15 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:image/image.dart' as img;
 import 'package:supabase_flutter/supabase_flutter.dart' show PostgrestException;
 import 'package:kampusbet/achievements/achievements_data.dart';
 import 'package:kampusbet/app.dart';
 import 'package:kampusbet/bets/bets_data.dart';
 import 'package:kampusbet/bets/bets_tab.dart';
 import 'package:kampusbet/campus/campus_data.dart';
+import 'package:kampusbet/campus/photo_proof.dart';
+import 'package:kampusbet/campus/photo_submit_screen.dart';
 import 'package:kampusbet/campus/qr_scan_screen.dart';
 import 'package:kampusbet/core/app_info.dart';
 import 'package:kampusbet/core/supabase.dart';
@@ -70,6 +73,7 @@ Future<void> pumpApp(
   FakeNotificationsApi? notifications,
   FakeCampusApi? campus,
   String scannedQr = '',
+  Uint8List? capturedPhoto,
 }) async {
   final dailyApi = daily ?? FakeDailyRewardApi(claimedToday: true);
   final notificationsApi = notifications ?? FakeNotificationsApi();
@@ -125,6 +129,7 @@ Future<void> pumpApp(
         dailyRewardApiProvider.overrideWithValue(dailyApi),
         notificationsApiProvider.overrideWithValue(notificationsApi),
         campusApiProvider.overrideWithValue(campusApi),
+        photoCaptureProvider.overrideWithValue(() async => capturedPhoto),
         scannerViewProvider.overrideWithValue(
           (onCode) => Center(
             child: TextButton(onPressed: () => onCode(scannedQr), child: const Text('Sahte QR okut')),
@@ -144,6 +149,7 @@ class FakeCampusApi implements CampusApi {
 
   List<CampusTask> items;
   final submitted = <(String, String)>[];
+  final photos = <(String, int)>[];
 
   @override
   Future<List<CampusTask>> tasks() async => items;
@@ -154,6 +160,9 @@ class FakeCampusApi implements CampusApi {
     if (code != 'ABC123ABC123') throw const PostgrestException(message: 'x', code: 'KB029');
     return (currency: 'SP', amount: 30, xp: 15);
   }
+
+  @override
+  Future<void> submitPhoto(String taskId, Uint8List jpeg) async => photos.add((taskId, jpeg.length));
 }
 
 /// Bildirimlerin sahtesi: bellekte liste, okundu işareti kaydedilir.
@@ -1415,6 +1424,73 @@ void main() {
     await tester.tap(find.text('Gönder'));
     await tester.pumpAndSettle();
     expect(find.textContaining('QR kodu geçersiz'), findsOneWidget);
+  });
+
+  testWidgets('fotoğraflı kampüs görevi: çek, önizle, gönder; onay bekler', (tester) async {
+    final api = FakeCampusApi([
+      const CampusTask(
+        id: 'f1',
+        title: 'Çöpü kutuya at',
+        icon: '♻️',
+        verification: 'photo',
+        period: 'once',
+        rewardCurrency: 'SP',
+        rewardAmount: 25,
+        rewardXp: 10,
+        canSubmit: true,
+      ),
+      const CampusTask(
+        id: 'f2',
+        title: 'Kampüsü temizle',
+        icon: '🧹',
+        verification: 'photo',
+        period: 'once',
+        rewardCurrency: 'SP',
+        rewardAmount: 20,
+        rewardXp: 0,
+        myStatus: 'rejected',
+        myNote: 'Çöp kutusu görünmüyor.',
+        canSubmit: true,
+      ),
+    ]);
+    final photo = Uint8List.fromList(img.encodeJpg(img.Image(width: 40, height: 30)));
+    await pumpApp(tester, userId: 'u1', profile: _profile, campus: api, capturedPhoto: photo);
+    await tester.tap(find.text('Profil'));
+    await tester.pumpAndSettle();
+    final profileList = find.descendant(of: find.byType(ProfileTab), matching: find.byType(Scrollable)).first;
+    await tester.scrollUntilVisible(find.text('Kampüs görevleri'), 200, scrollable: profileList);
+    await tester.ensureVisible(find.text('Kampüs görevleri'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Kampüs görevleri'));
+    await tester.pumpAndSettle();
+    expect(find.text('Reddedildi: Çöp kutusu görünmüyor. · yeniden deneyebilirsin'), findsOneWidget);
+
+    await tester.tap(find.text('Fotoğraf çek').first);
+    await tester.pumpAndSettle();
+    expect(find.text('Ödül: +25 SP · +10 XP (onaylanınca)'), findsOneWidget);
+    await tester.runAsync(() async {
+      await tester.tap(find.widgetWithText(FilledButton, 'Fotoğraf çek'));
+      await Future<void>.delayed(const Duration(milliseconds: 500));
+    });
+    await tester.pumpAndSettle();
+    expect(find.byType(Image), findsOneWidget);
+    await tester.tap(find.text('Gönder'));
+    await tester.pumpAndSettle();
+    expect(api.photos.single.$1, 'f1');
+    expect(find.text('Gönderildi'), findsOneWidget);
+  });
+
+  test('kanıt fotoğrafı küçültülür ve konum / cihaz bilgisi silinir', () {
+    final big = img.Image(width: 3000, height: 2000);
+    big.exif.imageIfd['Make'] = img.IfdValueAscii('Telefon');
+    big.exif.gpsIfd['GPSLatitudeRef'] = img.IfdValueAscii('N');
+    final source = img.encodeJpg(big);
+    expect(img.decodeJpg(source)!.exif.isEmpty, isFalse);
+    final out = img.decodeJpg(prepareProofPhoto(Uint8List.fromList(source)))!;
+    expect(out.width, 1280);
+    expect(out.height, 853);
+    expect(out.exif.isEmpty, isTrue);
+    expect(randomUuid(), matches(RegExp(r'^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$')));
   });
 
   test('kampüs QR içeriği çözülür', () {

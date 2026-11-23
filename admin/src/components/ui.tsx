@@ -47,10 +47,15 @@ export function SubmitButton({
   children,
   pendingText,
   tone = "primary",
+  name,
+  value,
 }: {
   children: ReactNode;
   pendingText?: string;
   tone?: "primary" | "danger" | "neutral";
+  // Birden çok gönderme düğmesinde hangisine basıldığı (ActionForm submitter'ı gönderir).
+  name?: string;
+  value?: string;
 }) {
   const actionPending = useContext(PendingContext);
   const { pending: formPending } = useFormStatus();
@@ -63,6 +68,8 @@ export function SubmitButton({
   return (
     <button
       type="submit"
+      name={name}
+      value={value}
       disabled={pending}
       className={`rounded-md px-3 py-1.5 text-sm font-medium disabled:opacity-50 ${tones[tone]}`}
     >

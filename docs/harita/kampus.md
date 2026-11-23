@@ -48,3 +48,28 @@ Kod: `20261122215319_kampus_gorevi_degerleri.sql` (enum: `kampus_gorevi_yonet`, 
   üretir; dönen QR'da süresi dolunca kendiliğinden yenilenir; "QR'ı yenile"). `qrcode` paketi.
 - Mobil: Profil > Kampüs görevleri (`/kampus-gorevleri`), `/kampus-gorevleri/:id/okut` (`mobile_scanner`; kamerasız
   "Kodu elle gir"). Kamera izni: Android eklentiden, iOS `NSCameraUsageDescription`.
+
+## Kampüs görevleri — fotoğraf ve onay (Adım 17b)
+
+Kod: `20261122221347_kampus_fotograf.sql`. Test: `21_kampus_fotograf.test.sql` (39).
+
+- **Depolama:** `campus-proofs` (herkese kapalı, en fazla 2 MB, yalnızca `image/jpeg`). Dosya adı
+  `<kişi>/<rastgele uuid>.jpg`. `storage.objects` politikaları: yükleme yalnızca kendi klasörüne, okul maili doğrulanmış,
+  yasaklı değil, saatte en fazla 10 (`private.campus_upload_allowed`); okuma sahibi ve sahibin okulunda kampüs görevi
+  yöneten / süperadmin (`private.campus_proof_readable`); güncelleme ve silme politikası yok (istemci değiştiremez,
+  silemez). Storage API istekleri PostgREST bekçisinden geçmez; yasak / silinme kontrolü politikada.
+- `submit_campus_task_photo(görev, yol)` → gönderi: ret `KB002`, `P0002`, `42501` (yöneten), `KB032` (açık değil ya da
+  QR görevi), `KB034` (fotoğraf yok / başkasının / kullanılmış), `KB030`, `KB031`. Bekleyen gönderi; okulun yetkililerine
+  günde bir `campus_review_new` bildirimi.
+- `review_campus_submission(gönderi, onay, not?)`: okulunda yöneten / süperadmin; ret gerekçesi ≥ 3 (`23514`); yeniden
+  karar `KB033`; onayda kontenjan yeniden denetlenir (`KB031`), ödül o an (`pay_campus_submission`). Öğrenciye
+  `campus_approved` / `campus_rejected`; denetim `campus_review`. Kilit sırası: görev satırı, sonra gönderi.
+- **pg_cron** `kampusbet_kampus_gonderileri` saatte bir `private.process_campus_submissions()`: 7 günde karara
+  bağlanmayan gönderi `expired` (+ `campus_expired`); karardan 30 gün sonra (hesap silinince hemen) fotoğrafı Storage
+  API ile siler (`private.storage_delete`, pg_net `DELETE /storage/v1/object/campus-proofs`), gönderiye bağlı olmayan
+  1 günden eski yüklemeleri de siler.
+- **Silme ayarı:** `private.storage_settings` (proje adresi; geliştirme projesinde dolduruldu) + Vault'ta
+  `kampusbet_storage_service_key` adlı servis anahtarı (**kullanıcının işi**; anahtar yoksa silme bekler, fotoğraf kalır).
+- Admin: `/kampus-gorevleri/onay` (bekleyenler, 5 dakikalık imzalı fotoğraf bağlantısı, onayla / gerekçeyle reddet).
+- Mobil: `/kampus-gorevleri/:id/foto` (`image_picker` yalnızca kamera; `prepareProofPhoto`: yöne göre döndür, uzun kenar
+  ≤ 1280, EXIF tamamen silinir, JPEG 80; `CampusApi.submitPhoto` yükler + gönderir).

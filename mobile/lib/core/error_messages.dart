@@ -37,6 +37,8 @@ const databaseMessages = <String, String>{
   'KB030': 'Bu görevi bu dönem zaten yaptın.',
   'KB031': 'Bu görevin kontenjanı doldu.',
   'KB032': 'Bu görev şu an açık değil.',
+  'KB033': 'Bu gönderi zaten karara bağlandı.',
+  'KB034': 'Fotoğraf yüklenemedi ya da daha önce kullanıldı; yeniden çek.',
   'KB024': 'Sonuçlanmamış bahsin, düellon ya da hakemliğin varken hesabını silemezsin. Önce sonuçlanmalarını bekle.',
   '42501': 'Bu işlem için yetkin yok ya da oturumun kapanmış.',
   '23514': 'Girdiğin bilgilerden biri geçersiz. Kontrol edip tekrar dene.',

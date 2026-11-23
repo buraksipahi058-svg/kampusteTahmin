@@ -17,5 +17,5 @@ abstract final class AppInfo {
 
   /// Kayıtta kabul edilen kullanım koşullarının sürümü (`assets/legal/kullanim_kosullari.txt` "Sürüm:" satırı;
   /// test denetler). Supabase Auth kullanıcı metadatasına `terms_version` olarak yazılır.
-  static const termsVersion = '2026-11-22';
+  static const termsVersion = '2026-11-23';
 }

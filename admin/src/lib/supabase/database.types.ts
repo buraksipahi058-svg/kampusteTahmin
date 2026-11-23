@@ -441,6 +441,8 @@ export type Database = {
           id: string
           method: Database["public"]["Enums"]["campus_verification"]
           period_start: string
+          photo_delete_after: string | null
+          photo_deleted_at: string | null
           photo_path: string | null
           review_note: string | null
           reviewed_at: string | null
@@ -457,6 +459,8 @@ export type Database = {
           id?: string
           method: Database["public"]["Enums"]["campus_verification"]
           period_start: string
+          photo_delete_after?: string | null
+          photo_deleted_at?: string | null
           photo_path?: string | null
           review_note?: string | null
           reviewed_at?: string | null
@@ -473,6 +477,8 @@ export type Database = {
           id?: string
           method?: Database["public"]["Enums"]["campus_verification"]
           period_start?: string
+          photo_delete_after?: string | null
+          photo_deleted_at?: string | null
           photo_path?: string | null
           review_note?: string | null
           reviewed_at?: string | null
@@ -1931,6 +1937,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      review_campus_submission: {
+        Args: { p_approve: boolean; p_note?: string; p_submission_id: string }
+        Returns: undefined
+      }
       revoke_permission: {
         Args: {
           p_key: Database["public"]["Enums"]["permission_key"]
@@ -2081,6 +2091,10 @@ export type Database = {
           question_no: number
           seconds_left: number
         }[]
+      }
+      submit_campus_task_photo: {
+        Args: { p_path: string; p_task_id: string }
+        Returns: string
       }
       submit_campus_task_qr: {
         Args: { p_code: string; p_task_id: string }

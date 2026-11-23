@@ -1,6 +1,6 @@
 # KVKK Aydınlatma Metni
 
-TASLAK — yayından önce hukuk incelemesinden geçmeli; köşeli parantezli yerler doldurulmalı. Sürüm: 22.11.2026
+TASLAK — yayından önce hukuk incelemesinden geçmeli; köşeli parantezli yerler doldurulmalı. Sürüm: 23.11.2026
 
 Bu metin, 6698 sayılı Kişisel Verilerin Korunması Kanunu'nun (KVKK) 10. maddesi uyarınca, KampüsBet uygulamasını kullanırken kişisel verilerinin nasıl işlendiğini anlatır.
 
@@ -15,6 +15,7 @@ KampüsBet'te gerçek para yoktur. SP ve SSP sanal puanlardır: satın alınamaz
 - Kimlik bilgileri: ad, soyad, okul, bölüm (isteğe bağlı).
 - İletişim bilgileri: giriş e-postan; doğrulanmış okul (öğrenci) e-postan. Doğrulama kodu yalnızca şifrelenmiş özet olarak, en fazla 10 dakika saklanır.
 - Uygulama içi işlemler: SP / SSP hareketleri, bahis ve tahmin yatırımların ve sonuçları, düello cevapların, görevler, XP ve seviye, market (kozmetik) alımların, hakemlik kararların ve itirazların.
+- Kampüs görevleri: QR ile ya da fotoğrafla yaptığın görevlerin kaydı; fotoğraflı görevde çektiğin fotoğraf (konum ve cihaz bilgisi fotoğraf gönderilmeden önce uygulamada silinir).
 - Yetkililer için: verilen izinler ve yönetim işlemlerinin kayıtları.
 - Teknik bilgiler: oturum bilgileri, giriş zamanları; kötüye kullanımı önlemek için son birkaç dakikadaki işlem sayın (en fazla 10 dakika tutulur); altyapı sağlayıcısının güvenlik kayıtlarında IP adresi ve cihaz / tarayıcı bilgisi.
 
@@ -28,7 +29,7 @@ KampüsBet'te gerçek para yoktur. SP ve SSP sanal puanlardır: satın alınamaz
 ## 4. Verilerini kimler görür
 
 - Okul arkadaşların: adın, soyadın, okulun, bölümün, seviyen ve kuşandığın kozmetikler; sıralamalarda adın, soyadının baş harfi ve sıralama değerlerin (isabet oranı, net kazanç, doğru tahmin serisi); açtığın ya da hakemliğini yaptığın sosyal bahislerde adın. Bireysel yatırımların başkalarına gösterilmez; yalnızca havuz toplamları görünür. Sıralamalarda görünmek istemezsen Profil > Gizlilik > "Liderlikte görün" seçeneğini kapatabilirsin; o andan itibaren sıralamalarda gösterilmezsin.
-- Okulundaki yetkililer, yalnızca kendilerine verilen izin ölçüsünde (ör. itiraz inceleme, okul istatistikleri).
+- Okulundaki yetkililer, yalnızca kendilerine verilen izin ölçüsünde (ör. itiraz inceleme, okul istatistikleri, kampüs görevi fotoğraflarını onaylama). Kampüs görevi fotoğraflarını yalnızca sen ve okulunun bu işle görevli yetkilileri görür; okul arkadaşların göremez.
 - Sistem yöneticisi.
 - Hizmet aldığımız veri işleyenler: Supabase (veritabanı ve kimlik doğrulama; sunucular Avrupa Birliği'nde, Almanya / Frankfurt) ve [e-posta gönderim sağlayıcısı, ör. Brevo] (yalnızca okul e-postana doğrulama kodu göndermek için).
 - Kanunen yetkili kamu kurum ve kuruluşları, talep halinde.
@@ -40,7 +41,8 @@ Veriler Avrupa Birliği'ndeki (Almanya) sunucularda saklanır; bu, KVKK m. 9 kap
 ## 6. Ne kadar saklanır, nasıl silinir
 
 - Verilerin hesabın açık olduğu sürece saklanır.
-- Hesabını istediğin zaman uygulamadan silebilirsin: Profil > Hesabımı sil. Silince adın, soyadın, bölümün, okul e-postan, giriş e-postan, şifren, oturumların, izinlerin ve sıralama satırların silinir; profilin başkalarına "Silinmiş Kullanıcı" olarak görünür ve aynı e-postayla yeniden kayıt olabilirsin.
+- Kampüs görevi fotoğrafları, gönderi onaylandıktan, reddedildikten ya da süresi dolduktan 30 gün sonra silinir.
+- Hesabını istediğin zaman uygulamadan silebilirsin: Profil > Hesabımı sil. Silince adın, soyadın, bölümün, okul e-postan, giriş e-postan, şifren, oturumların, izinlerin, bildirimlerin, kampüs görevi fotoğrafların ve sıralama satırların silinir; profilin başkalarına "Silinmiş Kullanıcı" olarak görünür ve aynı e-postayla yeniden kayıt olabilirsin.
 - Puan hareketleri, yatırım ve sonuç kayıtları kimliğinle bağı koparılmış (anonim) olarak saklanır; çünkü diğer kullanıcıların bahis sonuçları ve sistemin bütünlüğü bu kayıtlara dayanır.
 - Sonuçlanmamış bahsin, düellon ya da hakemliğin varken hesap silinemez; bunlar birkaç gün içinde sonuçlanır.
 - Altyapı sağlayıcısının güvenlik kayıtları sağlayıcının saklama süresi boyunca tutulabilir [süre].

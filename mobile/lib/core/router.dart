@@ -7,6 +7,7 @@ import '../achievements/achievements_screen.dart';
 import '../auth/auth_screen.dart';
 import '../bets/create_social_bet_screen.dart';
 import '../campus/campus_screen.dart';
+import '../campus/photo_submit_screen.dart';
 import '../campus/qr_scan_screen.dart';
 import '../games/duel_play_screen.dart';
 import '../games/duel_review_screen.dart';
@@ -75,6 +76,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: Routes.achievements, builder: (_, _) => const AchievementsScreen()),
       GoRoute(path: Routes.notifications, builder: (_, _) => const NotificationsScreen()),
       GoRoute(path: Routes.campus, builder: (_, _) => const CampusTasksScreen()),
+      GoRoute(
+        path: Routes.campusPhotoPattern,
+        builder: (_, state) => PhotoSubmitScreen(taskId: state.pathParameters['id']!),
+      ),
       GoRoute(
         path: Routes.campusScanPattern,
         builder: (_, state) => QrScanScreen(taskId: state.pathParameters['id']!),

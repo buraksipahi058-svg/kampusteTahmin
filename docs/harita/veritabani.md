@@ -34,6 +34,7 @@ Konu bölgeleri: [kimlik.md](kimlik.md), [para.md](para.md), [bahis.md](bahis.md
 | `20261122214819_bildirimler.sql` | 17 | `notifications` + RLS, bildirim tetikleyicileri (bahis, itiraz, düello, profil, yönetici para), `process_notifications` + 5 dakikalık iş, `mark_notifications_read` ([kampus](kampus.md)) |
 | `20261122215319_kampus_gorevi_degerleri.sql` | 17a | enum: `kampus_gorevi_yonet`, `campus_task_reward`, `ledger_ref_type.campus_task`, `xp_reason.campus_task` |
 | `20261122215322_kampus_gorevleri.sql` | 17a | `campus_tasks`, `private.campus_task_secrets`, `campus_task_submissions` + RLS, QR kodu (HMAC), `save_campus_task`, `reset_campus_task_qr`, `campus_task_qr`, `my_campus_tasks`, `submit_campus_task_qr`; `xp_on_ledger_entry` ve `achievement_metrics` yeniden, `campus_tasks` başarımları ([kampus](kampus.md)) |
+| `20261122221347_kampus_fotograf.sql` | 17b | `campus-proofs` depolama alanı + `storage.objects` politikaları, `private.storage_settings`, `private.storage_delete` (pg_net), `submit_campus_task_photo`, `review_campus_submission`, `process_campus_submissions` + saatlik iş, bildirim türleri, `notify_profile` yeniden (silinince fotoğraf) ([kampus](kampus.md)) |
 | `20261122105335_gunun_tahmini.sql` | 8 | günün tahmini ayarları, `bets_settlement_by_type` (mini oyunda `admin` de olur), `place_wager` (yalnızca `auto` mini oyuna kapalı; admin sonuçlandırmalıda açan / kapatan yatıramaz), `create/settle/cancel_daily_prediction`, saatlik pg_cron işi |
 
 ## Koda inmek gerekirse
@@ -125,6 +126,8 @@ Buluttaki gerçek durumu görmek daha ucuzsa: `npx supabase db query --linked "s
 | `KB030` | Kampüs görevi bu dönem zaten yapıldı (onaylı ya da bekleyen gönderi var) |
 | `KB031` | Kampüs görevinin kontenjanı doldu |
 | `KB032` | Kampüs görevi şu an açık değil (kapalı, başlamadı, bitti ya da doğrulama yöntemi farklı) |
+| `KB033` | Kampüs gönderisi zaten karara bağlandı (onay / ret yeniden yapılamaz) |
+| `KB034` | Kampüs gönderisinin fotoğrafı yok, kişinin klasöründe değil ya da daha önce kullanıldı |
 | `KB026` | İstek sınırı: kişinin son bir dakikadaki yazma isteği `economy_settings.api_write_limit_per_minute`'a ulaştı (bekçi) |
 | `42501` | Yetki yok / giriş gerekli |
 | `23514` | Geçersiz değer (kısıt) |

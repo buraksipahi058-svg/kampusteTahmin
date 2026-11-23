@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -6,6 +8,7 @@ import '../core/supabase.dart';
 import '../notifications/notifications_data.dart';
 import '../progress/progress_data.dart';
 import '../wallet/wallet_data.dart';
+import 'photo_proof.dart';
 
 /// Kampüs görevi (`public.my_campus_tasks`): okulun yetkilisinin açtığı, QR ya da fotoğrafla doğrulanan görev.
 class CampusTask {
@@ -118,6 +121,18 @@ class CampusApi {
       amount: row['reward_amount'] as int,
       xp: row['reward_xp'] as int,
     );
+  }
+
+  /// Fotoğrafı (hazırlanmış JPEG) kişinin klasörüne yükler, sonra `public.submit_campus_task_photo` ile gönderir.
+  /// Gönderi yetkili onayını bekler. Yükleme olur da gönderi reddedilirse dosya sahipsiz kalır; sunucu 1 gün sonra siler.
+  Future<void> submitPhoto(String taskId, Uint8List jpeg) async {
+    final uid = _client.auth.currentUser?.id;
+    if (uid == null) throw const AuthException('Oturum yok');
+    final path = '$uid/${randomUuid()}.jpg';
+    await _client.storage
+        .from('campus-proofs')
+        .uploadBinary(path, jpeg, fileOptions: const FileOptions(contentType: 'image/jpeg'));
+    await _client.rpc('submit_campus_task_photo', params: {'p_task_id': taskId, 'p_path': path});
   }
 }
 

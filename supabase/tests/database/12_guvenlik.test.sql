@@ -55,7 +55,8 @@ select is(
 select is(
   (select array_agg(f.proname::text order by f.proname) from our_functions f
    where f.nspname = 'private' and has_function_privilege('authenticated', f.oid, 'execute')),
-  array['current_school_id', 'has_permission', 'is_superadmin', 'my_cluster_ids', 'school_of_user'],
+  array['campus_proof_readable', 'campus_upload_allowed', 'current_school_id', 'has_permission', 'is_superadmin',
+        'my_cluster_ids', 'school_of_user'],
   'private şemada giriş yapanın çalıştırabildiği yalnızca RLS yardımcıları'
 );
 select is(

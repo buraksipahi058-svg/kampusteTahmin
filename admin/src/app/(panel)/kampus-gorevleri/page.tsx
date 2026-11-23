@@ -40,6 +40,9 @@ export default async function CampusTasksPage() {
           yapar. Basılı QR sızarsa &quot;QR&apos;ı yenile&quot; ile eskisini geçersiz kıl. Görevi yönetenler ödül alamaz.
         </p>
       </div>
+      <Link href="/kampus-gorevleri/onay" className="self-start rounded-md border border-zinc-300 px-3 py-1.5 text-sm font-medium hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-800">
+        Onay bekleyen fotoğraflar
+      </Link>
       <CampusTaskForm schools={allowedSchools} isSuper={isSuper} />
       {error && <p className="text-sm text-red-700">Görevler alınamadı: {dbErrorMessage(error)}</p>}
       <ul className="flex flex-col divide-y divide-zinc-200 dark:divide-zinc-800">

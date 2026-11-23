@@ -36,6 +36,7 @@ Kurallar: KARARLAR "Yayına hazırlık". Kullanıcının yapacakları [acik-isle
    - **Özel SMTP şart:** Supabase'in yerleşik maili saatte çok az mail gönderir. Brevo SMTP bilgileri girilir
      (aynı Brevo hesabı okul maili kodları için de kullanılır).
    - Leaked password protection açık (planda varsa), en az şifre uzunluğu 8.
+3b. **Fotoğraf silme anahtarı:** canlı projede Supabase Vault'a servis (secret) anahtarı `kampusbet_storage_service_key` adıyla konur ve `update private.storage_settings set project_url = 'https://<canlı-ref>.supabase.co';` çalıştırılır (kampüs görevi fotoğrafları karardan 30 gün sonra silinsin). Anahtar yalnızca veritabanında kalır; mobil ya da admin koduna girmez.
 4. **Admin paneli yayını** (ör. Vercel, kök klasör `admin/`): ortam değişkenleri `NEXT_PUBLIC_SUPABASE_URL`,
    `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (canlı projenin). Secret key **verilmez**. Alan adı → mağaza bağlantıları:
    `https://<admin-alan-adı>/gizlilik`, `https://<admin-alan-adı>/kosullar`, `https://<admin-alan-adı>/hesap-silme`.
