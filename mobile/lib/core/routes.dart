@@ -11,6 +11,10 @@ abstract final class Routes {
   static const createSocialBet = '/sosyal-bahis-ac';
   static const quests = '/gorevler';
   static const achievements = '/basarimlar';
+  static const notifications = '/bildirimler';
+
+  /// Alt sekmelerin yolları (bildirim linki bunlardan biriyse sekmeye geçilir, değilse ekran açılır).
+  static const tabs = {bets, games, market, leaderboard, profile};
   static const history = '/gecmis';
   static const privacy = '/kvkk';
   static const terms = '/kosullar';

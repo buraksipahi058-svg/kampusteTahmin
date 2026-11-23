@@ -27,6 +27,7 @@ parantez ortaya çıktığı adım.
 - [15] **Yasaklı / silinmiş hesabın otomatik çıkışı** canlıda denenmedi (gerçek yasaklı hesap yok); `KB025` tanıma birim testinde. **Seviye kutlaması** canlıda görülmedi (widget testinde). **Süperadmin okul süzgeci** süperadmin hesabıyla denenmedi.
 - [16] Canlıda yalnızca "Kampüslü" başarımının ödülü alındı ve 2. günün günlük ödülü takvimden alındı. Gizli başarım ("Ters Köşe"), çok kişili "okulda kazanan" oranı ve 7 / 14 / 30. gün bonuslarının takvimde alınması canlıda görülmedi (pgTAP ve widget testinde). Test hesabında 5 başarımın ödülü hazır bekliyor.
 - [16] Admin'in **Başarımlar** ekranı (liste, ekle, düzenle, aç / kapat) tarayıcıda giriş yapılarak denenmedi (süperadmin girişi gerekir); girişsiz istek giriş ekranına yönleniyor, `save_achievement` pgTAP'te.
+- [17] Bildirimlerin gerçek olaylardan (bahis sonucu, itiraz, düello daveti) canlıda üretildiği görülmedi; canlıda elle eklenen deneme bildirimiyle zil, liste, okundu ve bağlantı denendi. Üreticiler pgTAP'te.
 - [12-QA] Admin formlarının yeni davranışı (`ActionForm`: hata alınca girilenler kalır) tarayıcıda denenmedi (giriş gerekir); tip kontrolü ve derleme geçti.
 - [5] **Okul maili kodunun gerçek mail olarak gitmesi** (Brevo yolu). Yalnızca isteğin pg_net kuyruğuna girdiği test edildi; gerçek gönderim yok.
 - [4] **iOS derlemesi** hiç denenmedi (Mac ya da bulut CI gerekir).

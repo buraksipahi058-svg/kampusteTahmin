@@ -31,6 +31,7 @@ Konu bölgeleri: [kimlik.md](kimlik.md), [para.md](para.md), [bahis.md](bahis.md
 | `20261122210722_basarim_degerleri.sql` | 16 | enum değerleri: `ledger_reason.achievement_reward`, `ledger_ref_type.achievement`, `xp_reason.achievement` (ayrı migration: yeni enum değeri aynı transaction'da kullanılamaz) |
 | `20261122210724_basarimlar_gunluk_odul.sql` | 16 | `achievements` (katalog, 25 başarım) + `achievement_unlocks` (yalnızca eklenir) + RLS, `private.achievement_metrics`, `my_achievements`, `claim_achievement`, `daily_login_calendar`; `xp_on_ledger_entry` ve tetikleyicisi, `xp_events_source` ve `ledger_sp_only_rewards` kısıtları yeniden ([para](para.md)) |
 | `20261122212408_basarim_yonetimi.sql` | 16 | `save_achievement` (yalnızca süperadmin; anahtar değişmez, denetim kaydı `achievement_save`) |
+| `20261122214819_bildirimler.sql` | 17 | `notifications` + RLS, bildirim tetikleyicileri (bahis, itiraz, düello, profil, yönetici para), `process_notifications` + 5 dakikalık iş, `mark_notifications_read` ([kampus](kampus.md)) |
 | `20261122105335_gunun_tahmini.sql` | 8 | günün tahmini ayarları, `bets_settlement_by_type` (mini oyunda `admin` de olur), `place_wager` (yalnızca `auto` mini oyuna kapalı; admin sonuçlandırmalıda açan / kapatan yatıramaz), `create/settle/cancel_daily_prediction`, saatlik pg_cron işi |
 
 ## Koda inmek gerekirse

@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/supabase.dart';
 import '../leaderboard/leaderboard_data.dart';
+import '../notifications/notifications_data.dart';
 import '../profile/profile_data.dart';
 import '../progress/progress_data.dart';
 import '../quests/quests_data.dart';
@@ -271,6 +272,8 @@ void refreshAfterBet(ProviderContainer c) {
   c.invalidate(myDisputedBetIdsProvider);
   c.invalidate(myWagerHistoryProvider);
   c.invalidate(myOwnSocialBetsProvider);
+  // Sonuçlanma, itiraz, düello olayları bildirim üretir.
+  c.invalidate(unreadNotificationsProvider);
   c.invalidate(myStatsProvider);
   c.invalidate(questsProvider);
   c.invalidate(balanceProvider);

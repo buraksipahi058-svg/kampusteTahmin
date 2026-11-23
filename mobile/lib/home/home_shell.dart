@@ -10,6 +10,7 @@ import '../core/supabase.dart';
 import '../games/games_tab.dart';
 import '../leaderboard/leaderboard_tab.dart';
 import '../market/market_tab.dart';
+import '../notifications/notifications_screen.dart';
 import '../profile/profile_tab.dart';
 import '../progress/progress_data.dart';
 import '../wallet/balance_bar.dart';
@@ -134,6 +135,7 @@ class HomeShell extends ConsumerWidget {
       appBar: AppBar(
         title: Text(tab.label),
         actions: [
+          const NotificationBell(),
           IconButton(
             tooltip: 'Günlük ödül',
             onPressed: () => showDailyReward(context),

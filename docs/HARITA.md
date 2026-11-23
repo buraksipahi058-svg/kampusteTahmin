@@ -30,6 +30,7 @@ gerektirdiği bölgeleri aç. Kod dosyalarını baştan sona okuma; bölge dosya
 | 14 | Gizlilik (sıralamadan çıkma, veri dışa aktarma, istek sınırı, kullanım koşulları) | Bitti | `e62ac52` |
 | 15 | Mobil eksikler (kişi seçme, düello cevapları, kozmetikli isimler, başkasının profili, geçmiş, kutlama) | Bitti (commit yok) | |
 | 16 | Başarımlar (+ admin yönetimi, haber) + günlük ödül takvimi | Bitti (commit yok) | |
+| 17 | Uygulama içi bildirimler | Bitti (commit yok) | |
 
 ## Görev → ne okunur
 

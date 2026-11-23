@@ -15,6 +15,7 @@ import 'package:kampusbet/games/trivia_data.dart';
 import 'package:kampusbet/home/home_shell.dart';
 import 'package:kampusbet/leaderboard/leaderboard_data.dart';
 import 'package:kampusbet/market/market_data.dart';
+import 'package:kampusbet/notifications/notifications_data.dart';
 import 'package:kampusbet/core/account_guard.dart';
 import 'package:kampusbet/people/people_data.dart';
 import 'package:kampusbet/profile/privacy_data.dart';
@@ -64,8 +65,10 @@ Future<void> pumpApp(
   FakeDailyRewardApi? daily,
   List<Achievement> achievements = const [],
   List<Achievement> Function()? achievementsNow,
+  FakeNotificationsApi? notifications,
 }) async {
   final dailyApi = daily ?? FakeDailyRewardApi(claimedToday: true);
+  final notificationsApi = notifications ?? FakeNotificationsApi();
   final privacyApi = privacy ?? FakePrivacyApi();
   // Gerçek telefon boyutu (Pixel 7); varsayılan 800×600 test ekranında düğmeler görünür alanın dışında kalıyor.
   tester.view.physicalSize = const Size(1080, 2400);
@@ -115,12 +118,45 @@ Future<void> pumpApp(
         balanceProvider.overrideWith((ref) async => const Balance(sp: 1050, ssp: 0)),
         loginStreakProvider.overrideWith((ref) async => const LoginStreak(current: 1, longest: 3)),
         dailyRewardApiProvider.overrideWithValue(dailyApi),
+        notificationsApiProvider.overrideWithValue(notificationsApi),
         achievementsProvider.overrideWith((ref) async => achievementsNow?.call() ?? achievements),
       ],
       child: const KampusBetApp(),
     ),
   );
   await tester.pumpAndSettle();
+}
+
+/// Bildirimlerin sahtesi: bellekte liste, okundu işareti kaydedilir.
+class FakeNotificationsApi implements NotificationsApi {
+  FakeNotificationsApi([List<AppNotification>? items]) : items = items ?? [];
+
+  List<AppNotification> items;
+
+  @override
+  Future<List<AppNotification>> latest() async => items;
+
+  @override
+  Future<int> unreadCount() async => items.where((n) => n.unread).length;
+
+  @override
+  Future<void> markRead([List<int>? ids]) async {
+    items = [
+      for (final n in items)
+        if (ids == null || ids.contains(n.id))
+          AppNotification(
+            id: n.id,
+            kind: n.kind,
+            title: n.title,
+            body: n.body,
+            link: n.link,
+            createdAt: n.createdAt,
+            readAt: n.readAt ?? DateTime(2026, 11, 23),
+          )
+        else
+          n,
+    ];
+  }
 }
 
 /// Günlük ödülün sahtesi: 7 günlük takvim (bugün 1. gün), ödül alınınca bugün işaretlenir.
@@ -1232,6 +1268,50 @@ void main() {
     expect(newAchievementMessage(null, [a, b], firstLoadAnnounced: false), '🏆 2 başarımın ödülü hazır!');
     expect(newAchievementMessage(null, [a, b], firstLoadAnnounced: true), isNull);
     expect(newAchievementMessage([a, b], [a, b], firstLoadAnnounced: true), isNull);
+  });
+
+  testWidgets('bildirimler: zilde okunmamış sayısı, dokununca okundu ve ilgili sekme', (tester) async {
+    final api = FakeNotificationsApi([
+      AppNotification(
+        id: 1,
+        kind: 'bet_won',
+        title: 'Kazandın! +50 SSP',
+        body: '«Final kim kazanır?» sonuçlandı. Sonuç: A.',
+        link: '/oyunlar',
+        createdAt: DateTime.now().subtract(const Duration(minutes: 5)),
+      ),
+      AppNotification(
+        id: 2,
+        kind: 'level_up',
+        title: 'Seviye 2!',
+        body: 'Tebrikler, 2. seviyeye ulaştın.',
+        createdAt: DateTime.now().subtract(const Duration(hours: 3)),
+        readAt: DateTime.now(),
+      ),
+    ]);
+    await pumpApp(tester, userId: 'u1', profile: _profile, notifications: api);
+    expect(find.descendant(of: find.byTooltip('Bildirimler'), matching: find.text('1')), findsOneWidget);
+
+    await tester.tap(find.byTooltip('Bildirimler'));
+    await tester.pumpAndSettle();
+    expect(find.text('Kazandın! +50 SSP'), findsOneWidget);
+    expect(find.text('5 dk önce'), findsOneWidget);
+    expect(find.text('3 sa önce'), findsOneWidget);
+    expect(find.text('Tümünü okundu say'), findsOneWidget);
+
+    await tester.tap(find.text('Kazandın! +50 SSP'));
+    await tester.pumpAndSettle();
+    expect(api.items.first.unread, isFalse);
+    // Link bir sekmeyse oraya geçilir.
+    expect(find.text('Trivia düellosu'), findsOneWidget);
+    expect(find.descendant(of: find.byTooltip('Bildirimler'), matching: find.text('1')), findsNothing);
+  });
+
+  test('bildirim zamanı kısa yazılır', () {
+    final now = DateTime(2026, 11, 23, 12);
+    expect(timeAgo(now.subtract(const Duration(seconds: 20)), now), 'şimdi');
+    expect(timeAgo(now.subtract(const Duration(hours: 30)), now), 'dün');
+    expect(timeAgo(now.subtract(const Duration(days: 4)), now), '4 gün önce');
   });
 
   test('yardımcılar: hesap engeli, kozmetik anahtarı, İstanbul haftası', () {

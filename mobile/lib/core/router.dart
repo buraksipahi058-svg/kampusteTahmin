@@ -10,6 +10,7 @@ import '../games/duel_play_screen.dart';
 import '../games/duel_review_screen.dart';
 import '../home/home_shell.dart';
 import '../legal/legal_screen.dart';
+import '../notifications/notifications_screen.dart';
 import '../people/public_profile_screen.dart';
 import '../profile/change_password_screen.dart';
 import '../profile/create_profile_screen.dart';
@@ -70,6 +71,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: Routes.createSocialBet, builder: (_, _) => const CreateSocialBetScreen()),
       GoRoute(path: Routes.quests, builder: (_, _) => const QuestsScreen()),
       GoRoute(path: Routes.achievements, builder: (_, _) => const AchievementsScreen()),
+      GoRoute(path: Routes.notifications, builder: (_, _) => const NotificationsScreen()),
       GoRoute(path: Routes.history, builder: (_, _) => const HistoryScreen()),
       GoRoute(path: Routes.privacy, builder: (_, _) => const LegalScreen(LegalDocument.privacy)),
       GoRoute(path: Routes.terms, builder: (_, _) => const LegalScreen(LegalDocument.terms)),
