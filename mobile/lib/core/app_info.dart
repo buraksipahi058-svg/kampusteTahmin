@@ -18,4 +18,8 @@ abstract final class AppInfo {
   /// Kayıtta kabul edilen kullanım koşullarının sürümü (`assets/legal/kullanim_kosullari.txt` "Sürüm:" satırı;
   /// test denetler). Supabase Auth kullanıcı metadatasına `terms_version` olarak yazılır.
   static const termsVersion = '2026-11-23';
+
+  /// "Nasıl oynanır" öğreticisinin sürümü. Supabase Auth kullanıcı metadatasına `tutorial_version` olarak yazılır;
+  /// öğreticinin içeriği belirgin değişirse artırılır, herkese bir kez daha kendiliğinden gösterilir.
+  static const tutorialVersion = 1;
 }

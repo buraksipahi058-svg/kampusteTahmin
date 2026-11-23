@@ -18,6 +18,7 @@ import '../market/market_tab.dart';
 import '../notifications/notifications_screen.dart';
 import '../profile/profile_tab.dart';
 import '../progress/progress_data.dart';
+import '../tutorial/tutorial_data.dart';
 import '../wallet/balance_bar.dart';
 import '../wallet/daily_reward_sheet.dart';
 import '../wallet/wallet_data.dart';
@@ -81,15 +82,15 @@ class HomeShell extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Açılışta bugünün ödülü alınmadıysa günlük ödül takvimi kişi başına bir kez kendiliğinden açılır.
-    ref.listen(dailyRewardReadyProvider, (_, ready) {
-      final userId = ref.read(currentUserIdProvider);
-      if (!ready || userId == null || ref.read(dailyRewardPromptedProvider) == userId) return;
-      ref.read(dailyRewardPromptedProvider.notifier).mark(userId);
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (context.mounted) showDailyReward(context);
-      });
-    });
+    // İlk girişte "Nasıl oynanır" öğreticisi hesap başına bir kez kendiliğinden açılır (Profil'den yine açılabilir).
+    final userId = ref.watch(currentUserIdProvider);
+    if (userId != null && _tutorialPending(ref, userId)) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _showTutorial(context, ref, userId));
+    }
+
+    // Açılışta bugünün ödülü alınmadıysa günlük ödül takvimi kişi başına bir kez kendiliğinden açılır
+    // (öğretici açıksa ya da açılacaksa o kapanınca).
+    ref.listen(dailyRewardReadyProvider, (_, _) => _maybePromptDailyReward(context, ref));
     final rewardReady = ref.watch(dailyRewardReadyProvider);
 
     // Yeni başarım haberi: hedefe yeni ulaşılan başarım (ilerleme yeniden okununca) ya da açılışta bekleyen ödüller
@@ -199,6 +200,31 @@ Future<void> showLevelUp(BuildContext context, int level) {
       ),
     ],
   );
+}
+
+/// Öğretici bu kişiye kendiliğinden açılacak mı: hesapta görülmedi ve bu oturumda henüz açılmadı.
+bool _tutorialPending(WidgetRef ref, String userId) =>
+    ref.read(tutorialSessionProvider).promptedFor != userId && !ref.read(tutorialStoreProvider).seen;
+
+Future<void> _showTutorial(BuildContext context, WidgetRef ref, String userId) async {
+  if (!context.mounted || !_tutorialPending(ref, userId)) return;
+  ref.read(tutorialSessionProvider.notifier).opened(userId);
+  await context.push(Routes.tutorial);
+  if (!context.mounted) return;
+  // Kaydedilemese de (bağlantı yok) bu oturumda yeniden açılmaz.
+  ref.read(tutorialStoreProvider).markSeen();
+  ref.read(tutorialSessionProvider.notifier).closed();
+  _maybePromptDailyReward(context, ref);
+}
+
+void _maybePromptDailyReward(BuildContext context, WidgetRef ref) {
+  final userId = ref.read(currentUserIdProvider);
+  if (!ref.read(dailyRewardReadyProvider) || userId == null || ref.read(dailyRewardPromptedProvider) == userId) return;
+  if (ref.read(tutorialSessionProvider).open || _tutorialPending(ref, userId)) return;
+  ref.read(dailyRewardPromptedProvider.notifier).mark(userId);
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    if (context.mounted) showDailyReward(context);
+  });
 }
 
 /// Günlük ödül penceresinin kendiliğinden açıldığı kişi (oturum başına bir kez; çıkış / girişte yeni kişi için yine).

@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart' show MaterialPage;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -23,6 +24,7 @@ import '../profile/history_screen.dart';
 import '../profile/profile_data.dart';
 import '../profile/verify_email_screen.dart';
 import '../quests/quests_screen.dart';
+import '../tutorial/tutorial_screen.dart';
 import 'account_guard.dart';
 import 'loading_screen.dart';
 import 'routes.dart';
@@ -88,6 +90,12 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: Routes.privacy, builder: (_, _) => const LegalScreen(LegalDocument.privacy)),
       GoRoute(path: Routes.terms, builder: (_, _) => const LegalScreen(LegalDocument.terms)),
       GoRoute(path: Routes.changePassword, builder: (_, _) => const ChangePasswordScreen()),
+      // Öğretici alttan tam ekran açılır (karşılama ekranı gibi).
+      GoRoute(
+        path: Routes.tutorial,
+        pageBuilder: (_, state) =>
+            MaterialPage(key: state.pageKey, fullscreenDialog: true, child: const TutorialScreen()),
+      ),
       GoRoute(
         path: Routes.duelPlayPattern,
         builder: (_, state) => DuelPlayScreen(betId: state.pathParameters['id']!),

@@ -33,6 +33,8 @@ import 'package:kampusbet/profile/profile_tab.dart';
 import 'package:kampusbet/profile/student_email_data.dart';
 import 'package:kampusbet/progress/progress_data.dart';
 import 'package:kampusbet/quests/quests_data.dart';
+import 'package:kampusbet/tutorial/tutorial_data.dart';
+import 'package:kampusbet/tutorial/tutorial_screen.dart';
 import 'package:kampusbet/wallet/wallet_data.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' show PostgrestException;
@@ -80,6 +82,7 @@ Future<void> pumpApp(
   FakeCampusApi? campus,
   String scannedQr = '',
   Uint8List? capturedPhoto,
+  FakeTutorialStore? tutorial,
 }) async {
   final dailyApi = daily ?? FakeDailyRewardApi(claimedToday: true);
   final notificationsApi = notifications ?? FakeNotificationsApi();
@@ -142,11 +145,27 @@ Future<void> pumpApp(
           ),
         ),
         achievementsProvider.overrideWith((ref) async => achievementsNow?.call() ?? achievements),
+        tutorialStoreProvider.overrideWithValue(tutorial ?? FakeTutorialStore(seen: true)),
       ],
       child: const KampusBetApp(),
     ),
   );
   await tester.pumpAndSettle();
+}
+
+/// Öğretici kaydının sahtesi: varsayılan testlerde görülmüş (açılmaz); işaretleme sayılır.
+class FakeTutorialStore implements TutorialStore {
+  FakeTutorialStore({this.seen = false});
+
+  @override
+  bool seen;
+  var marks = 0;
+
+  @override
+  Future<void> markSeen() async {
+    marks++;
+    seen = true;
+  }
 }
 
 /// Kampüs görevlerinin sahtesi: doğru kod "ABC123ABC123"; gönderiler kaydedilir.
@@ -1677,5 +1696,67 @@ void main() {
     await tester.tap(find.text('Tekrar dene'));
     expect(retried, 1);
     expect(find.text('Şu an resmi bahis yok.'), findsOneWidget);
+  });
+
+  testWidgets('yeni hesapta öğretici bir kez açılır, sayfalar gezilir, kapanınca kaydedilir ve günlük ödül sonra açılır', (
+    tester,
+  ) async {
+    final tutorial = FakeTutorialStore();
+    await pumpApp(tester, userId: 'u1', profile: _profile, tutorial: tutorial, daily: FakeDailyRewardApi());
+
+    // Önce öğretici; günlük ödül penceresi onun üstüne binmez.
+    expect(find.text('Hoş geldin!'), findsOneWidget);
+    expect(find.textContaining('Ödülü al'), findsNothing);
+    expect(find.bySemanticsLabel('Sayfa 1 / ${tutorialPages.length}'), findsOneWidget);
+
+    for (var i = 1; i < tutorialPages.length; i++) {
+      await tester.tap(find.text('İleri'));
+      await tester.pumpAndSettle();
+      expect(find.text(tutorialPages[i].title), findsOneWidget);
+    }
+    // Son sayfada "Atla" yok, düğme "Başlayalım".
+    expect(find.text('Atla'), findsNothing);
+    await tester.tap(find.text('Başlayalım'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Hoş geldin!'), findsNothing);
+    expect(tutorial.marks, 1);
+    expect(find.textContaining('Ödülü al'), findsOneWidget);
+  });
+
+  testWidgets('öğreticiyi görmüş hesapta kendiliğinden açılmaz; Profil\'den açılır ve "Atla" ile kapanır', (
+    tester,
+  ) async {
+    final tutorial = FakeTutorialStore(seen: true);
+    await pumpApp(tester, userId: 'u1', profile: _profile, tutorial: tutorial);
+    expect(find.text('Hoş geldin!'), findsNothing);
+
+    await tester.tap(find.text('Profil'));
+    await tester.pumpAndSettle();
+    final profileList = find.descendant(of: find.byType(ProfileTab), matching: find.byType(Scrollable)).first;
+    await tester.scrollUntilVisible(find.text('Nasıl oynanır'), 200, scrollable: profileList);
+    await tester.tap(find.text('Nasıl oynanır'));
+    await tester.pumpAndSettle();
+    expect(find.text('Hoş geldin!'), findsOneWidget);
+
+    await tester.tap(find.text('Atla'));
+    await tester.pumpAndSettle();
+    expect(find.text('Hoş geldin!'), findsNothing);
+    expect(find.text('Nasıl oynanır'), findsOneWidget);
+    // Profil'den açılınca yeniden kaydedilmez.
+    expect(tutorial.marks, 0);
+  });
+
+  testWidgets('öğretici "Atla" ile kapatılınca da kaydedilir ve aynı oturumda yeniden açılmaz', (tester) async {
+    final tutorial = FakeTutorialStore();
+    await pumpApp(tester, userId: 'u1', profile: _profile, tutorial: tutorial);
+    await tester.tap(find.text('Atla'));
+    await tester.pumpAndSettle();
+    expect(tutorial.marks, 1);
+
+    // Sekme değişince (yeniden çizim) tekrar açılmaz.
+    await tester.tap(find.text('Oyunlar'));
+    await tester.pumpAndSettle();
+    expect(find.text('Hoş geldin!'), findsNothing);
   });
 }

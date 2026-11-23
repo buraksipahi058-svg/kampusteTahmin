@@ -27,6 +27,7 @@ abstract final class Routes {
   static const privacy = '/kvkk';
   static const terms = '/kosullar';
   static const changePassword = '/sifre';
+  static const tutorial = '/nasil-oynanir';
   static const duelPlayPattern = '/duello/:id';
   static String duelPlay(String betId) => '/duello/$betId';
   static const duelReviewPattern = '/duello/:id/cevaplar';

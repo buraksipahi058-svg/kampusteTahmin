@@ -41,6 +41,7 @@ parantez ortaya çıktığı adım.
 - [18-mor] Mor, fütüristik mobil tema emülatörde release APK ile ana sekmelerde ve alt ekranlarda (kampüs görevleri, görevler, başarımlar, günlük ödül, günün tahmini, düello) normal ve %200 yazıyla görüldü [18e]; 18e dahil release APK telefona kuruldu (2026-11-23), telefonda gözle bakılmadı (kullanıcı bakacak). Açık tema tanımlı ama kullanılmıyor (uygulama hep koyu açılır), gözle denetlenmedi.
 - [18d] Admin paneli dar ekranda (375 px) Resmi bahisler, Market, Yetkiler ve Bakiye sayfalarında gözle denetlendi [18e]; öteki sayfalar yalnızca masaüstünde. Panel masaüstü öncelikli.
 - [18e] Yeni ortak hata görünümü (`ErrorView` + "Tekrar dene") düello cevapları, kişi profili ve yasal metin ekranlarında gözle görülmedi (hata durumu üretilmedi); analiz ve 72 test temiz. Düello cevaplarının yeşil doğru / kırmızı yanlış hali emülatörde görüldü.
+- [Öğretici] Gerçek yeni bir kayıtla (kayıt → okul seçimi / profil → öğretici) denenmedi: emülatörde mevcut test hesabıyla açıldı, "Başlayalım" ile kapatınca hesaba `tutorial_version = 1` yazıldı, yeniden açılışta çıkmadı; %200 yazıyla Profil'den açıldı. Çevrimdışıyken kapatma (kaydedilemezse sonraki açılışta yeniden çıkması) ve günlük ödülün öğreticiden sonra açılması yalnızca widget testinde. Telefona kurulmadı.
 
 ## Eksik (yapılmadı, sonraya bırakıldı)
 

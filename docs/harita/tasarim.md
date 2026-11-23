@@ -123,3 +123,12 @@ sekmeler ve alt ekranlar normal ve %200 yazıyla, admin masaüstü ve 375 px gen
 - **Hata görünümü her ekranda aynı:** düello cevapları, kişi profili ve yasal metin de `ErrorView` + "Tekrar dene".
 - **Admin dar ekran:** üst şeritte etkin sayfa ortaya kaydırılır, kaydırma çubuğu gizli; klavye odağında mor halka.
 
+## Öğretici (yeni başlayan için)
+
+- İlk girişte (profil oluşturulduktan sonra) sekmelerin üstünde alttan tam ekran açılır; hesap başına bir kez, günlük
+  ödül penceresi ondan sonra. Profil > "Nasıl oynanır" ile her zaman yeniden açılır.
+- Sayfa: üstte ana tonlu büyük `IconBadge` (ilk sayfada tam logo), başlık, kısa giriş, ikonlu maddeler (SSP ile ilgili
+  maddeler altın ton). Altta sayfa noktaları (etkin uzun, mor) ve tam genişlikte "İleri" / "Başlayalım"; sağ üstte
+  "Atla" (son sayfada yok). Sayfa geçişi kaydırma ya da "İleri" (250 ms ease-in-out; azaltılmışta doğrudan), sayfa
+  değişince seçim titreşimi, kapatınca hafif titreşim. İçerik kayar: %200 yazıda taşmaz.
+

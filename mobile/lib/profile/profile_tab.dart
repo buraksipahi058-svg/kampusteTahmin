@@ -175,7 +175,7 @@ class ProfileTab extends ConsumerWidget {
               children: [
                 if (studentEmail case StudentEmail(verified: true, :final email)) ...[
                   ListTile(
-                    leading: Icon(Symbols.verified_rounded, fill: 1, color: theme.colorScheme.primary),
+                    leading: Icon(Symbols.verified_rounded, fill: 1, color: context.appColors.success),
                     title: const Text('Okul maili doğrulandı'),
                     subtitle: Text(email ?? ''),
                   ),
@@ -192,6 +192,16 @@ class ProfileTab extends ConsumerWidget {
           ),
           const SizedBox(height: Space.sm),
           const PrivacyCard(),
+          const SizedBox(height: Space.sm),
+          Card(
+            child: ListTile(
+              leading: const Icon(Symbols.help_rounded),
+              title: const Text('Nasıl oynanır'),
+              subtitle: const Text('Puanlar, bahisler ve oyunlar kısaca'),
+              trailing: const Icon(Symbols.chevron_right_rounded),
+              onTap: () => context.push(Routes.tutorial),
+            ),
+          ),
           const SizedBox(height: 24),
           OutlinedButton.icon(
             onPressed: () => ref.read(supabaseProvider).auth.signOut(),
