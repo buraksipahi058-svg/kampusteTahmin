@@ -53,6 +53,9 @@ export default async function PanelLayout({ children }: LayoutProps<"/">) {
     ...(staff.role === "superadmin" || staff.permissions.some((p) => p.key === "kampus_gorevi_yonet")
       ? [{ href: "/kampus-gorevleri", label: "Kampüs görevleri" }]
       : []),
+    ...(staff.role === "superadmin" || staff.permissions.some((p) => p.key === "kelime_yonet")
+      ? [{ href: "/kelimeler", label: "Kampüs kelimesi" }]
+      : []),
     ...(staff.role === "superadmin" || staff.permissions.some((p) => p.key === "market_yonet")
       ? [{ href: "/market", label: "Market" }]
       : []),

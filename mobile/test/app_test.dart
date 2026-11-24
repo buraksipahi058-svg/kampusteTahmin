@@ -20,6 +20,8 @@ import 'package:kampusbet/core/brand_logo.dart';
 import 'package:kampusbet/core/state_views.dart';
 import 'package:kampusbet/core/supabase.dart';
 import 'package:kampusbet/games/games_tab.dart';
+import 'package:kampusbet/games/word_data.dart';
+import 'package:kampusbet/games/word_screen.dart';
 import 'package:kampusbet/games/trivia_data.dart';
 import 'package:kampusbet/home/home_shell.dart';
 import 'package:kampusbet/leaderboard/leaderboard_data.dart';
@@ -83,6 +85,7 @@ Future<void> pumpApp(
   String scannedQr = '',
   Uint8List? capturedPhoto,
   FakeTutorialStore? tutorial,
+  FakeWordApi? word,
 }) async {
   final dailyApi = daily ?? FakeDailyRewardApi(claimedToday: true);
   final notificationsApi = notifications ?? FakeNotificationsApi();
@@ -146,11 +149,79 @@ Future<void> pumpApp(
         ),
         achievementsProvider.overrideWith((ref) async => achievementsNow?.call() ?? achievements),
         tutorialStoreProvider.overrideWithValue(tutorial ?? FakeTutorialStore(seen: true)),
+        wordApiProvider.overrideWithValue(word ?? FakeWordApi()),
       ],
       child: const KampusBetApp(),
     ),
   );
   await tester.pumpAndSettle();
+}
+
+/// Kampüs kelimesinin sahtesi: kelime `answer` (yoksa bugün bulmaca yok); sözlükte `dictionary` ve kelimenin kendisi.
+/// İşaretler sunucudakiyle aynı kuralla hesaplanır.
+class FakeWordApi implements WordApi {
+  FakeWordApi({this.answer, this.dictionary = const {'MELEK', 'LAMBA', 'KİTAP'}, this.canEarn = true});
+
+  final String? answer;
+  final Set<String> dictionary;
+  final bool canEarn;
+  final guesses = <String>[];
+  final marks = <String>[];
+
+  static const rewardsSp = [60, 60, 40, 40, 20, 20];
+  static const rewardsXp = [20, 20, 15, 15, 10, 10];
+
+  bool get _solved => guesses.isNotEmpty && guesses.last == answer;
+  bool get _finished => _solved || guesses.length >= 6;
+
+  @override
+  Future<WordPuzzle?> today() async => answer == null
+      ? null
+      : WordPuzzle.fromJson({
+          'puzzle_id': 'w1',
+          'word_length': answer!.length,
+          'max_guesses': 6,
+          'guesses': guesses,
+          'marks': marks,
+          'solved': _solved,
+          'finished': _finished,
+          'reward_sp': _solved && canEarn ? rewardsSp[guesses.length - 1] : 0,
+          'reward_xp': _solved && canEarn ? rewardsXp[guesses.length - 1] : 0,
+          'answer': _finished ? answer : null,
+          'rewards_sp': rewardsSp,
+          'rewards_xp': rewardsXp,
+          'can_earn': canEarn,
+        });
+
+  @override
+  Future<WordGuessResult> guess(String puzzleId, String guess) async {
+    if (guess.length != answer!.length) throw const PostgrestException(message: 'x', code: 'KB037');
+    if (guess != answer && !dictionary.contains(guess)) throw const PostgrestException(message: 'x', code: 'KB038');
+    final g = guess.split(''), a = answer!.split('');
+    final m = List.filled(g.length, '0');
+    final rest = <String>[];
+    for (var i = 0; i < g.length; i++) {
+      if (g[i] == a[i]) {
+        m[i] = '2';
+      } else {
+        rest.add(a[i]);
+      }
+    }
+    for (var i = 0; i < g.length; i++) {
+      if (m[i] != '2' && rest.remove(g[i])) m[i] = '1';
+    }
+    guesses.add(guess);
+    marks.add(m.join());
+    final n = guesses.length;
+    return WordGuessResult(
+      marks: parseMarks(m.join()),
+      solved: _solved,
+      finished: _finished,
+      rewardSp: _solved && canEarn ? rewardsSp[n - 1] : 0,
+      rewardXp: _solved && canEarn ? rewardsXp[n - 1] : 0,
+      answer: _finished ? answer : null,
+    );
+  }
 }
 
 /// Öğretici kaydının sahtesi: varsayılan testlerde görülmüş (açılmaz); işaretleme sayılır.
@@ -1759,4 +1830,122 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Hoş geldin!'), findsNothing);
   });
+
+  Future<void> typeWord(WidgetTester tester, String word) async {
+    for (final l in word.split('')) {
+      await tester.tap(find.widgetWithText(InkWell, l));
+      await tester.pump();
+    }
+  }
+
+  testWidgets('kampüs kelimesi: tahmin işaretlenir, sözlükte olmayan ve kısa kelime reddedilir, bulan ödülü görür', (
+    tester,
+  ) async {
+    final word = FakeWordApi(answer: 'KALEM');
+    await pumpApp(
+      tester,
+      userId: 'u1',
+      profile: _profile,
+      studentEmail: StudentEmail(email: 'ada@ogr.ornek.edu.tr', verifiedAt: DateTime(2026, 11, 22)),
+      word: word,
+    );
+    await tester.tap(find.text('Oyunlar'));
+    await tester.pumpAndSettle();
+    expect(find.text('Bugünün kelimesi seni bekliyor'), findsOneWidget);
+    await tester.tap(find.text('Kampüs kelimesi'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('5 harfli kampüs kelimesini 6 hakta bul'), findsOneWidget);
+    expect(find.textContaining('1–2. tahminde 60 SP + 20 XP'), findsOneWidget);
+
+    // Kısa kelime sunucuya gitmez.
+    await typeWord(tester, 'MEL');
+    await tester.tap(find.text('Gönder'));
+    await tester.pump();
+    expect(find.text('Kelime 5 harfli olmalı.'), findsOneWidget);
+    await tester.tap(find.bySemanticsLabel('Sil'));
+    await tester.tap(find.bySemanticsLabel('Sil'));
+    await tester.tap(find.bySemanticsLabel('Sil'));
+    await tester.pump();
+
+    // Sözlükte olmayan kelime: hak gitmez.
+    await typeWord(tester, 'ABCDE');
+    await tester.tap(find.text('Gönder'));
+    await tester.pumpAndSettle();
+    expect(find.text('Bu kelime sözlükte yok; başka bir kelime dene.'), findsOneWidget);
+    expect(word.guesses, isEmpty);
+    for (var i = 0; i < 5; i++) {
+      await tester.tap(find.bySemanticsLabel('Sil'));
+    }
+    await tester.pump();
+
+    await typeWord(tester, 'MELEK');
+    await tester.tap(find.text('Gönder'));
+    await tester.pumpAndSettle();
+    expect(
+      find.bySemanticsLabel('1. tahmin MELEK: M başka yerde, E yok, L doğru yerde, E doğru yerde, K başka yerde'),
+      findsOneWidget,
+    );
+
+    await typeWord(tester, 'KALEM');
+    await tester.tap(find.text('Gönder'));
+    await tester.pumpAndSettle();
+    expect(find.text('Buldun!'), findsOneWidget);
+    // Kutlama penceresinde ve arkadaki sonuç kartında.
+    expect(find.text('2. tahminde buldun: +60 SP · +20 XP'), findsNWidgets(2));
+    await tester.tap(find.text('Tamam'));
+    await tester.pumpAndSettle();
+    expect(find.text('Kelime: KALEM'), findsOneWidget);
+    expect(find.text('2. tahminde buldun: +60 SP · +20 XP'), findsOneWidget);
+    // Bitince klavye kalkar.
+    expect(find.text('Gönder'), findsNothing);
+  });
+
+  testWidgets('kampüs kelimesi: bugün kelime yoksa boş durum, Oyunlar kartında rozet yok', (tester) async {
+    await pumpApp(
+      tester,
+      userId: 'u1',
+      profile: _profile,
+      studentEmail: StudentEmail(email: 'ada@ogr.ornek.edu.tr', verifiedAt: DateTime(2026, 11, 22)),
+    );
+    await tester.tap(find.text('Oyunlar'));
+    await tester.pumpAndSettle();
+    expect(find.text('Bugünün kelimesi seni bekliyor'), findsNothing);
+    await tester.tap(find.text('Kampüs kelimesi'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Bugünün kelimesi henüz girilmedi'), findsOneWidget);
+  });
+
+  test('kampüs kelimesi ödül özeti aynı ödüllü tahminleri birleştirir', () {
+    expect(
+      rewardSummary(const [60, 60, 40, 40, 20, 20], const [20, 20, 15, 15, 10, 10]),
+      'Bulursan: 1–2. tahminde 60 SP + 20 XP · 3–4. tahminde 40 SP + 15 XP · 5–6. tahminde 20 SP + 10 XP.',
+    );
+    expect(
+      rewardSummary(const [50, 30, 10], const [0, 0, 0]),
+      'Bulursan: 1. tahminde 50 SP · 2. tahminde 30 SP · 3. tahminde 10 SP.',
+    );
+  });
+
+  testWidgets('kampüs kelimesi: 8 harfli kelime %200 yazıda taşmadan çizilir, tuşlar çalışır', (tester) async {
+    tester.platformDispatcher.textScaleFactorTestValue = 2;
+    addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+    await pumpApp(
+      tester,
+      userId: 'u1',
+      profile: _profile,
+      studentEmail: StudentEmail(email: 'ada@ogr.ornek.edu.tr', verifiedAt: DateTime(2026, 11, 22)),
+      word: FakeWordApi(answer: 'KÜTÜPHANE'.substring(0, 8)),
+    );
+    await tester.tap(find.text('Oyunlar'));
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(find.text('Kampüs kelimesi'), 200);
+    await tester.ensureVisible(find.text('Kampüs kelimesi'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Kampüs kelimesi'));
+    await tester.pumpAndSettle();
+    await typeWord(tester, 'ĞÜŞİÖÇ');
+    expect(find.bySemanticsLabel('Yazılan: ĞÜŞİÖÇ'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
 }
+

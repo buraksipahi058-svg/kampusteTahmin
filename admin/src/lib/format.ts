@@ -16,6 +16,10 @@ export const formatOdds = (value: number | null) =>
 // Sayfa her istekte sunucuda çizildiği için "şu an" isteğin anıdır.
 export const isPast = (iso: string) => Date.parse(iso) <= Date.now();
 
+// Bugünün tarihi İstanbul'da ("2026-11-24"), <input type="date"> varsayılanı ve sınırı için.
+export const istanbulToday = () =>
+  new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Istanbul" }).format(new Date(Date.now()));
+
 // <input type="datetime-local"> değeri İstanbul saati kabul edilir (Türkiye yıl boyu UTC+3).
 export const istanbulLocalToIso = (local: string) => new Date(`${local}:00+03:00`).toISOString();
 

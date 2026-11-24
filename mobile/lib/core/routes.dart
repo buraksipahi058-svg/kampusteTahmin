@@ -16,6 +16,7 @@ abstract final class Routes {
   static const dailyPredictions = '/gunun-tahmini';
   static const duels = '/duellolar';
   static const campus = '/kampus-gorevleri';
+  static const word = '/kampus-kelimesi';
   static const campusScanPattern = '/kampus-gorevleri/:id/okut';
   static String campusScan(String taskId) => '/kampus-gorevleri/$taskId/okut';
   static const campusPhotoPattern = '/kampus-gorevleri/:id/foto';

@@ -13,8 +13,10 @@ import '../core/verify_email_card.dart';
 import '../profile/student_email_data.dart';
 import '../wallet/wallet_data.dart';
 import 'trivia_data.dart';
+import 'word_data.dart';
 
-/// Oyunlar sekmesi: her oyunun kartı kendi ekranını açar (günün tahmini, kampüs görevleri, trivia düellosu).
+/// Oyunlar sekmesi: her oyunun kartı kendi ekranını açar (günün tahmini, kampüs görevleri, trivia düellosu,
+/// kampüs kelimesi).
 /// Kartta, kişiyi bekleyen iş varsa sayısı rozet olarak görünür: yatırım yapmadığı açık soru, yapabileceği
 /// kampüs görevi, sırası gelen ya da kendisine gelen düello.
 class GamesTab extends ConsumerWidget {
@@ -44,11 +46,15 @@ class GamesTab extends ConsumerWidget {
               .length
         : 0;
 
+    final word = ready ? ref.watch(wordPuzzleProvider).value : null;
+    final wordWaiting = word != null && !word.finished ? 1 : 0;
+
     return RefreshIndicator(
       onRefresh: () async {
         ref.invalidate(dailyPredictionsProvider);
         ref.invalidate(campusTasksProvider);
         ref.invalidate(triviaDuelsProvider);
+        ref.invalidate(wordPuzzleProvider);
         ref.invalidate(myWagersProvider);
         ref.invalidate(balanceProvider);
         await ref.read(triviaDuelsProvider.future);
@@ -85,6 +91,14 @@ class GamesTab extends ConsumerWidget {
             count: myDuels,
             countText: '$myDuels düelloda sıra sende',
             route: Routes.duels,
+          ),
+          _GameCard(
+            icon: Symbols.spellcheck_rounded,
+            title: 'Kampüs kelimesi',
+            subtitle: 'Günün kampüs kelimesini 6 hakta bul; az hakta bulana daha çok ödül',
+            count: wordWaiting,
+            countText: 'Bugünün kelimesi seni bekliyor',
+            route: Routes.word,
           ),
         ],
       ),

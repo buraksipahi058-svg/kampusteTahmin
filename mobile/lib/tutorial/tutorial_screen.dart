@@ -117,6 +117,11 @@ const tutorialPages = [
         'Kampüs görevleri',
         'Yemekhane, kütüphane, etkinlik: QR okut ya da fotoğraf çek, ödül kazan.',
       ),
+      TutorialItem(
+        Symbols.spellcheck_rounded,
+        'Kampüs kelimesi',
+        'Her gün kampüsle ilgili bir kelime: 6 hakta bul, ne kadar az hakta bulursan o kadar çok ödül.',
+      ),
     ],
   ),
   TutorialPage(

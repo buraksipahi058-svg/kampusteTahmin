@@ -14,6 +14,7 @@ import '../games/daily_predictions_screen.dart';
 import '../games/duel_play_screen.dart';
 import '../games/duel_review_screen.dart';
 import '../games/duels_screen.dart';
+import '../games/word_screen.dart';
 import '../home/home_shell.dart';
 import '../legal/legal_screen.dart';
 import '../notifications/notifications_screen.dart';
@@ -78,6 +79,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: Routes.dailyPredictions, builder: (_, _) => const DailyPredictionsScreen()),
       GoRoute(path: Routes.duels, builder: (_, _) => const DuelsScreen()),
       GoRoute(path: Routes.campus, builder: (_, _) => const CampusTasksScreen()),
+      GoRoute(path: Routes.word, builder: (_, _) => const WordScreen()),
       GoRoute(
         path: Routes.campusPhotoPattern,
         builder: (_, state) => PhotoSubmitScreen(taskId: state.pathParameters['id']!),

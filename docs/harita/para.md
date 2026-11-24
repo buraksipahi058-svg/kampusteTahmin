@@ -63,7 +63,8 @@ profildeki XP = olayların toplamı kontrolünü de yapar. Kurallar: KARARLAR "X
 
 XP paradan ayrıdır, ledger'a girmez. **Tek gerçek `xp_events`** (yalnızca eklenir): `reason` (`daily_login`, `quest`,
 `correct_pick`), `amount`, kaynak (`ledger_entry_id` ya da `wager_id`, her kaynak bir kez), `xp_after`. Kişi kendininkini,
-süperadmin hepsini görür. `profiles.xp` / `level` önbellektir.
+süperadmin hepsini görür. `profiles.xp` / `level` önbellektir. Sonradan eklenen nedenler: `achievement`, `campus_task`,
+`word_puzzle` (kampüs kelimesi: ledger `word_reward` yalnızca SP, XP denemedeki `reward_xp`'den; [kelime](kelime.md)).
 
 - `private.award_xp(user, reason, amount, ledger_entry_id?, wager_id?)` → verilen XP: profili kilitler, doğru tahminde
   günlük sınırı (`xp_daily_pick_cap`) uygular, olayı yazar, önbelleği günceller. Tekrar kaynakta 0 döner.

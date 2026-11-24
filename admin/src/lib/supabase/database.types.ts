@@ -661,6 +661,9 @@ export type Database = {
           trivia_question_count: number
           trivia_seconds_per_question: number
           updated_at: string
+          word_max_guesses: number
+          word_reward_sp: number[]
+          word_reward_xp: number[]
           xp_correct_pick: number
           xp_daily_login: number
           xp_daily_pick_cap: number
@@ -692,6 +695,9 @@ export type Database = {
           trivia_question_count?: number
           trivia_seconds_per_question?: number
           updated_at?: string
+          word_max_guesses?: number
+          word_reward_sp?: number[]
+          word_reward_xp?: number[]
           xp_correct_pick?: number
           xp_daily_login?: number
           xp_daily_pick_cap?: number
@@ -723,6 +729,9 @@ export type Database = {
           trivia_question_count?: number
           trivia_seconds_per_question?: number
           updated_at?: string
+          word_max_guesses?: number
+          word_reward_sp?: number[]
+          word_reward_xp?: number[]
           xp_correct_pick?: number
           xp_daily_login?: number
           xp_daily_pick_cap?: number
@@ -1567,6 +1576,105 @@ export type Database = {
           },
         ]
       }
+      word_attempts: {
+        Row: {
+          created_at: string
+          finished_at: string | null
+          guesses: string[]
+          marks: string[]
+          puzzle_id: string
+          reward_sp: number
+          reward_xp: number
+          solved: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          finished_at?: string | null
+          guesses?: string[]
+          marks?: string[]
+          puzzle_id: string
+          reward_sp?: number
+          reward_xp?: number
+          solved?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          finished_at?: string | null
+          guesses?: string[]
+          marks?: string[]
+          puzzle_id?: string
+          reward_sp?: number
+          reward_xp?: number
+          solved?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "word_attempts_puzzle_id_fkey"
+            columns: ["puzzle_id"]
+            isOneToOne: false
+            referencedRelation: "word_puzzles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "word_attempts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      word_puzzles: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          puzzle_date: string
+          school_id: string | null
+          updated_at: string
+          word_length: number
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          puzzle_date: string
+          school_id?: string | null
+          updated_at?: string
+          word_length: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          puzzle_date?: string
+          school_id?: string | null
+          updated_at?: string
+          word_length?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "word_puzzles_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "word_puzzles_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "clusters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       xp_events: {
         Row: {
           amount: number
@@ -1783,6 +1891,7 @@ export type Database = {
         }[]
       }
       delete_my_account: { Args: never; Returns: undefined }
+      delete_word_puzzle: { Args: { p_id: string }; Returns: undefined }
       dispute_social_result: {
         Args: { p_bet_id: string; p_reason: string }
         Returns: string
@@ -1822,6 +1931,19 @@ export type Database = {
           p_user_id: string
         }
         Returns: undefined
+      }
+      list_word_puzzles: {
+        Args: never
+        Returns: {
+          id: string
+          in_dictionary: boolean
+          players: number
+          puzzle_date: string
+          school_id: string
+          school_name: string
+          solvers: number
+          word: string
+        }[]
       }
       lock_official_bet: { Args: { p_bet_id: string }; Returns: undefined }
       mark_notifications_read: { Args: { p_ids?: number[] }; Returns: number }
@@ -1909,6 +2031,25 @@ export type Database = {
           week_rank_best_streak: number
           week_rank_hit_rate: number
           week_rank_sp_profit: number
+        }[]
+      }
+      my_word_puzzle: {
+        Args: never
+        Returns: {
+          answer: string
+          can_earn: boolean
+          finished: boolean
+          guesses: string[]
+          marks: string[]
+          max_guesses: number
+          puzzle_date: string
+          puzzle_id: string
+          reward_sp: number
+          reward_xp: number
+          rewards_sp: number[]
+          rewards_xp: number[]
+          solved: boolean
+          word_length: number
         }[]
       }
       place_wager: {
@@ -2052,6 +2193,15 @@ export type Database = {
         }
         Returns: string
       }
+      save_word_puzzle: {
+        Args: {
+          p_id: string
+          p_puzzle_date: string
+          p_school_id: string
+          p_word: string
+        }
+        Returns: string
+      }
       school_stats: {
         Args: { p_school_id: string }
         Returns: {
@@ -2132,6 +2282,18 @@ export type Database = {
           score: number
         }[]
       }
+      submit_word_guess: {
+        Args: { p_guess: string; p_puzzle_id: string }
+        Returns: {
+          answer: string
+          finished: boolean
+          guesses_left: number
+          marks: string
+          reward_sp: number
+          reward_xp: number
+          solved: boolean
+        }[]
+      }
       trivia_duel_review: {
         Args: { p_bet_id: string }
         Returns: {
@@ -2185,6 +2347,7 @@ export type Database = {
         | "admin_adjust"
         | "achievement_reward"
         | "campus_task_reward"
+        | "word_reward"
       ledger_ref_type:
         | "bet"
         | "wager"
@@ -2192,6 +2355,7 @@ export type Database = {
         | "market_item"
         | "achievement"
         | "campus_task"
+        | "word_puzzle"
       market_category: "title" | "badge" | "frame" | "name_color"
       membership_role: "member" | "owner"
       odds_mode: "pool" | "fixed"
@@ -2205,6 +2369,7 @@ export type Database = {
         | "analitik_gor"
         | "trivia_yonet"
         | "kampus_gorevi_yonet"
+        | "kelime_yonet"
       quest_action: "wager" | "prediction" | "duel" | "social_bet" | "win"
       quest_period: "daily" | "weekly" | "seasonal"
       settlement_mode: "auto" | "admin" | "referee"
@@ -2215,6 +2380,7 @@ export type Database = {
         | "correct_pick"
         | "achievement"
         | "campus_task"
+        | "word_puzzle"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -2383,6 +2549,7 @@ export const Constants = {
         "admin_adjust",
         "achievement_reward",
         "campus_task_reward",
+        "word_reward",
       ],
       ledger_ref_type: [
         "bet",
@@ -2391,6 +2558,7 @@ export const Constants = {
         "market_item",
         "achievement",
         "campus_task",
+        "word_puzzle",
       ],
       market_category: ["title", "badge", "frame", "name_color"],
       membership_role: ["member", "owner"],
@@ -2405,6 +2573,7 @@ export const Constants = {
         "analitik_gor",
         "trivia_yonet",
         "kampus_gorevi_yonet",
+        "kelime_yonet",
       ],
       quest_action: ["wager", "prediction", "duel", "social_bet", "win"],
       quest_period: ["daily", "weekly", "seasonal"],
@@ -2416,6 +2585,7 @@ export const Constants = {
         "correct_pick",
         "achievement",
         "campus_task",
+        "word_puzzle",
       ],
     },
   },
