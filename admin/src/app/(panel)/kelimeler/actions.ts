@@ -21,6 +21,8 @@ export async function saveWord(_prev: ActionState, formData: FormData): Promise<
     p_school_id: (schoolId || null) as unknown as string,
     p_puzzle_date: date,
     p_word: word,
+    // İpucu isteğe bağlı: 3. tahminden sonra öğrenciye gösterilir.
+    p_hint: String(formData.get("hint") ?? "").trim() || (null as unknown as string),
   });
   if (error) return { error: dbErrorMessage(error) };
   refresh();

@@ -46,9 +46,21 @@ export function WordForm({ schools, canGlobal, today }: { schools: School[]; can
           />
         </label>
       </div>
+      <label className="flex flex-col gap-1 text-sm">
+        İpucu (isteğe bağlı, 3. tahminden sonra görünür)
+        <input
+          name="hint"
+          minLength={3}
+          maxLength={140}
+          autoComplete="off"
+          placeholder="Öğle arası kuyruğun olduğu yer"
+          className={inputClass}
+        />
+      </label>
       <p className="text-xs text-muted">
-        Öğrenciler kelimeyi göremez; tahminler sunucuda işaretlenir. Tahminler sözlükte olmalıdır, günün kelimesi
-        her durumda kabul edilir. Kelimeyi giren yetkili o okulun kelimesinden ödül alamaz.
+        Öğrenciler kelimeyi ve ipucunu zamanı gelmeden göremez; tahminler sunucuda işaretlenir. Tahminler sözlükte
+        olmalıdır; girdiğin kelime sözlükte yoksa eklenir. Kelimeyi giren ya da bu listede gören, o kelimeden ödül
+        alamaz. Bugün bütün okullar için kelime varsa okula ancak yarından itibaren kelime girilebilir.
       </p>
       <div className="flex items-center gap-3">
         <SubmitButton>Kaydet</SubmitButton>

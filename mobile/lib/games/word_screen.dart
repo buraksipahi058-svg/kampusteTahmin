@@ -194,6 +194,10 @@ class _Game extends StatelessWidget {
               ),
               const SizedBox(height: Space.sm),
               const _Legend(),
+              if (puzzle.hint != null || (puzzle.hasHint && !puzzle.finished)) ...[
+                const SizedBox(height: Space.md),
+                _HintLine(puzzle: puzzle),
+              ],
               const SizedBox(height: Space.lg),
               _Board(puzzle: puzzle, typing: typing),
               if (puzzle.finished) ...[const SizedBox(height: Space.lg), _ResultCard(puzzle: puzzle)],
@@ -295,6 +299,53 @@ class _Legend extends StatelessWidget {
         item(LetterMark.present, 'Kelimede var'),
         item(LetterMark.absent, 'Kelimede yok'),
       ],
+    );
+  }
+}
+
+/// İpucu: kelimeyi giren yazdıysa `hintAfter` tahminden sonra (ya da oyun bitince) açılır; öncesinde ne zaman
+/// açılacağı yazar.
+class _HintLine extends StatelessWidget {
+  const _HintLine({required this.puzzle});
+
+  final WordPuzzle puzzle;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final hint = puzzle.hint;
+    if (hint == null) {
+      return Row(
+        children: [
+          Icon(Symbols.lock_rounded, size: 18, color: theme.colorScheme.onSurfaceVariant),
+          const SizedBox(width: Space.sm),
+          Expanded(
+            child: Text(
+              'İpucu ${puzzle.hintAfter}. tahminden sonra açılır.',
+              style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+            ),
+          ),
+        ],
+      );
+    }
+    return Semantics(
+      liveRegion: true,
+      child: Container(
+        padding: const EdgeInsets.all(Space.md),
+        decoration: BoxDecoration(
+          color: context.appColors.ssp.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(Radii.md),
+          border: Border.all(color: context.appColors.ssp.withValues(alpha: 0.4)),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(Symbols.lightbulb_rounded, fill: 1, color: context.appColors.ssp),
+            const SizedBox(width: Space.sm),
+            Expanded(child: Text('İpucu: $hint', style: theme.textTheme.bodyMedium)),
+          ],
+        ),
+      ),
     );
   }
 }

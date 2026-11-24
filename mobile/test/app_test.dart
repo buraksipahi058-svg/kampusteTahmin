@@ -160,9 +160,10 @@ Future<void> pumpApp(
 /// Kampüs kelimesinin sahtesi: kelime `answer` (yoksa bugün bulmaca yok); sözlükte `dictionary` ve kelimenin kendisi.
 /// İşaretler sunucudakiyle aynı kuralla hesaplanır.
 class FakeWordApi implements WordApi {
-  FakeWordApi({this.answer, this.dictionary = const {'MELEK', 'LAMBA', 'KİTAP'}, this.canEarn = true});
+  FakeWordApi({this.answer, this.dictionary = const {'MELEK', 'LAMBA', 'KİTAP'}, this.canEarn = true, this.hint});
 
   final String? answer;
+  final String? hint;
   final Set<String> dictionary;
   final bool canEarn;
   final guesses = <String>[];
@@ -173,6 +174,7 @@ class FakeWordApi implements WordApi {
 
   bool get _solved => guesses.isNotEmpty && guesses.last == answer;
   bool get _finished => _solved || guesses.length >= 6;
+  String? get _visibleHint => _finished || guesses.length >= 3 ? hint : null;
 
   @override
   Future<WordPuzzle?> today() async => answer == null
@@ -191,6 +193,9 @@ class FakeWordApi implements WordApi {
           'rewards_sp': rewardsSp,
           'rewards_xp': rewardsXp,
           'can_earn': canEarn,
+          'has_hint': hint != null,
+          'hint_after': 3,
+          'hint': _visibleHint,
         });
 
   @override
@@ -220,6 +225,7 @@ class FakeWordApi implements WordApi {
       rewardSp: _solved && canEarn ? rewardsSp[n - 1] : 0,
       rewardXp: _solved && canEarn ? rewardsXp[n - 1] : 0,
       answer: _finished ? answer : null,
+      hint: _visibleHint,
     );
   }
 }
@@ -1946,6 +1952,29 @@ void main() {
     await typeWord(tester, 'ĞÜŞİÖÇ');
     expect(find.bySemanticsLabel('Yazılan: ĞÜŞİÖÇ'), findsOneWidget);
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('kampüs kelimesi: ipucu 3. tahminden sonra açılır', (tester) async {
+    await pumpApp(
+      tester,
+      userId: 'u1',
+      profile: _profile,
+      studentEmail: StudentEmail(email: 'ada@ogr.ornek.edu.tr', verifiedAt: DateTime(2026, 11, 22)),
+      word: FakeWordApi(answer: 'KALEM', hint: 'Derste yazı yazarsın'),
+    );
+    await openGame(tester, 'Kampüs kelimesi');
+    expect(find.text('İpucu 3. tahminden sonra açılır.'), findsOneWidget);
+    for (final w in ['MELEK', 'LAMBA']) {
+      await typeWord(tester, w);
+      await tester.tap(find.text('Gönder'));
+      await tester.pumpAndSettle();
+    }
+    expect(find.text('İpucu: Derste yazı yazarsın'), findsNothing);
+    await typeWord(tester, 'KİTAP');
+    await tester.tap(find.text('Gönder'));
+    await tester.pumpAndSettle();
+    expect(find.text('İpucu: Derste yazı yazarsın'), findsOneWidget);
+    expect(find.text('İpucu 3. tahminden sonra açılır.'), findsNothing);
   });
 }
 

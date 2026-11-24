@@ -44,17 +44,12 @@ export default async function WordsPage() {
                 <p className="flex flex-wrap items-center gap-2">
                   <span className="font-mono text-base font-semibold tracking-widest">{w.word}</span>
                   {w.puzzle_date === today && <Badge tone="primary">Bugün</Badge>}
-                  {!w.in_dictionary && <Badge tone="warning">Sözlükte yok</Badge>}
                 </p>
+                {w.hint && <p className="text-xs">İpucu: {w.hint}</p>}
                 <p className="text-xs text-muted">
                   {formatDate(w.puzzle_date)} · {w.school_name ?? "Tüm okullar"}
-                  {w.players > 0 && ` · ${w.players} kişi oynadı, ${w.solvers} kişi buldu`}
+                  {w.players > 0 && ` · ${w.players} kişi oynadı, ${w.solvers} kişi buldu, ${w.first_try} kişi ilk tahminde`}
                 </p>
-                {!w.in_dictionary && (
-                  <p className="text-xs text-muted">
-                    Kelimenin kendisi tahminde kabul edilir; ama sözlükte olmadığı için benzer biçimleri (ör. çoğul) denenemez.
-                  </p>
-                )}
               </div>
               {w.players === 0 && !past && <DeleteWord id={w.id} />}
             </li>

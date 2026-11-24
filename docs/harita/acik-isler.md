@@ -42,7 +42,7 @@ parantez ortaya çıktığı adım.
 - [18d] Admin paneli dar ekranda (375 px) Resmi bahisler, Market, Yetkiler ve Bakiye sayfalarında gözle denetlendi [18e]; öteki sayfalar yalnızca masaüstünde. Panel masaüstü öncelikli.
 - [18e] Yeni ortak hata görünümü (`ErrorView` + "Tekrar dene") düello cevapları, kişi profili ve yasal metin ekranlarında gözle görülmedi (hata durumu üretilmedi); analiz ve 72 test temiz. Düello cevaplarının yeşil doğru / kırmızı yanlış hali emülatörde görüldü.
 - [Öğretici] Gerçek yeni bir kayıtla (kayıt → okul seçimi / profil → öğretici) denenmedi: emülatörde mevcut test hesabıyla açıldı, "Başlayalım" ile kapatınca hesaba `tutorial_version = 1` yazıldı, yeniden açılışta çıkmadı; %200 yazıyla Profil'den açıldı. Çevrimdışıyken kapatma (kaydedilemezse sonraki açılışta yeniden çıkması) ve günlük ödülün öğreticiden sonra açılması yalnızca widget testinde. Telefona kuruldu (2026-11-23), telefonda gözle bakılmadı.
-- [19] Kampüs kelimesi cihazda (emülatör / telefon) oynanmadı: bulutta bugün için kelime yok (test kelimesi girilmedi); oyun ekranı widget testlerinde (5 ve 8 harf, %200 yazı) denendi. Admin `/kelimeler` sayfası oturum açık hâlde görülmedi (tarayıcıdaki admin oturumu kapanmıştı; derleme, tip ve lint temiz). Admin giriş sayfası yeni logoyla görüldü.
+- [19, G3] Kampüs kelimesi ve ipucu cihazda (emülatör / telefon) oynanmadı (Adım 19 APK'sı telefona kuruldu, 2026-11-24; ipucu sürümü kurulmadı): bulutta bugün için kelime yok (test kelimesi girilmedi); oyun ekranı widget testlerinde (5 ve 8 harf, %200 yazı) denendi. Admin `/kelimeler` sayfası oturum açık hâlde görülmedi (tarayıcıdaki admin oturumu kapanmıştı; derleme, tip ve lint temiz). Admin giriş sayfası yeni logoyla görüldü.
 - [19] Aynı kişinin aynı anda gönderdiği iki tahmin için eşzamanlılık testi yazılmadı (deneme satırı kilidiyle sıraya girer; pgTAP tek bağlantıda sınar).
 
 ## Eksik (yapılmadı, sonraya bırakıldı)
@@ -68,7 +68,8 @@ parantez ortaya çıktığı adım.
 - [9] Market'te tema, banner, emote ve bahis "flair"i türleri yok (v1: unvan, rozet, çerçeve, isim rengi); stoklu / sınırlı sayıda ürün yok.
 - [9] Admin'de ürünün kaç kez satıldığı ve görevin kaç kişi tarafından tamamlandığı görünmüyor (analitik).
 - [9] Görev türleri sabit beş eylem; "farklı kümede bahis aç" gibi ölçütler yok (grup / küme oluşturma da yok).
-- [19] Kampüs kelimesinde istatistik / seri, sıralama, başarım ve bildirim yok; geçmiş günlerin kelimeleri oynanamaz. Admin'de kelime düzenleme yok (sil + yeniden gir). Sözlük yalnızca kök kelimeler: çoğul / çekimli biçimler tahmin edilemez.
+- [19] Kampüs kelimesinde istatistik / seri, sıralama, başarım ve bildirim yok; geçmiş günlerin kelimeleri oynanamaz. Admin'de kelime / ipucu düzenleme yok (sil + yeniden gir). Sözlük yalnızca kök kelimeler (+ admin'in girdikleri): çoğul / çekimli biçimler tahmin edilemez.
+- [G3] Yetkili kelimeyi arkadaşlarına söyleyebilir (tasarım gereği önlenemez); yönetim listesindeki "ilk tahminde bulan" sayısı tespite yardım eder, otomatik uyarı yok.
 
 ## Çözülmemiş sorunlar / bilinen pürüzler
 

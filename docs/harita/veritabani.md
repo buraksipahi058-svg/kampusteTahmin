@@ -39,6 +39,7 @@ Konu bölgeleri: [kimlik.md](kimlik.md), [para.md](para.md), [bahis.md](bahis.md
 | `20261124074445_kelime_oyunu_degerleri.sql` | 19 | enum: `kelime_yonet`, `ledger_reason.word_reward`, `ledger_ref_type.word_puzzle`, `xp_reason.word_puzzle` |
 | `20261124074448_kelime_oyunu.sql` | 19 | kelime ayarları, `word_puzzles` / `word_attempts` + RLS, `private.word_answers` / `word_dictionary`, yardımcılar, `ledger_sp_only_rewards` + `xp_events_source` + `xp_on_ledger_entry` (kelime ödülü), `my_word_puzzle`, `submit_word_guess`, `save/delete_word_puzzle`, `list_word_puzzles`, `export_my_data` sarmalayıcı ([kelime](kelime.md)) |
 | `20261124074450_kelime_sozlugu.sql` | 19 | sözlük verisi (18.849 kelime; `supabase/sozluk/sozluk_migration.py` üretir) |
+| `20261124084204_kelime_guvenlik_ipucu.sql` | G3 + 19 | Güvenlik kontrolü 3 ([guvenlik](guvenlik.md) sonu) ve ipucu: `word_hint_after`, `word_answers.hint`, `private.word_puzzle_viewers`, `word_puzzles` kolon bazlı okuma, `word_reward_blocked(bulmaca, okul)`, `word_puzzle_for_user`, `word_hint_visible`; `my_word_puzzle`, `submit_word_guess`, `save_word_puzzle` (+ipucu), `list_word_puzzles` yeniden ([kelime](kelime.md)) |
 | `20261122105335_gunun_tahmini.sql` | 8 | günün tahmini ayarları, `bets_settlement_by_type` (mini oyunda `admin` de olur), `place_wager` (yalnızca `auto` mini oyuna kapalı; admin sonuçlandırmalıda açan / kapatan yatıramaz), `create/settle/cancel_daily_prediction`, saatlik pg_cron işi |
 
 ## Koda inmek gerekirse
@@ -66,6 +67,7 @@ Aynı fonksiyon birden fazla migration'da tanımlıysa **en yeni dosyadaki** ge�
 | `private.current_school_id`, `private.is_verified`, `public.request_student_email_code`, `private.award_xp`, `public.delete_my_account`, `public.claim_quest_reward` | `20261122173731_qa_duzeltmeleri.sql` | önceki tanımlar |
 | `public.get_leaderboard`, `private.store_leaderboard`, `guard.check_request` | `20261122200659_gizlilik.sql` | `20261122173731_...`, `20261122133546_...`, `20261122182015_...` |
 | `private.xp_on_ledger_entry`, `public.export_my_data` (eski gövdesi `private.export_my_data_base`) | `20261124074448_kelime_oyunu.sql` | `20261122215322_...`, `20261122223007_...` |
+| `public.my_word_puzzle`, `submit_word_guess`, `save_word_puzzle`, `list_word_puzzles` | `20261124084204_kelime_guvenlik_ipucu.sql` | `20261124074448_...` |
 
 **İki tablo arasına ikinci bir yabancı anahtar ekleme:** PostgREST istemci sorgularında gömme
 (`bets?select=...,bet_options(...)`) belirsizleşir (PGRST201) ve mobil/admin sorguları bozulur.
@@ -140,6 +142,7 @@ Buluttaki gerçek durumu görmek daha ucuzsa: `npx supabase db query --linked "s
 | `KB038` | Kampüs kelimesi: tahmin sözlükte yok (ve günün kelimesi değil) |
 | `KB039` | Kampüs kelimesi: kişinin bugünkü oyunu bitti |
 | `KB040` | Kampüs kelimesi: oynanmaya başlanan kelime değiştirilemez / silinemez |
+| `KB041` | Kampüs kelimesi: bugün genel kelime oynanırken okula bugün için kelime girilemez |
 | `KB026` | İstek sınırı: kişinin son bir dakikadaki yazma isteği `economy_settings.api_write_limit_per_minute`'a ulaştı (bekçi) |
 | `42501` | Yetki yok / giriş gerekli |
 | `23514` | Geçersiz değer (kısıt) |

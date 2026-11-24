@@ -661,6 +661,7 @@ export type Database = {
           trivia_question_count: number
           trivia_seconds_per_question: number
           updated_at: string
+          word_hint_after: number
           word_max_guesses: number
           word_reward_sp: number[]
           word_reward_xp: number[]
@@ -695,6 +696,7 @@ export type Database = {
           trivia_question_count?: number
           trivia_seconds_per_question?: number
           updated_at?: string
+          word_hint_after?: number
           word_max_guesses?: number
           word_reward_sp?: number[]
           word_reward_xp?: number[]
@@ -729,6 +731,7 @@ export type Database = {
           trivia_question_count?: number
           trivia_seconds_per_question?: number
           updated_at?: string
+          word_hint_after?: number
           word_max_guesses?: number
           word_reward_sp?: number[]
           word_reward_xp?: number[]
@@ -1935,8 +1938,9 @@ export type Database = {
       list_word_puzzles: {
         Args: never
         Returns: {
+          first_try: number
+          hint: string
           id: string
-          in_dictionary: boolean
           players: number
           puzzle_date: string
           school_id: string
@@ -2040,6 +2044,9 @@ export type Database = {
           can_earn: boolean
           finished: boolean
           guesses: string[]
+          has_hint: boolean
+          hint: string
+          hint_after: number
           marks: string[]
           max_guesses: number
           puzzle_date: string
@@ -2195,6 +2202,7 @@ export type Database = {
       }
       save_word_puzzle: {
         Args: {
+          p_hint?: string
           p_id: string
           p_puzzle_date: string
           p_school_id: string
@@ -2288,6 +2296,7 @@ export type Database = {
           answer: string
           finished: boolean
           guesses_left: number
+          hint: string
           marks: string
           reward_sp: number
           reward_xp: number

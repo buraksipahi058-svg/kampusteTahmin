@@ -41,6 +41,7 @@ const messages: Record<string, string> = {
   KB038: "Bu kelime sözlükte yok.",
   KB039: "Bugünün kelimesi bitti.",
   KB040: "Oynanmaya başlanan kelime değiştirilemez ya da silinemez.",
+  KB041: "Bugün bütün okullar için kelime oynanıyor; okula yarından itibaren kelime girilebilir.",
   "42501": "Bu işlem için yetkin yok.",
   "23514": "Girilen bilgilerden biri geçersiz.",
   "23505": "Bu kayıt zaten var.",

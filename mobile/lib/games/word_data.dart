@@ -35,6 +35,9 @@ class WordPuzzle {
     this.rewardsSp = const [],
     this.rewardsXp = const [],
     this.canEarn = true,
+    this.hasHint = false,
+    this.hintAfter = 3,
+    this.hint,
   });
 
   final String id;
@@ -55,6 +58,11 @@ class WordPuzzle {
   /// Kelimeyi yöneten (görebilen) ödül alamaz.
   final bool canEarn;
 
+  /// Kelimeyi giren ipucu yazdı mı; ipucu `hintAfter` tahminden sonra (ya da oyun bitince) sunucudan gelir.
+  final bool hasHint;
+  final int hintAfter;
+  final String? hint;
+
   int get guessesLeft => maxGuesses - guesses.length;
 
   factory WordPuzzle.fromJson(Map<String, dynamic> json) {
@@ -73,6 +81,9 @@ class WordPuzzle {
       rewardsSp: ints('rewards_sp'),
       rewardsXp: ints('rewards_xp'),
       canEarn: json['can_earn'] as bool,
+      hasHint: json['has_hint'] as bool? ?? false,
+      hintAfter: json['hint_after'] as int? ?? 3,
+      hint: json['hint'] as String?,
     );
   }
 
@@ -91,6 +102,9 @@ class WordPuzzle {
     rewardsSp: rewardsSp,
     rewardsXp: rewardsXp,
     canEarn: canEarn,
+    hasHint: hasHint,
+    hintAfter: hintAfter,
+    hint: r.hint ?? hint,
   );
 }
 
@@ -102,6 +116,7 @@ class WordGuessResult {
     this.rewardSp = 0,
     this.rewardXp = 0,
     this.answer,
+    this.hint,
   });
 
   final List<LetterMark> marks;
@@ -110,6 +125,7 @@ class WordGuessResult {
   final int rewardSp;
   final int rewardXp;
   final String? answer;
+  final String? hint;
 }
 
 /// Kampüs kelimesinin sunucu tarafı (testte sahtesiyle değiştirilir).
@@ -134,6 +150,7 @@ class WordApi {
       rewardSp: row['reward_sp'] as int,
       rewardXp: row['reward_xp'] as int,
       answer: row['answer'] as String?,
+      hint: row['hint'] as String?,
     );
   }
 }

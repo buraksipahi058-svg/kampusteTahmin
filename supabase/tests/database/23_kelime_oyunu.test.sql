@@ -17,6 +17,8 @@ select plan(49);
 -- ---------------------------------------------------------------------------
 
 update public.economy_settings set signup_bonus_sp = 1000;
+-- Buluttaki gerçek kelimeler testi etkilemesin (bugünün genel kelimesi gibi): geri alınan işlemde 10 yıl geriye.
+update public.word_puzzles set puzzle_date = puzzle_date - 3650;
 insert into public.clusters (id, name, type) values
   ('a0000000-0000-4000-8000-000000000001', 'Test Üniversitesi A', 'school'),
   ('b0000000-0000-4000-8000-000000000001', 'Test Üniversitesi B', 'school');
@@ -118,13 +120,12 @@ select pg_temp.as_user(4);
 select is((select array_agg(word order by puzzle_date) from public.list_word_puzzles()), array['SINAV', 'KALEM', 'DEFTER'],
   'yetkili kendi okulunun kelimelerini görür, genel kelimeyi görmez');
 select pg_temp.as_user(5);
-select ok((select bool_and(in_dictionary) from public.list_word_puzzles()) and
-          (select count(*)::int from public.list_word_puzzles()) = 4, 'süperadmin hepsini sözlük bilgisiyle görür');
+select is((select count(*)::int from public.list_word_puzzles()), 4, 'süperadmin hepsini görür');
 select pg_temp.as_user(1);
 select throws_ok($$select * from public.list_word_puzzles()$$, '42501', null, 'öğrenci kelime listesini göremez');
 select throws_ok($$select word from private.word_answers$$, '42501', null, 'kelimeler istemciye kapalı');
 select throws_ok($$select word from private.word_dictionary$$, '42501', null, 'sözlük tablosu istemciye kapalı');
-select is((select count(*)::int from public.word_puzzles), 3,
+select is((select count(*)::int from public.word_puzzles where puzzle_date > pg_temp.today() - 30), 3,
   'öğrenci okulunun bugüne kadarki bulmacalarını görür (ileri tarihliyi görmez; genel bugün de görünür)');
 select pg_temp.as_user(4);
 select is((select count(*)::int from public.word_puzzles where school_id is not null), 3, 'yetkili ileri tarihliyi de görür');

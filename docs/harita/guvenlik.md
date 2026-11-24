@@ -130,3 +130,29 @@ sınırları; depolama adı kuralı ve üzerine yazamama; QR kodu (48 bit, anaht
 publishable anahtar, arama girdisi temizleniyor, açık yönlendirme yok; mobilde sır yok, bağlantılar yalnızca uygulama
 içi. Advisors: yalnızca bilinen uyarılar (RPC'ler tasarım gereği, `rls_auto_enable`, sızdırılmış şifre koruması).
 Kalan riskler [acik-isler](acik-isler.md)'de.
+
+## Genel güvenlik kontrolü 3 (2026-11-24, Adım 19 sonrası)
+
+Kod: `supabase/migrations/20261124084204_kelime_guvenlik_ipucu.sql`. Test: `24_kelime_guvenlik_ipucu.test.sql` (27).
+Kapsam: `d937b4f..ae8bce1` (Oyunlar menüsü, tasarım 18a–18e, logo, öğretici, kampüs kelimesi).
+
+Yapılan: yeni değişikliklerin kodu görmeden bağımsız saldırgan gözüyle incelenmesi (en çok kampüs kelimesi), Supabase
+advisors (yeni tür yok), admin `npm audit` (0), son 8 commit'te ve repoda sır taraması (yok), release APK'da sır
+taraması (yalnızca publishable anahtar), girişsiz canlı API denemesi (yeni tablolar ve 6 yeni fonksiyon 401, `private`
+şema açık değil, şema listesi kapalı), `user_metadata`'ya güvenen SQL / admin kodu yok (öğretici bilgisi yalnızca
+arayüz), zamanlanmış işler (7 iş, son 6 saatte hatasız), canlı bakiye / XP tutarlılığı (uyuşmazlık 0).
+
+| Bulgu | Önem | Düzeltme |
+|---|---|---|
+| Sözlükte olmayan cevap, sözlük dışı tahminlerin hak harcamadan "cevap mı?" diye denenmesiyle bulunabiliyordu (başarısız istek hız sınırına da girmiyor) | Orta | Girilen kelime sözlüğe eklenir, cevap istisnası kalktı; bitmiş oyunda `KB039` sözlük kontrolünden önce |
+| Gün içinde okula kelime eklenince (ya da bugüne taşınınca) genel kelimeyi bitiren ikinci oyun ve ikinci ödül alabiliyordu | Düşük | Kişi günde tek bulmaca oynar (`word_puzzle_for_user`); bugün genel kelime varken okula bugün için kelime `KB041` |
+| Ödül engeli yalnızca o anki izne bakıyordu: izni kalkacak yetkili ileri tarihli kelimeleri görüp sonra tam ödül alabilirdi | Düşük | `private.word_puzzle_viewers` (giren, yönetim listesinde gören) ödül almaz |
+| Kelime düzenleme ile ilk tahmin arasında yarış (eski kelimeyle işaretleme) | Bilgi | Tahmin bulmaca satırını `FOR SHARE` kilitler |
+| Kelimeyi giren yetkilinin kimliği öğrencilere açıktı | Bilgi | `word_puzzles.created_by` kolon bazlı okumayla kapalı |
+
+Bilgi (önlenemez): yetkili kelimeyi arkadaşlarına söyleyebilir; tespit için yönetim listesinde "ilk tahminde bulan"
+sayısı var. Bilinen sınır: istek bekçisi yalnızca başarılı yazma isteklerini sayar ([acik-isler](acik-isler.md)).
+Temiz bulunan: cevap yalnızca oyun bitince dönüyor, başka hiçbir yol `word_answers`'a dokunmuyor, tahmin kapsamı
+(dün / yarın / başka okul / genel) doğru, RLS önceliği ve NULL doğru, deneme kilidi ödülü tek seferlik kılıyor, XP /
+ledger kısıtlarında önceki nedenler korunmuş, yönetim izinleri ve denetim kaydı, `export_my_data` sarmalayıcısı,
+admin'de XSS / açık yönlendirme / sır yok, mobilde cevap ya da sözlük yok.
